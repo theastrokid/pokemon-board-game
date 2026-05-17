@@ -267,7 +267,10 @@ GameUI.reorderPartyByDrop = function (player, fromIdx, toIdx) {
   // Clamp toIdx if it now exceeds bounds (when dropping into an empty slot beyond party)
   const clampedTo = Math.min(toIdx, player.party.length);
   player.party.splice(clampedTo, 0, moved);
-  GameUI.renderParty(player);
+  // refreshAll (not renderParty) so the visible trainer panel updates AND
+  // the multiplayer broadcast fires — without this, a peer reorder stays
+  // invisible to other devices until some other mutation triggers a sync.
+  GameUI.refreshAll();
   const fromWasBattle = fromIdx < 3;
   const toIsBattle = clampedTo < 3;
   if (fromWasBattle !== toIsBattle) {
@@ -495,8 +498,10 @@ GameUI.refreshAll = function () {
   GameBoard.renderTokens();
   GameUI._refreshTapHint();
   // Push state to peers in multiplayer mode. Guarded against re-entry when
-  // we're applying a remote update (so we don't echo it back).
-  if (window.GameMP && GameMP.enabled) GameMP.broadcastState();
+  // we're applying a remote update (so we don't echo it back). fromMutation=true
+  // so the receiver knows to defend our own slot from races with stale peer
+  // broadcasts in flight.
+  if (window.GameMP && GameMP.enabled) GameMP.broadcastState(true);
 };
 
 // ============================== ENCOUNTER ==============================

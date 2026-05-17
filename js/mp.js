@@ -96,9 +96,24 @@ GameMP._broadcastTimer = null;
 GameMP._lastBroadcastTs = 0;
 GameMP.THROTTLE_MS = 40;
 
-GameMP.broadcastState = function () {
+// "Own slot stale window": after we mutate our own slot OR broadcast our
+// own slot, any incoming full state's view of our slot is treated as
+// potentially stale for this many ms — sender may not have received our
+// last update yet. Long enough to cover normal WAN latency (~500ms p99),
+// short enough not to block legitimate cross-slot mutations from trade/pvp
+// (which always sit behind a 3+ second user-confirm flow).
+GameMP.STALE_WINDOW_MS = 1500;
+GameMP._dirtyOwnSlot = false;        // local mutation hasn't been sent yet
+GameMP._ownSlotStaleUntil = 0;       // protect own slot from incoming until this ts
+
+GameMP.broadcastState = function (fromMutation) {
   if (!GameMP.enabled || !GameMP.ws) return;
   if (GameMP._suspendBroadcast) return;
+  // Caller signals whether this broadcast is driven by a local mutation
+  // (refreshAll path) vs the idle poll. Only mutations should mark the
+  // own-slot as dirty, otherwise every poll would self-flag and we'd
+  // permanently protect against incoming.
+  if (fromMutation) GameMP._dirtyOwnSlot = true;
   // Decide what to send. Active-player device (or host running a CPU)
   // sends a FULL snapshot. Off-turn devices send only their own player
   // slot so they can't clobber the active turn's authoritative state.
@@ -140,6 +155,12 @@ GameMP._doSend = function () {
   if (sig === GameMP._lastSentSig) return;
   GameMP._lastSentSig = sig;
   GameMP._lastBroadcastActiveIdx = GameState.activePlayerIdx;
+  // Our own slot was just placed on the wire. Any peer state that arrives
+  // in the next STALE_WINDOW_MS may still reflect the version BEFORE our
+  // update (network in-flight) — so we ignore their view of our slot for
+  // that window. Clear the dirty flag too: we no longer have unsent work.
+  GameMP._dirtyOwnSlot = false;
+  GameMP._ownSlotStaleUntil = Date.now() + GameMP.STALE_WINDOW_MS;
   msg.ts = Date.now();
   GameMP.send(msg);
 };
@@ -147,10 +168,11 @@ GameMP._doSend = function () {
 // Poll every 120ms so modal opens (encounter, battle, draws, branch,
 // fainted, victory) propagate to spectators even when the show*() function
 // didn't trigger a refreshAll. Throttle + dedupe mean an idle game costs
-// nothing — only real state changes hit the wire.
+// nothing — only real state changes hit the wire. fromMutation=false so
+// the idle poll doesn't false-flag our own slot as dirty.
 setInterval(() => {
   if (!GameMP.enabled || !GameMP.ws) return;
-  GameMP.broadcastState();
+  GameMP.broadcastState(false);
 }, 120);
 
 GameMP._serializeState = function () {
@@ -175,17 +197,22 @@ GameMP._applyState = function (state) {
   }
   GameMP._suspendBroadcast = true;
   try {
-    // ALWAYS protect our own slot from peer state replacement. Peer's view
-    // of OUR slot can lag behind our local mutations (evolution, item use,
-    // discard, mid-battle HP). Skipping this guard let race-arrival of a
-    // peer's stale full state revert our local changes — including
-    // evolutions that "didn't stick" in the party panel.
-    // Only skip the guard when our slot is empty (initial join — we WANT
-    // the peer's data to populate us).
+    // Protect our own slot only when EITHER:
+    //   - we have an unsent local mutation (dirty), OR
+    //   - we recently broadcast our slot and the incoming sender may not
+    //     have received it yet (within STALE_WINDOW_MS).
+    // Unconditional protection (the previous behavior) silently dropped
+    // every cross-slot mutation from the active player — breaking trades
+    // and PvP wins where the active player rewrites a peer's party. The
+    // dirty + stale window still defends evolutions / item use / discard
+    // on the off-turn player because those flip the flag locally and keep
+    // the window warm until both sides converge.
     const haveOwnSlot = GameMP.localSlot != null && GameState.players[GameMP.localSlot];
-    const ownSlotPreserve = haveOwnSlot ? GameState.players[GameMP.localSlot] : null;
+    const recentlyBroadcast = Date.now() < GameMP._ownSlotStaleUntil;
+    const protectOwnSlot = haveOwnSlot && (GameMP._dirtyOwnSlot || recentlyBroadcast);
+    const ownSlotPreserve = protectOwnSlot ? GameState.players[GameMP.localSlot] : null;
     GameState.players = state.players || GameState.players;
-    if (haveOwnSlot && GameState.players) GameState.players[GameMP.localSlot] = ownSlotPreserve;
+    if (ownSlotPreserve && GameState.players) GameState.players[GameMP.localSlot] = ownSlotPreserve;
     GameState.activePlayerIdx = state.activePlayerIdx ?? GameState.activePlayerIdx;
     GameState.turnCount = state.turnCount ?? GameState.turnCount;
     GameState.pendingTileResolution = !!state.pendingTileResolution;
