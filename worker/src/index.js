@@ -138,6 +138,10 @@ export class GameRoom {
         this.broadcast(msg, session);
       } else if (msg.type === 'chat' || msg.type === 'cursor' || msg.type === 'ping') {
         this.broadcast(msg, session);
+      } else if (msg.type === 'trade-proposal' || msg.type === 'trade-response' || msg.type === 'trade-cancel') {
+        // Two-player trade flow. Sender → all other clients; trade.js on
+        // each receiver filters by addressed slot.
+        this.broadcast(msg, session);
       }
     });
 
