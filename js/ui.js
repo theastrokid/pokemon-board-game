@@ -5,6 +5,17 @@ window.GameUI = {};
 
 GameUI.el = function (id) { return document.getElementById(id); };
 
+// Helper: every show*() function should call this first to clear any
+// leftover spectator marking + re-enable buttons. Without it, if THIS
+// device was previously spectating a peer's modal, opening our own copy
+// inherits data-spectator="1" + disabled buttons → unclickable Continue.
+GameUI._unspectate = function (modalId) {
+  const el = document.getElementById(modalId);
+  if (!el) return;
+  if (el.dataset.spectator) delete el.dataset.spectator;
+  el.querySelectorAll('button').forEach(b => { b.disabled = false; });
+};
+
 // Which players this device may interactively mutate (release / use items /
 // rearrange party).
 //  - Single-device: only the active player (preserves classic pass-and-play).
@@ -490,6 +501,7 @@ GameUI.refreshAll = function () {
 
 // ============================== ENCOUNTER ==============================
 GameUI.showEncounter = function (speciesId, ctx) {
+  GameUI._unspectate('encounterModal');
   const modal = GameUI.el('encounterModal');
   modal.hidden = false;
   const p = GameData.getPokemon(speciesId);
@@ -764,6 +776,7 @@ GameUI.hideEncounter = function () {
 
 // ============================== BATTLE UI ==============================
 GameUI.showBattle = function (battleState) {
+  GameUI._unspectate('battleModal');
   const modal = GameUI.el('battleModal');
   modal.hidden = false;
   GameBattle.renderBattle(battleState);
@@ -821,6 +834,7 @@ GameUI.tileDescription = function (tile) {
 
 // ============================== BRANCH MODAL ==============================
 GameUI.showBranch = function (tile, onPick) {
+  GameUI._unspectate('branchModal');
   const modal = GameUI.el('branchModal');
   modal.hidden = false;
   const optsEl = GameUI.el('branchOptions');
@@ -842,6 +856,7 @@ GameUI.showBranch = function (tile, onPick) {
 
 // ============================== DRAW REVEAL ==============================
 GameUI.showDraws = function (title, draws, onContinue) {
+  GameUI._unspectate('drawModal');
   const modal = GameUI.el('drawModal');
   modal.hidden = false;
   // Allow HTML in the title so callers can embed a leader sprite.
@@ -940,6 +955,7 @@ GameUI.showOutOfBallsPopup = function (pokemonName, onClose) {
 
 // ============================== FAINTED POPUP ==============================
 GameUI.showFaintedPopup = function (player, returnTile, onClose) {
+  GameUI._unspectate('faintedModal');
   const modal = GameUI.el('faintedModal');
   modal.hidden = false;
   // Pick the lead Pokemon to display fainted
@@ -958,6 +974,7 @@ GameUI.showFaintedPopup = function (player, returnTile, onClose) {
 
 // ============================== VICTORY ==============================
 GameUI.showVictory = function (player, defeatedLeader) {
+  GameUI._unspectate('victoryModal');
   const modal = GameUI.el('victoryModal');
   modal.hidden = false;
   const winnerName = GameUI.el('winnerName');
@@ -1154,6 +1171,7 @@ GameUI.showEvolutionPicker = function (eligible, onPick) {
 
 // ============================== EVOLUTION ANIMATION ==============================
 GameUI.playEvolutionAnimation = function (fromSpeciesId, toSpeciesId, fromName, toName, onComplete) {
+  GameUI._unspectate('evolveAnimModal');
   const modal = GameUI.el('evolveAnimModal');
   const before = GameUI.el('evolveSpriteBefore');
   const after = GameUI.el('evolveSpriteAfter');

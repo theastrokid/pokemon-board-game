@@ -175,17 +175,17 @@ GameMP._applyState = function (state) {
   }
   GameMP._suspendBroadcast = true;
   try {
-    // If THIS device is mid-battle and owns the active player, protect our
-    // own slot from being overwritten by a peer's stale snapshot. The
-    // battle's playerTeam holds the authoritative HP/PP/fainted; spamming a
-    // peer-sent state could revert mid-battle damage.
-    const protectOwnSlot = GameMP.isLocalDeviceActive()
-      && window.GameBattle && GameBattle.active && !GameBattle.active._spectator
-      && GameMP.localSlot != null
-      && GameState.players[GameMP.localSlot];
-    const ownSlotPreserve = protectOwnSlot ? GameState.players[GameMP.localSlot] : null;
+    // ALWAYS protect our own slot from peer state replacement. Peer's view
+    // of OUR slot can lag behind our local mutations (evolution, item use,
+    // discard, mid-battle HP). Skipping this guard let race-arrival of a
+    // peer's stale full state revert our local changes — including
+    // evolutions that "didn't stick" in the party panel.
+    // Only skip the guard when our slot is empty (initial join — we WANT
+    // the peer's data to populate us).
+    const haveOwnSlot = GameMP.localSlot != null && GameState.players[GameMP.localSlot];
+    const ownSlotPreserve = haveOwnSlot ? GameState.players[GameMP.localSlot] : null;
     GameState.players = state.players || GameState.players;
-    if (protectOwnSlot) GameState.players[GameMP.localSlot] = ownSlotPreserve;
+    if (haveOwnSlot && GameState.players) GameState.players[GameMP.localSlot] = ownSlotPreserve;
     GameState.activePlayerIdx = state.activePlayerIdx ?? GameState.activePlayerIdx;
     GameState.turnCount = state.turnCount ?? GameState.turnCount;
     GameState.pendingTileResolution = !!state.pendingTileResolution;
