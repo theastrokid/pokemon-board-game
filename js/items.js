@@ -125,52 +125,82 @@ GameItems.applyEvolve = function (item, player) {
     alert('No Pokemon in your party.');
     return;
   }
+  // Stable identifier we re-resolve against after async gaps: in multiplayer
+  // an incoming full state from the active player can swap our slot's player
+  // object (and its party members) for fresh references during the picker /
+  // animation window. Mutating the captured `mon` then disappears into the
+  // orphan object — candy gone, no evolution visible. Re-look-up by id +
+  // instanceId at every mutation point keeps us pinned to the live object.
+  const playerId = player.id;
+  const resolveLive = (instanceId) => {
+    const livePlayer = GameState.players.find(p => p && p.id === playerId);
+    if (!livePlayer) return { livePlayer: null, liveMon: null };
+    const liveMon = livePlayer.party.find(m => m.instanceId === instanceId);
+    return { livePlayer, liveMon };
+  };
+
   GameUI.showEvolutionPicker(eligible, (mon, chosenEvolutionId) => {
+    let { livePlayer, liveMon } = resolveLive(mon.instanceId);
+    if (!livePlayer || !liveMon) {
+      GameUI.log(`${mon.name} is no longer available for evolution.`, 'system');
+      return;
+    }
     // Per-Pokemon limit: each instance can only take one Rare Candy per turn.
-    if (GameState.candiedInstancesThisTurn[mon.instanceId]) {
-      GameUI.log(`${mon.name} has already used a Rare Candy this turn.`, 'system');
+    if (GameState.candiedInstancesThisTurn[liveMon.instanceId]) {
+      GameUI.log(`${liveMon.name} has already used a Rare Candy this turn.`, 'system');
       return;
     }
     if (chosenEvolutionId == null) {
       // Stat boost path (fully-evolved Pokemon). Lifetime cap: 1 per mon ever.
-      if ((mon.boostCount || 0) >= 1) {
-        GameUI.log(`${mon.name} has already received its Rare Candy boost.`, 'system');
+      if ((liveMon.boostCount || 0) >= 1) {
+        GameUI.log(`${liveMon.name} has already received its Rare Candy boost.`, 'system');
         return;
       }
-      GameItems.applyStatBoost(player, mon);
-      GameState.consumeItem(player, item.id);
-      GameState.candiedInstancesThisTurn[mon.instanceId] = true;
-      GameUI.log(`<span class="crit">${player.name}'s ${mon.name} grew stronger! +25% HP, +25% move power, PP raised to 40/5.</span>`, 'crit');
+      GameItems.applyStatBoost(livePlayer, liveMon);
+      GameState.consumeItem(livePlayer, item.id);
+      GameState.candiedInstancesThisTurn[liveMon.instanceId] = true;
+      GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! +25% HP, +25% move power, PP raised to 40/5.</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
       return;
     }
     const evolved = chosenEvolutionId;
     const newData = GameData.getPokemon(evolved);
-    const oldName = mon.name;
-    const oldSpeciesId = mon.speciesId;
-    const wasFainted = mon.fainted;
-    GameState.consumeItem(player, item.id);
-    GameState.candiedInstancesThisTurn[mon.instanceId] = true;
+    const oldName = liveMon.name;
+    const oldSpeciesId = liveMon.speciesId;
+    const wasFainted = liveMon.fainted;
+    const targetInstanceId = liveMon.instanceId;
+    GameState.consumeItem(livePlayer, item.id);
+    GameState.candiedInstancesThisTurn[targetInstanceId] = true;
     GameUI.refreshAll();
     GameUI.playEvolutionAnimation(oldSpeciesId, evolved, oldName, newData.name, () => {
-      mon.speciesId = evolved;
-      mon.name = newData.name;
-      mon.types = newData.types.slice();
-      const oldMax = mon.maxHp;
-      mon.maxHp = newData.hp;
+      // Re-resolve again — the animation gap (~2800ms) exceeds the MP stale
+      // window (1500ms), so by now the captured liveMon ref may be stale.
+      const fresh = resolveLive(targetInstanceId);
+      const finalPlayer = fresh.livePlayer || livePlayer;
+      const finalMon = fresh.liveMon;
+      if (!finalMon) {
+        GameUI.log(`${oldName} could not be evolved (no longer in ${finalPlayer.name}'s party).`, 'system');
+        GameUI.refreshAll();
+        return;
+      }
+      finalMon.speciesId = evolved;
+      finalMon.name = newData.name;
+      finalMon.types = newData.types.slice();
+      const oldMax = finalMon.maxHp;
+      finalMon.maxHp = newData.hp;
       if (wasFainted) {
         // Fainted Pokemon revives at 10% of new max HP
-        mon.hp = Math.max(1, Math.round(newData.hp * 0.1));
-        mon.fainted = false;
+        finalMon.hp = Math.max(1, Math.round(newData.hp * 0.1));
+        finalMon.fainted = false;
       } else {
-        mon.hp = Math.min(newData.hp, mon.hp + (newData.hp - oldMax));
+        finalMon.hp = Math.min(newData.hp, finalMon.hp + (newData.hp - oldMax));
       }
-      mon.moves = GameState.cloneMoves(newData.moves);
+      finalMon.moves = GameState.cloneMoves(newData.moves);
       // Evolution clears any prior +25% boosts (new species, new base stats).
-      mon.boostCount = 0;
-      const suffix = wasFainted ? ` and revived at ${mon.hp}/${mon.maxHp} HP` : '';
-      GameUI.log(`<span class="crit">${player.name}'s ${oldName} evolved into ${newData.name}${suffix}!</span>`, 'crit');
+      finalMon.boostCount = 0;
+      const suffix = wasFainted ? ` and revived at ${finalMon.hp}/${finalMon.maxHp} HP` : '';
+      GameUI.log(`<span class="crit">${finalPlayer.name}'s ${oldName} evolved into ${newData.name}${suffix}!</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
     });
