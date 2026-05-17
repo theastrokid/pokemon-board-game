@@ -25,6 +25,7 @@
 
   setupScreenInit();
   bindGlobalListeners();
+  setupMultiplayer();
 
   function setupScreenInit() {
     const countBtns = document.querySelectorAll('#playerCountButtons .count-btn');
@@ -130,7 +131,77 @@
     }
   }
 
-  function startGame() {
+  let mpMode = 'local'; // 'local' | 'host' | 'join'
+
+  function setupMultiplayer() {
+    document.querySelectorAll('.mp-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.mp-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        mpMode = tab.dataset.mode;
+        document.getElementById('mpJoinPanel').hidden = mpMode !== 'join';
+        document.getElementById('mpHostPanel').hidden = mpMode !== 'host';
+        // Change Start button text + behavior for join
+        const startBtn = document.getElementById('startGameBtn');
+        if (mpMode === 'join') startBtn.textContent = 'Joining requires the room code (use Join button)';
+        else if (mpMode === 'host') startBtn.textContent = 'Host & start adventure';
+        else startBtn.textContent = 'Start adventure';
+        startBtn.disabled = mpMode === 'join';
+      });
+    });
+
+    document.getElementById('mpJoinBtn').addEventListener('click', async () => {
+      const code = document.getElementById('mpJoinCode').value.trim().toUpperCase();
+      const status = document.getElementById('mpJoinStatus');
+      status.textContent = 'Connecting...';
+      try {
+        await GameMP.joinRoom(code);
+        status.textContent = `Connected to ${code}. Waiting for host to share the game state...`;
+        // Hide setup, show game (state will arrive via WS)
+        document.getElementById('setup').hidden = true;
+        document.getElementById('game').hidden = false;
+        document.getElementById('app').classList.remove('screen-setup');
+        showMpRoomPill(code);
+        // Render an empty board while we wait for the host's first state push.
+        if (window.GameBoard) GameBoard.render();
+      } catch (e) {
+        status.textContent = 'Failed: ' + e.message;
+      }
+    });
+  }
+
+  function showMpRoomPill(code) {
+    const pill = document.getElementById('mpRoomPill');
+    if (!pill) return;
+    pill.hidden = false;
+    document.getElementById('mpRoomCode').textContent = code;
+  }
+
+  // Poll waiting banner state every 400ms so it stays accurate as turns change.
+  setInterval(() => {
+    const banner = document.getElementById('mpWaitingBanner');
+    if (!banner || !window.GameMP) return;
+    const msg = GameMP.statusBanner && GameMP.statusBanner();
+    if (msg) {
+      banner.textContent = msg;
+      banner.hidden = false;
+    } else {
+      banner.hidden = true;
+    }
+    // Gate the Roll button when this device isn't the active player
+    const rollBtn = document.getElementById('rollMoveBtn');
+    if (rollBtn && GameMP.enabled) {
+      const localActive = GameMP.isLocalDeviceActive();
+      if (!localActive) {
+        rollBtn.disabled = true;
+      } else {
+        // Only re-enable if the underlying state actually allows rolling.
+        if (!GameState.busy && !GameState.pendingTileResolution) rollBtn.disabled = false;
+      }
+    }
+  }, 400);
+
+  async function startGame() {
     const rows = document.querySelectorAll('#trainerSetup .trainer-row-v');
     GameState.reset();
     rows.forEach((row, i) => {
@@ -141,7 +212,6 @@
       const p = GameState.makePlayer(i, name, starter);
       p.trainerSprite = trainer;
       p.isCpu = isCpu;
-      // Starting inventory per Damon's rules
       GameState.giveItem(p, 'potion');
       GameState.giveItem(p, 'potion');
       GameState.giveItem(p, 'super_potion');
@@ -150,6 +220,19 @@
       for (let j = 0; j < 5; j++) GameState.giveBall(p, 'pokeball');
       GameState.players.push(p);
     });
+    // Host an online room if requested
+    if (mpMode === 'host') {
+      try {
+        const code = await GameMP.hostRoom();
+        showMpRoomPill(code);
+        // Tiny alert so the host knows their code (so they can read it to friends)
+        alert(`Room code: ${code}\n\nShare this with the other trainers — they pick "Join with code" on the setup screen.`);
+        // Broadcast initial state once joiners connect (the DO caches it too)
+        setTimeout(() => GameMP.broadcastState(), 300);
+      } catch (e) {
+        alert('Could not host room: ' + e.message + '\nStarting in local mode instead.');
+      }
+    }
     enterGame();
   }
 

@@ -376,6 +376,9 @@ GameUI.refreshAll = function () {
   GameUI.renderPlayerPanel();
   GameBoard.renderTokens();
   GameUI._refreshTapHint();
+  // Push state to peers in multiplayer mode. Guarded against re-entry when
+  // we're applying a remote update (so we don't echo it back).
+  if (window.GameMP && GameMP.enabled) GameMP.broadcastState();
 };
 
 // ============================== ENCOUNTER ==============================

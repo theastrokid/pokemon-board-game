@@ -1430,6 +1430,96 @@ body {
   .setup-card { padding: 14px; }
 }
 
+/* ===========================================================
+   MULTIPLAYER  (setup tabs + in-game room pill + waiting banner)
+   =========================================================== */
+.mp-card { border: 2px solid rgba(56,189,248,0.3); }
+.mp-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.mp-tab {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg-3);
+  color: var(--ink-dim);
+  border: 2px solid transparent;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mp-tab:hover { background: var(--bg-2); color: var(--ink); }
+.mp-tab.active {
+  background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+  color: #04263a;
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 0 2px 6px rgba(14,165,233,0.4);
+}
+.mp-panel {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+}
+.mp-code-input {
+  background: var(--bg);
+  color: var(--pop);
+  border: 2px solid var(--bg-3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-align: center;
+  text-transform: uppercase;
+  width: 140px;
+  margin: 0 8px 8px 0;
+  font-family: monospace;
+}
+.mp-code-input:focus { outline: none; border-color: var(--pop); }
+.mp-room-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+  color: #04263a;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 6px;
+  box-shadow: 0 2px 6px rgba(14,165,233,0.4);
+}
+.mp-room-pill strong { letter-spacing: 2px; font-size: 14px; }
+
+.mp-waiting {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #1e3a5f, #142540);
+  color: var(--pop);
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,203,5,0.4);
+  z-index: 10;
+  pointer-events: none;
+  animation: mpWait 1.6s ease-in-out infinite;
+}
+@keyframes mpWait {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1; transform: translateX(-50%) scale(1.02); }
+}
+
 /* Hide log bar entirely */
 .logbar { display: none !important; }
 .battle-arena {

@@ -17,6 +17,24 @@
       <p class="tagline">The physical card adventure. Now with a digital board.</p>
     </header>
 
+    <div class="setup-card mp-card">
+      <h2>Play mode</h2>
+      <div class="mp-tabs">
+        <button type="button" class="mp-tab active" data-mode="local">📱 Same-device / CPU</button>
+        <button type="button" class="mp-tab" data-mode="host">🌐 Host online game</button>
+        <button type="button" class="mp-tab" data-mode="join">🔑 Join with code</button>
+      </div>
+      <div id="mpJoinPanel" class="mp-panel" hidden>
+        <p class="hint">Enter the 4-letter room code shared by the host.</p>
+        <input type="text" id="mpJoinCode" class="mp-code-input" placeholder="ABCD" maxlength="4" />
+        <button id="mpJoinBtn" class="primary-btn">Join room</button>
+        <p class="hint" id="mpJoinStatus"></p>
+      </div>
+      <div id="mpHostPanel" class="mp-panel" hidden>
+        <p class="hint">You'll get a 4-letter code to share with the other trainers. Up to 6 players (mix human + CPU).</p>
+      </div>
+    </div>
+
     <div class="setup-card">
       <h2>How many trainers?</h2>
       <div class="player-count-buttons" id="playerCountButtons">
@@ -59,6 +77,7 @@
       <div class="topbar-left">
         <span class="area-pill" id="areaPill">Pallet Town</span>
         <span class="turn-pill" id="turnPill">Turn 1</span>
+        <span id="mpRoomPill" class="mp-room-pill" hidden>🌐 <strong id="mpRoomCode"></strong></span>
       </div>
       <div class="topbar-center"></div>
       <div class="topbar-right">
@@ -74,6 +93,7 @@
         <div id="boardWrap" class="board-wrap">
           <svg id="boardSvg" class="board-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
+        <div id="mpWaitingBanner" class="mp-waiting" hidden></div>
       </div>
 
       <aside class="side-pane">
@@ -472,6 +492,7 @@
 <script src="js/trade.js"></script>
 <script src="js/game.js"></script>
 <script src="js/cpu.js"></script>
+<script src="js/mp.js"></script>
 <script src="js/main.js"></script>
 
 </body>
