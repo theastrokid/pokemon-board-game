@@ -164,6 +164,7 @@
         showMpRoomPill(code);
         // Render an empty board while we wait for the host's first state push.
         if (window.GameBoard) GameBoard.render();
+        if (window.GameCpu) GameCpu.start();
       } catch (e) {
         status.textContent = 'Failed: ' + e.message;
       }
@@ -177,29 +178,25 @@
     document.getElementById('mpRoomCode').textContent = code;
   }
 
-  // Poll waiting banner state every 400ms so it stays accurate as turns change.
+  // Poll every 150ms so turn handoffs (and the CPU button gate) feel snappy.
   setInterval(() => {
     const banner = document.getElementById('mpWaitingBanner');
-    if (!banner || !window.GameMP) return;
-    const msg = GameMP.statusBanner && GameMP.statusBanner();
-    if (msg) {
-      banner.textContent = msg;
-      banner.hidden = false;
-    } else {
-      banner.hidden = true;
+    if (banner && window.GameMP) {
+      const msg = GameMP.statusBanner && GameMP.statusBanner();
+      if (msg) { banner.textContent = msg; banner.hidden = false; }
+      else { banner.hidden = true; }
     }
-    // Gate the Roll button when this device isn't the active player
+    // Gate the Roll button when this device isn't the active player.
     const rollBtn = document.getElementById('rollMoveBtn');
-    if (rollBtn && GameMP.enabled) {
+    if (rollBtn && window.GameMP && GameMP.enabled) {
       const localActive = GameMP.isLocalDeviceActive();
       if (!localActive) {
         rollBtn.disabled = true;
-      } else {
-        // Only re-enable if the underlying state actually allows rolling.
-        if (!GameState.busy && !GameState.pendingTileResolution) rollBtn.disabled = false;
+      } else if (!GameState.busy && !GameState.pendingTileResolution) {
+        rollBtn.disabled = false;
       }
     }
-  }, 400);
+  }, 150);
 
   async function startGame() {
     const rows = document.querySelectorAll('#trainerSetup .trainer-row-v');

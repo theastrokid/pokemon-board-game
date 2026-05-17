@@ -49,12 +49,19 @@ GameCpu._currentSignature = function () {
       .join(',');
     modalDetail = (resultEl ? resultEl.textContent : '') + '|' + enabledList;
   }
+  // Include rollBtn.disabled so the watchdog re-fires the moment the
+  // multiplayer gate re-enables the Roll button after a turn handoff
+  // — otherwise the CPU clicks too early, button is still disabled, the
+  // click is a no-op, and the sig stays identical so dedupe blocks retry.
+  const rollBtn = document.getElementById('rollMoveBtn');
+  const rollDisabled = rollBtn ? rollBtn.disabled : null;
   return JSON.stringify({
     pid: p ? p.id : null,
     turn: GameState.turnCount,
     tile: p ? p.tile : null,
     pending: GameState.pendingTileResolution,
     busy: GameState.busy,
+    rollDisabled,
     modal: openModal ? openModal.id : null,
     modalDetail,
     battle: b ? { kind: b.kind, pAct: b.playerActive, oAct: b.oppActive, opPend: !!b.opponentPending, msg: b.message } : null,

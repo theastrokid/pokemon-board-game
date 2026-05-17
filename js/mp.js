@@ -94,7 +94,7 @@ GameMP.send = function (msg) {
 // during animations doesn't flood the wire.
 GameMP._broadcastTimer = null;
 GameMP._lastBroadcastTs = 0;
-GameMP.THROTTLE_MS = 80;
+GameMP.THROTTLE_MS = 40;
 
 GameMP.broadcastState = function () {
   if (!GameMP.enabled || !GameMP.ws) return;
@@ -141,14 +141,14 @@ GameMP._doSend = function () {
   GameMP.send(msg);
 };
 
-// Poll the active player's state every 200ms so modal opens (encounter,
-// battle, draws, branch, fainted, victory) propagate to spectators even when
-// the show* function didn't trigger a refreshAll. Throttled + deduped, so a
-// quiet game costs nothing extra.
+// Poll every 120ms so modal opens (encounter, battle, draws, branch,
+// fainted, victory) propagate to spectators even when the show*() function
+// didn't trigger a refreshAll. Throttle + dedupe mean an idle game costs
+// nothing — only real state changes hit the wire.
 setInterval(() => {
   if (!GameMP.enabled || !GameMP.ws) return;
   GameMP.broadcastState();
-}, 200);
+}, 120);
 
 GameMP._serializeState = function () {
   return {
