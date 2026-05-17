@@ -119,6 +119,13 @@ export class GameRoom {
             peers: this.sessions.filter(s => s.hello).map(s => ({ sessionId: s.id, hello: s.hello })),
           }));
         } catch (e) {}
+      } else if (msg.type === 'player-update') {
+        // Partial update — patch the cached state's player slot so late
+        // joiners see the latest, then broadcast to peers.
+        if (this.lastState && this.lastState.players && msg.slot != null && msg.player) {
+          this.lastState.players[msg.slot] = msg.player;
+        }
+        this.broadcast(msg, session);
       } else if (msg.type === 'chat' || msg.type === 'cursor' || msg.type === 'ping') {
         this.broadcast(msg, session);
       }

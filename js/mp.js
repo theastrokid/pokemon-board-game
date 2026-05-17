@@ -99,16 +99,16 @@ GameMP.THROTTLE_MS = 80;
 GameMP.broadcastState = function () {
   if (!GameMP.enabled || !GameMP.ws) return;
   if (GameMP._suspendBroadcast) return;
-  // Only the active player (or host driving CPU) broadcasts. Spectators
-  // never re-broadcast — eliminates an entire half of the chatter.
-  if (!GameMP.isLocalDeviceActive()) return;
+  // Decide what to send. Active-player device (or host running a CPU)
+  // sends a FULL snapshot. Off-turn devices send only their own player
+  // slot so they can't clobber the active turn's authoritative state.
   const now = Date.now();
   const elapsed = now - GameMP._lastBroadcastTs;
   if (elapsed >= GameMP.THROTTLE_MS) {
     GameMP._doSend();
     return;
   }
-  if (GameMP._broadcastTimer) return; // already scheduled
+  if (GameMP._broadcastTimer) return;
   GameMP._broadcastTimer = setTimeout(() => {
     GameMP._broadcastTimer = null;
     GameMP._doSend();
@@ -117,8 +117,17 @@ GameMP.broadcastState = function () {
 
 GameMP._doSend = function () {
   GameMP._lastBroadcastTs = Date.now();
-  const snapshot = GameMP._serializeState();
-  GameMP.send({ type: 'state', state: snapshot, ts: Date.now() });
+  if (GameMP.isLocalDeviceActive()) {
+    const snapshot = GameMP._serializeState();
+    GameMP.send({ type: 'state', state: snapshot, ts: Date.now() });
+  } else if (GameMP.localSlot != null && GameState.players[GameMP.localSlot]) {
+    GameMP.send({
+      type: 'player-update',
+      slot: GameMP.localSlot,
+      player: GameState.players[GameMP.localSlot],
+      ts: Date.now(),
+    });
+  }
 };
 
 GameMP._serializeState = function () {
@@ -341,13 +350,26 @@ GameMP._onMessage = function (event) {
       if (GameMP.onPeerChange) GameMP.onPeerChange();
       break;
     case 'state':
-      // The remote pushed a new state. Replace ours.
+      // The remote pushed a full state. Replace ours.
       if (msg.state) GameMP._applyState(msg.state);
-      // If we're a late-joining guest and don't have a localSlot yet, pick the
-      // first non-host slot that's higher than ours. Default: slot 1 (player 2).
       if (GameMP.localSlot == null && GameState.players && GameState.players.length > 1) {
         GameMP.localSlot = 1;
         GameMP.send({ type: 'hello', playerSlot: 1, isHost: false });
+      }
+      break;
+    case 'player-update':
+      // Partial update — replace just one slot. Used for off-turn party
+      // management (discard, item use, reorder) so the sender doesn't clobber
+      // the active player's authoritative state.
+      if (msg.slot != null && msg.player && GameState.players) {
+        GameMP._suspendBroadcast = true;
+        try {
+          GameState.players[msg.slot] = msg.player;
+          if (window.GameUI && GameUI.refreshAll) GameUI.refreshAll();
+          if (window.GameBoard && GameBoard.renderTokens) GameBoard.renderTokens();
+        } finally {
+          GameMP._suspendBroadcast = false;
+        }
       }
       break;
     default:

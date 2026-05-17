@@ -1157,6 +1157,18 @@ body {
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(14,165,233,0.4);
 }
+.tp-me-tag {
+  background: linear-gradient(180deg, #4ade80, #16a34a);
+  color: #04261a;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 99px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(22,163,74,0.4);
+}
+.trainer-panel.owned { border-color: rgba(74,222,128,0.45); }
+.trainer-panel.owned.active { border-color: var(--pop); }
 
 /* CPU toggle on setup screen */
 .cpu-toggle {

@@ -5,6 +5,20 @@ window.GameUI = {};
 
 GameUI.el = function (id) { return document.getElementById(id); };
 
+// Which players this device may interactively mutate (release / use items /
+// rearrange party).
+//  - Single-device: only the active player (preserves classic pass-and-play).
+//  - Multiplayer: just the slot this device claimed (plus CPUs if you're host).
+GameUI.isLocallyOwned = function (p, slotIdx) {
+  if (!p) return false;
+  if (!window.GameMP || !GameMP.enabled) {
+    return p === GameState.currentPlayer();
+  }
+  if (GameMP.localSlot != null && slotIdx === GameMP.localSlot) return true;
+  if (p.isCpu && GameMP.isHost) return true;
+  return false;
+};
+
 // Toggle the "Tap board to roll" hint based on whether the player can roll.
 GameUI._refreshTapHint = function () {
   const pane = GameUI.el('boardPane');
@@ -352,10 +366,11 @@ GameUI.renderPlayerPanel = function () {
   if (!wrap) return;
   wrap.innerHTML = '';
   const active = GameState.currentPlayer();
-  GameState.players.forEach((p) => {
+  GameState.players.forEach((p, slotIdx) => {
     const isActive = p === active;
+    const owned = GameUI.isLocallyOwned(p, slotIdx);
     const panel = document.createElement('div');
-    panel.className = 'trainer-panel' + (isActive ? ' active' : '');
+    panel.className = 'trainer-panel' + (isActive ? ' active' : '') + (owned ? ' owned' : '');
     panel.dataset.playerId = p.id;
     const tile = GameData.getTile(p.tile);
     const area = tile ? GameData.getArea(tile.area) : null;
@@ -367,7 +382,7 @@ GameUI.renderPlayerPanel = function () {
       <div class="tp-header">
         ${sprite}
         <div class="tp-headinfo">
-          <div class="tp-name" style="color:${p.color}">${p.name}${p.isCpu ? ' <span class="tp-cpu-tag">🤖 CPU</span>' : ''}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}</div>
+          <div class="tp-name" style="color:${p.color}">${p.name}${p.isCpu ? ' <span class="tp-cpu-tag">🤖 CPU</span>' : ''}${owned && window.GameMP && GameMP.enabled ? ' <span class="tp-me-tag">YOU</span>' : ''}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}</div>
           <div class="tp-pos">${area ? area.name : '?'} · Tile ${tileLabel}${p.completed ? ' · 🏆' : ''}</div>
         </div>
         <div class="tp-counts">
@@ -389,14 +404,14 @@ GameUI.renderPlayerPanel = function () {
         const hpClass = hpPct > 50 ? '' : hpPct > 20 ? 'mid' : 'low';
         const card = document.createElement('div');
         card.className = 'tp-mon' + (mon.fainted ? ' fainted' : '') + (i < 3 ? ' battle-slot' : '');
-        card.draggable = isActive;
+        card.draggable = owned;
         card.dataset.partyIdx = i;
         card.innerHTML = `
           ${i < 3 ? `<div class="tp-mon-slot">${i + 1}</div>` : ''}
           <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" draggable="false" />
           <div class="tp-mon-name">${mon.name}</div>
           <div class="tp-mon-hp"><div class="tp-mon-hp-fill ${hpClass}" style="width:${hpPct}%"></div></div>
-          ${isActive ? '<button class="tp-mon-x" title="Release">✕</button>' : ''}
+          ${owned ? '<button class="tp-mon-x" title="Release">✕</button>' : ''}
         `;
         card.addEventListener('click', (e) => {
           if (e.target.closest('.tp-mon-x')) return;
@@ -405,14 +420,14 @@ GameUI.renderPlayerPanel = function () {
         });
         const x = card.querySelector('.tp-mon-x');
         if (x) x.addEventListener('click', (e) => { e.stopPropagation(); GameUI.discardPartyMember(p, i); });
-        if (isActive) GameUI._attachPartyDragHandlers(card, p, i);
+        if (owned) GameUI._attachPartyDragHandlers(card, p, i);
         partyEl.appendChild(card);
       } else {
         const empty = document.createElement('div');
         empty.className = 'tp-mon empty' + (i < 3 ? ' battle-slot' : '');
         empty.dataset.partyIdx = i;
         empty.textContent = '+';
-        if (isActive) GameUI._attachPartyDragHandlers(empty, p, i, true);
+        if (owned) GameUI._attachPartyDragHandlers(empty, p, i, true);
         partyEl.appendChild(empty);
       }
     }
@@ -428,10 +443,10 @@ GameUI.renderPlayerPanel = function () {
         const li = document.createElement('li');
         li.innerHTML = `
           <span class="tp-inv-name"><img class="tp-inv-sprite" src="${GameData.spriteItem(itemId)}" onerror="this.style.display='none'" alt="" />${item.name}</span>
-          <span class="tp-inv-right"><span class="tp-count">×${count}</span>${isActive ? `<button class="tp-use" data-item="${itemId}">USE</button>` : ''}</span>
+          <span class="tp-inv-right"><span class="tp-count">×${count}</span>${owned ? `<button class="tp-use" data-item="${itemId}">USE</button>` : ''}</span>
         `;
         const useBtn = li.querySelector('.tp-use');
-        if (useBtn) useBtn.addEventListener('click', () => GameItems.useItem(itemId));
+        if (useBtn) useBtn.addEventListener('click', () => GameItems.useItem(itemId, p));
         itemsEl.appendChild(li);
       });
     }

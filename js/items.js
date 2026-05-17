@@ -49,8 +49,8 @@ GameItems.applyBattleBuff = function (item, player) {
   GameState.consumeItem(player, item.id);
 };
 
-GameItems.useItem = function (itemId) {
-  const player = GameState.currentPlayer();
+GameItems.useItem = function (itemId, playerOverride) {
+  const player = playerOverride || GameState.currentPlayer();
   const item = GameData.getItem(itemId);
   if (!item || !player.items[itemId]) return;
   GameItems.applyItem(item, player, {});
