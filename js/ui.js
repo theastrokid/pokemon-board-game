@@ -892,6 +892,16 @@ GameUI.showDraws = function (title, draws, onContinue) {
 
 // ============================== POKEMON DETAIL ==============================
 GameUI.showPokemonDetail = function (mon, player) {
+  const slotIdx = GameState.players.indexOf(player);
+  const owned = GameUI.isLocallyOwned(player, slotIdx);
+  // Offer a Release button inside the detail modal so tapping a party
+  // Pokemon gives a clear discard path — the small ✕ overlay on the party
+  // card itself is easy to miss on tablet/mobile.
+  const canRelease = owned && player.party.length > 1 && !mon.fainted;
+  const cannotReleaseReason = !owned
+    ? null
+    : (player.party.length <= 1 ? 'Cannot release your last Pokemon.'
+        : (mon.fainted ? 'Revive before releasing.' : null));
   const html = `
     <div style="display:flex;gap:16px;align-items:center;">
       <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" style="width:96px;height:96px;image-rendering:pixelated;" />
@@ -914,8 +924,29 @@ GameUI.showPokemonDetail = function (mon, player) {
         </div>
       `;}).join('')}
     </div>
+    ${canRelease ? `
+      <div style="margin-top:16px;text-align:center;">
+        <button id="pokemonDetailReleaseBtn" class="primary-btn" style="background:#dc2626;border-color:#b91c1c;color:#fff;font-weight:bold;padding:10px 20px;">
+          Release ${mon.name}
+        </button>
+      </div>
+    ` : (cannotReleaseReason ? `
+      <div style="margin-top:16px;text-align:center;color:var(--ink-dim);font-size:12px;">
+        ${cannotReleaseReason}
+      </div>
+    ` : '')}
   `;
   GameUI.showTileInfo({ title: mon.name, description: `${player.name}'s Pokemon` }, html);
+  if (canRelease) {
+    const btn = document.getElementById('pokemonDetailReleaseBtn');
+    if (btn) {
+      btn.onclick = () => {
+        GameUI.el('tileModal').hidden = true;
+        const idx = player.party.findIndex(m => m.instanceId === mon.instanceId);
+        if (idx >= 0) GameUI.discardPartyMember(player, idx);
+      };
+    }
+  }
 };
 
 // ============================== ITEM PICKER ==============================
