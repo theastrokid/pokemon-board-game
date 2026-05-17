@@ -5,9 +5,12 @@
 //   - Pokemon-for-Pokemon (classic swap)
 //   - Pokemon-for-Items (target offers a bundle of items + balls, any qty)
 //
-// Anti-spam: every trade goes through a 3-second confirm modal where the
-// confirm button is locked for the full countdown. After 3s the button is
-// enabled and the user must explicitly press it. Either side can cancel.
+// Two-step confirm: the initiator (active player) builds the proposal and
+// hits Confirm — that just SENDS the proposal. The recipient (target) sees
+// a prompt with Accept / Decline and must explicitly agree before the
+// transfer executes. Either side can decline / cancel, in which case the
+// trade fails and the active player's turn proceeds normally. CPU
+// recipients auto-accept after a short delay.
 // =============================================================
 window.GameTrade = {};
 
@@ -22,6 +25,10 @@ GameTrade.state = {
   forced: false,
   onDone: null,
 };
+
+// In-flight trade proposal (one global at a time — only the active player
+// can initiate, and we only allow one trade per tile resolution).
+GameTrade._pendingProposal = null;
 
 GameTrade.start = function (onDone) {
   const from = GameState.currentPlayer();
@@ -108,7 +115,7 @@ GameTrade.start = function (onDone) {
       alert('You must keep at least 1 Pokemon. Trade a Pokemon-for-Pokemon instead.');
       return;
     }
-    GameTrade._openCountdown();
+    GameTrade._proposeTradeToTarget();
   };
 };
 
@@ -258,140 +265,314 @@ GameTrade._reflectChoices = function () {
   GameUI.el('tradeConfirmBtn').disabled = !(s.fromMon && s.target && targetReady);
 };
 
-// =========== 3-second countdown confirm (no auto-confirm) ===========
-GameTrade._openCountdown = function () {
+// =========== Two-player proposal / accept flow ===========
+
+// Whether the player at idx is "owned" by THIS device — i.e., we drive
+// their UI. In single-device mode every slot is local. In MP, only our
+// claimed slot (plus host-driven CPUs) is local.
+GameTrade._isPlayerLocal = function (idx) {
+  if (!window.GameMP || !GameMP.enabled) return true;
+  const player = GameState.players[idx];
+  if (!player) return false;
+  if (GameMP.localSlot === idx) return true;
+  if (player.isCpu && GameMP.isHost) return true;
+  return false;
+};
+
+GameTrade._proposeTradeToTarget = function () {
   const s = GameTrade.state;
-  const modal = GameUI.el('tradeConfirmModal');
-  const goBtn = GameUI.el('tradeConfirmGoBtn');
-  const cancelBtn = GameUI.el('tradeConfirmCancelBtn');
+  // Build a network-safe proposal payload. References are stable IDs so
+  // both sides re-resolve against the live GameState at execute time.
+  const proposal = {
+    fromIdx: GameState.players.indexOf(s.from),
+    targetIdx: GameState.players.indexOf(s.target),
+    fromMonInstanceId: s.fromMon.instanceId,
+    targetMonInstanceId: s.targetMon ? s.targetMon.instanceId : null,
+    targetBundle: JSON.parse(JSON.stringify(s.targetBundle || { items: {}, balls: {} })),
+    offerMode: s.offerMode,
+    forced: !!s.forced,
+  };
+  GameTrade._pendingProposal = proposal;
+  // Hide the trade-builder modal so the focus shifts to the confirm modal.
+  GameUI.el('tradeModal').hidden = true;
+  GameTrade._showInitiatorWaiting(proposal);
+  // Send the proposal across the wire so the target's device can render
+  // their accept prompt.
+  if (window.GameMP && GameMP.enabled) {
+    GameMP.send({ type: 'trade-proposal', proposal, ts: Date.now() });
+  }
+  // If the target is local (single-device, or host-driven CPU), also pop
+  // the recipient prompt here. Slight delay so the initiator's "waiting"
+  // UI paints first — clarifies whose action is needed next.
+  if (GameTrade._isPlayerLocal(proposal.targetIdx)) {
+    setTimeout(() => GameTrade._receiveProposal(proposal), 80);
+  }
+};
+
+GameTrade._renderConfirmSides = function (proposal) {
+  const from = GameState.players[proposal.fromIdx];
+  const target = GameState.players[proposal.targetIdx];
+  if (!from || !target) return;
+  const fromMon = from.party.find(m => m.instanceId === proposal.fromMonInstanceId);
+  const targetMon = proposal.targetMonInstanceId
+    ? target.party.find(m => m.instanceId === proposal.targetMonInstanceId)
+    : null;
   const fromSide = GameUI.el('tradeConfirmFromSide');
   const targetSide = GameUI.el('tradeConfirmTargetSide');
-  fromSide.innerHTML = `
-    <div class="hint">${s.from.name} gives</div>
-    <img src="${GameData.spriteStatic(s.fromMon.speciesId)}" alt="${s.fromMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
-    <div class="trade-confirm-name">${s.fromMon.name}</div>
-  `;
-  if (s.offerMode === 'pokemon') {
-    targetSide.innerHTML = `
-      <div class="hint">${s.target.name} gives</div>
-      <img src="${GameData.spriteStatic(s.targetMon.speciesId)}" alt="${s.targetMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
-      <div class="trade-confirm-name">${s.targetMon.name}${s.forced ? ' <span class="hint">(forced)</span>' : ''}</div>
-    `;
-    GameUI.el('tradeConfirmSummary').textContent =
-      `${s.from.name} ↔ ${s.target.name}: ${s.fromMon.name} for ${s.targetMon.name}.`;
+  fromSide.innerHTML = fromMon ? `
+    <div class="hint">${from.name} gives</div>
+    <img src="${GameData.spriteStatic(fromMon.speciesId)}" alt="${fromMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
+    <div class="trade-confirm-name">${fromMon.name}</div>
+  ` : `<div class="hint">${from.name}'s Pokemon is no longer available.</div>`;
+  if (proposal.offerMode === 'pokemon') {
+    targetSide.innerHTML = targetMon ? `
+      <div class="hint">${target.name} gives</div>
+      <img src="${GameData.spriteStatic(targetMon.speciesId)}" alt="${targetMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
+      <div class="trade-confirm-name">${targetMon.name}${proposal.forced ? ' <span class="hint">(forced pick)</span>' : ''}</div>
+    ` : `<div class="hint">${target.name}'s offered Pokemon is no longer available.</div>`;
   } else {
-    const parts = GameTrade._bundleSummary(s.targetBundle);
+    const bundle = proposal.targetBundle || { items: {}, balls: {} };
+    const parts = GameTrade._bundleSummary(bundle);
     const iconsHtml = [
-      ...Object.entries(s.targetBundle.items || {}).map(([id, qty]) =>
+      ...Object.entries(bundle.items || {}).map(([id, qty]) =>
         qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteItem(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
-      ...Object.entries(s.targetBundle.balls || {}).map(([id, qty]) =>
+      ...Object.entries(bundle.balls || {}).map(([id, qty]) =>
         qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteBall(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
     ].join('');
     targetSide.innerHTML = `
-      <div class="hint">${s.target.name} gives</div>
+      <div class="hint">${target.name} gives</div>
       <div class="trade-bundle-grid">${iconsHtml}</div>
       <div class="trade-confirm-name">${parts.join(' · ')}</div>
     `;
-    GameUI.el('tradeConfirmSummary').textContent =
-      `${s.from.name} ↔ ${s.target.name}: ${s.fromMon.name} for ${parts.join(', ')}.`;
   }
+};
 
-  modal.hidden = false;
-  let secs = 3;
+GameTrade._showInitiatorWaiting = function (proposal) {
+  const modal = GameUI.el('tradeConfirmModal');
+  const target = GameState.players[proposal.targetIdx];
+  GameTrade._renderConfirmSides(proposal);
+  GameUI.el('tradeConfirmTitle').textContent = `Waiting for ${target.name}...`;
+  GameUI.el('tradeConfirmSummary').textContent = `Proposal sent. ${target.name} must accept before the trade completes.`;
+  GameUI.el('tradeConfirmNote').textContent = 'Tap Cancel proposal to withdraw the offer.';
+  const goBtn = GameUI.el('tradeConfirmGoBtn');
+  goBtn.hidden = true;
   goBtn.disabled = true;
-  goBtn.textContent = `Confirming in ${secs}s`;
-  if (GameTrade._tickHandle) clearInterval(GameTrade._tickHandle);
-  GameTrade._tickHandle = setInterval(() => {
-    secs--;
-    if (secs > 0) {
-      goBtn.textContent = `Confirming in ${secs}s`;
-    } else {
-      clearInterval(GameTrade._tickHandle);
-      GameTrade._tickHandle = null;
-      // Button becomes pressable. User must click to confirm — no auto-confirm.
-      goBtn.disabled = false;
-      goBtn.textContent = 'Confirm now';
-    }
-  }, 1000);
-
-  goBtn.onclick = () => {
-    if (goBtn.disabled) return;
-    GameTrade._closeCountdownAndConfirm();
-  };
-  cancelBtn.onclick = () => GameTrade._cancelCountdown(true);
+  goBtn.onclick = null;
+  const cancelBtn = GameUI.el('tradeConfirmCancelBtn');
+  cancelBtn.hidden = false;
+  cancelBtn.disabled = false;
+  cancelBtn.textContent = 'Cancel proposal';
+  cancelBtn.onclick = () => GameTrade._initiatorCancelProposal();
+  modal.hidden = false;
 };
 
-GameTrade._cancelCountdown = function (logIt) {
-  if (GameTrade._tickHandle) { clearInterval(GameTrade._tickHandle); GameTrade._tickHandle = null; }
+GameTrade._showRecipientPrompt = function (proposal) {
+  const modal = GameUI.el('tradeConfirmModal');
+  const from = GameState.players[proposal.fromIdx];
+  GameTrade._renderConfirmSides(proposal);
+  GameUI.el('tradeConfirmTitle').textContent = `${from.name} wants to trade with you`;
+  const summaryText = proposal.offerMode === 'pokemon'
+    ? `${from.name} is offering ${proposal.fromMonInstanceId ? 'their Pokemon' : 'a Pokemon'} for one of yours.`
+    : `${from.name} is offering their Pokemon for items from your bag.`;
+  GameUI.el('tradeConfirmSummary').textContent = summaryText;
+  GameUI.el('tradeConfirmNote').textContent = 'Accept to complete the swap, or Decline to refuse.';
+  const goBtn = GameUI.el('tradeConfirmGoBtn');
+  goBtn.hidden = false;
+  goBtn.disabled = false;
+  goBtn.textContent = 'Accept trade';
+  goBtn.onclick = () => GameTrade._respondToProposal('accept');
+  const cancelBtn = GameUI.el('tradeConfirmCancelBtn');
+  cancelBtn.hidden = false;
+  cancelBtn.disabled = false;
+  cancelBtn.textContent = 'Decline';
+  cancelBtn.onclick = () => GameTrade._respondToProposal('decline');
+  modal.hidden = false;
+};
+
+// Called when this device is the recipient of an incoming proposal. The
+// initiator might be us too (single-device or host-driven CPU sender —
+// not currently used, since CPU never initiates trades).
+GameTrade._receiveProposal = function (proposal) {
+  // Ignore duplicate / outdated proposals if we already have one in flight
+  // pointing at the same target.
+  GameTrade._pendingProposal = proposal;
+  GameTrade._showRecipientPrompt(proposal);
+  const target = GameState.players[proposal.targetIdx];
+  if (target && target.isCpu) {
+    // CPU recipients auto-accept after a short delay so the human can see
+    // what just happened. (Future hook: AI evaluation could decline.)
+    setTimeout(() => {
+      // Only respond if we still own the pending — it might have been
+      // cancelled in the meantime.
+      if (GameTrade._pendingProposal === proposal) {
+        GameTrade._respondToProposal('accept');
+      }
+    }, 900);
+  }
+};
+
+GameTrade._respondToProposal = function (response) {
+  const proposal = GameTrade._pendingProposal;
+  if (!proposal) return;
+  // Close the recipient modal locally.
   GameUI.el('tradeConfirmModal').hidden = true;
-  if (logIt) GameUI.log('Trade cancelled during the 3-second hold.', 'system');
+  // Send the response back to the initiator.
+  if (window.GameMP && GameMP.enabled) {
+    GameMP.send({ type: 'trade-response', response, ts: Date.now() });
+  }
+  // If the initiator is local (single-device, or we're hosting and the
+  // initiator slot is local), handle their side here too.
+  const initiatorLocal = GameTrade._isPlayerLocal(proposal.fromIdx);
+  if (initiatorLocal) {
+    GameTrade._handleResponseAsInitiator(response, proposal);
+  } else {
+    // We're only the recipient. Clear pending here since the initiator
+    // path won't run on this device.
+    GameTrade._pendingProposal = null;
+  }
 };
 
-GameTrade._closeCountdownAndConfirm = function () {
-  if (GameTrade._tickHandle) { clearInterval(GameTrade._tickHandle); GameTrade._tickHandle = null; }
+// Initiator-side: own cancel button pressed while waiting for response.
+GameTrade._initiatorCancelProposal = function () {
+  const proposal = GameTrade._pendingProposal;
+  if (!proposal) return;
+  if (window.GameMP && GameMP.enabled) {
+    GameMP.send({ type: 'trade-cancel', ts: Date.now() });
+  }
+  GameTrade._handleResponseAsInitiator('cancel', proposal);
+};
+
+// Handle a response from the recipient (or our own cancel). Runs on the
+// initiator's device only.
+GameTrade._handleResponseAsInitiator = function (response, proposal) {
+  // Defensive: only act if we're still expecting THIS proposal.
+  if (GameTrade._pendingProposal !== proposal) return;
+  GameTrade._pendingProposal = null;
   GameUI.el('tradeConfirmModal').hidden = true;
-  GameTrade.confirm();
-};
-
-GameTrade.confirm = function () {
-  const s = GameTrade.state;
-  const fromIdx = s.from.party.findIndex(m => m.instanceId === s.fromMon.instanceId);
-  if (fromIdx < 0) return;
-  // Defensive: item trades must leave the source with at least 1 Pokemon.
-  if (s.offerMode === 'items' && s.from.party.length <= 1) {
-    GameUI.log(`Trade aborted — ${s.from.name} must keep at least 1 Pokemon.`, 'system');
-    GameUI.el('tradeModal').hidden = true;
-    if (s.onDone) s.onDone(false);
+  GameUI.el('tradeModal').hidden = true;
+  const onDone = GameTrade.state && GameTrade.state.onDone;
+  if (response === 'accept') {
+    GameTrade._executeProposal(proposal);
+    if (onDone) onDone(true);
     return;
   }
-  const givenMon = s.from.party[fromIdx];
-  if (s.offerMode === 'pokemon') {
-    const targetIdx = s.target.party.findIndex(m => m.instanceId === s.targetMon.instanceId);
-    if (targetIdx < 0) return;
-    const receivedMon = s.target.party[targetIdx];
-    s.from.party[fromIdx] = receivedMon;
-    s.target.party[targetIdx] = givenMon;
-    GameUI.log(`<span class="actor">${s.from.name}</span> traded <strong>${givenMon.name}</strong> for <strong>${receivedMon.name}</strong> with ${s.target.name}.`, 'crit');
+  if (response === 'decline') {
+    const target = GameState.players[proposal.targetIdx];
+    GameUI.log(`${target ? target.name : 'Recipient'} declined the trade.`, 'system');
   } else {
-    // Validate the bundle is still satisfiable (counts may have changed).
-    const bundle = s.targetBundle;
+    GameUI.log('Trade proposal cancelled.', 'system');
+  }
+  if (onDone) onDone(false);
+};
+
+// Recipient-side: initiator withdrew before we responded. Close the prompt.
+GameTrade._cancelledByInitiator = function () {
+  if (!GameTrade._pendingProposal) return;
+  GameTrade._pendingProposal = null;
+  GameUI.el('tradeConfirmModal').hidden = true;
+  GameUI.log('Trade proposal withdrawn by initiator.', 'system');
+};
+
+// Inbound message dispatcher — wired from mp.js _onMessage.
+GameTrade.onNetMessage = function (msg) {
+  if (!msg || !msg.type) return;
+  if (msg.type === 'trade-proposal') {
+    const proposal = msg.proposal;
+    if (!proposal) return;
+    // Only the addressed target's device should render the recipient prompt.
+    if (!GameTrade._isPlayerLocal(proposal.targetIdx)) return;
+    GameTrade._receiveProposal(proposal);
+    return;
+  }
+  if (msg.type === 'trade-response') {
+    const proposal = GameTrade._pendingProposal;
+    if (!proposal) return;
+    // Only the initiator's device should execute on a response.
+    if (!GameTrade._isPlayerLocal(proposal.fromIdx)) return;
+    GameTrade._handleResponseAsInitiator(msg.response, proposal);
+    return;
+  }
+  if (msg.type === 'trade-cancel') {
+    const proposal = GameTrade._pendingProposal;
+    if (!proposal) return;
+    // Only the recipient's device should react to the initiator's cancel.
+    if (!GameTrade._isPlayerLocal(proposal.targetIdx)) return;
+    GameTrade._cancelledByInitiator();
+    return;
+  }
+};
+
+// Execute the agreed-upon proposal. Resolves all references (player, mons)
+// against the LIVE GameState — never against the captured `state` from the
+// builder UI — because MP state sync may have moved things since.
+GameTrade._executeProposal = function (proposal) {
+  const from = GameState.players[proposal.fromIdx];
+  const target = GameState.players[proposal.targetIdx];
+  if (!from || !target) {
+    GameUI.log('Trade aborted — a participant is missing.', 'system');
+    return;
+  }
+  const fromIdxInParty = from.party.findIndex(m => m.instanceId === proposal.fromMonInstanceId);
+  if (fromIdxInParty < 0) {
+    GameUI.log(`Trade aborted — ${from.name} no longer has the offered Pokemon.`, 'system');
+    return;
+  }
+  // Defensive: item trades must leave the source with at least 1 Pokemon.
+  if (proposal.offerMode === 'items' && from.party.length <= 1) {
+    GameUI.log(`Trade aborted — ${from.name} must keep at least 1 Pokemon.`, 'system');
+    return;
+  }
+  const givenMon = from.party[fromIdxInParty];
+  if (proposal.offerMode === 'pokemon') {
+    const targetIdxInParty = target.party.findIndex(m => m.instanceId === proposal.targetMonInstanceId);
+    if (targetIdxInParty < 0) {
+      GameUI.log(`Trade aborted — ${target.name} no longer has the offered Pokemon.`, 'system');
+      return;
+    }
+    const receivedMon = target.party[targetIdxInParty];
+    from.party[fromIdxInParty] = receivedMon;
+    target.party[targetIdxInParty] = givenMon;
+    GameUI.log(`<span class="actor">${from.name}</span> traded <strong>${givenMon.name}</strong> for <strong>${receivedMon.name}</strong> with ${target.name}.`, 'crit');
+  } else {
+    const bundle = proposal.targetBundle || { items: {}, balls: {} };
     for (const [id, qty] of Object.entries(bundle.items || {})) {
-      if ((s.target.items[id] || 0) < qty) {
-        GameUI.log(`${s.target.name} no longer has ${qty}× ${GameData.getItem(id)?.name || id} — trade aborted.`, 'system');
-        GameUI.el('tradeModal').hidden = true;
-        if (s.onDone) s.onDone(false);
+      if ((target.items[id] || 0) < qty) {
+        GameUI.log(`${target.name} no longer has ${qty}× ${GameData.getItem(id)?.name || id} — trade aborted.`, 'system');
         return;
       }
     }
     for (const [id, qty] of Object.entries(bundle.balls || {})) {
-      if ((s.target.balls[id] || 0) < qty) {
-        GameUI.log(`${s.target.name} no longer has ${qty}× ${GameData.getPokeball(id)?.name || id} — trade aborted.`, 'system');
-        GameUI.el('tradeModal').hidden = true;
-        if (s.onDone) s.onDone(false);
+      if ((target.balls[id] || 0) < qty) {
+        GameUI.log(`${target.name} no longer has ${qty}× ${GameData.getPokeball(id)?.name || id} — trade aborted.`, 'system');
         return;
       }
     }
-    // Transfer all bundled items + balls.
     Object.entries(bundle.items || {}).forEach(([id, qty]) => {
       for (let i = 0; i < qty; i++) {
-        GameState.consumeItem(s.target, id);
-        GameState.giveItem(s.from, id);
+        GameState.consumeItem(target, id);
+        GameState.giveItem(from, id);
       }
     });
     Object.entries(bundle.balls || {}).forEach(([id, qty]) => {
       for (let i = 0; i < qty; i++) {
-        GameState.consumeBall(s.target, id);
-        GameState.giveBall(s.from, id);
+        GameState.consumeBall(target, id);
+        GameState.giveBall(from, id);
       }
     });
-    // Source gives up the Pokemon to the target.
-    s.from.party.splice(fromIdx, 1);
-    if (s.target.party.length < 6) s.target.party.push(givenMon);
-    else GameUI.log(`${s.target.name}'s party was full — released ${givenMon.name}.`, 'system');
+    from.party.splice(fromIdxInParty, 1);
+    if (target.party.length < 6) target.party.push(givenMon);
+    else GameUI.log(`${target.name}'s party was full — released ${givenMon.name}.`, 'system');
     const summary = GameTrade._bundleSummary(bundle).join(' + ');
-    GameUI.log(`<span class="actor">${s.from.name}</span> traded <strong>${givenMon.name}</strong> for ${summary} with ${s.target.name}.`, 'crit');
+    GameUI.log(`<span class="actor">${from.name}</span> traded <strong>${givenMon.name}</strong> for ${summary} with ${target.name}.`, 'crit');
   }
-  GameUI.el('tradeModal').hidden = true;
   GameUI.refreshAll();
-  if (s.onDone) s.onDone(true);
+};
+
+// Kept as a thin wrapper for any legacy caller that still invokes the old
+// confirm path (no current callers, but plays it safe if anything was bound
+// before this refactor).
+GameTrade.confirm = function () {
+  const s = GameTrade.state;
+  if (!s || !s.fromMon || !s.target) return;
+  GameTrade._proposeTradeToTarget();
 };

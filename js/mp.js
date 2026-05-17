@@ -485,6 +485,15 @@ GameMP._onMessage = function (event) {
         }
       }
       break;
+    case 'trade-proposal':
+    case 'trade-response':
+    case 'trade-cancel':
+      // Two-step trade flow — initiator sends 'trade-proposal' to all,
+      // only the addressed target's device renders the accept prompt.
+      // The target's accept/decline comes back as 'trade-response'. Either
+      // side can 'trade-cancel'. trade.js owns the routing.
+      if (window.GameTrade && GameTrade.onNetMessage) GameTrade.onNetMessage(msg);
+      break;
     default:
       break;
   }

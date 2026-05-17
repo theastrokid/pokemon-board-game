@@ -264,17 +264,17 @@
     </div>
   </div>
 
-  <!-- ============= TRADE CONFIRM (3s countdown) ============= -->
+  <!-- ============= TRADE CONFIRM (two-player) ============= -->
   <div id="tradeConfirmModal" class="modal" hidden>
     <div class="modal-card trade-confirm-card">
-      <h2>Are you sure?</h2>
+      <h2 id="tradeConfirmTitle">Are you sure?</h2>
       <p class="hint" id="tradeConfirmSummary"></p>
       <div class="trade-confirm-stage">
         <div class="trade-confirm-side" id="tradeConfirmFromSide"></div>
         <div class="trade-confirm-arrow">⇄</div>
         <div class="trade-confirm-side" id="tradeConfirmTargetSide"></div>
       </div>
-      <p class="trade-confirm-note">Either trainer can cancel. Trade completes when the countdown ends.</p>
+      <p class="trade-confirm-note" id="tradeConfirmNote">Both trainers must accept. Either side can decline.</p>
       <div class="trade-confirm-actions">
         <button id="tradeConfirmCancelBtn" class="ghost-btn">Cancel trade</button>
         <button id="tradeConfirmGoBtn" class="primary-btn" disabled>Confirming in 3s</button>
