@@ -83,6 +83,10 @@
         <div class="trainer-row-header">
           <span class="trainer-color" style="background:${colors[i]}"></span>
           <input type="text" class="trainer-name-input" placeholder="Trainer ${i + 1}" value="Trainer ${i + 1}" />
+          <label class="cpu-toggle">
+            <input type="checkbox" class="cpu-toggle-input" />
+            <span class="cpu-toggle-label">🤖 CPU</span>
+          </label>
         </div>
         <div class="trainer-pick-section">
           <h4>Sprite</h4>
@@ -110,6 +114,19 @@
           row.dataset.starter = btn.dataset.starter;
         });
       });
+      // CPU toggle: visual state + label name suggestion
+      const cpuInput = row.querySelector('.cpu-toggle-input');
+      const nameInput = row.querySelector('.trainer-name-input');
+      cpuInput.addEventListener('change', () => {
+        row.dataset.cpu = cpuInput.checked ? '1' : '0';
+        row.classList.toggle('is-cpu', cpuInput.checked);
+        // If the user hasn't customized the name, set a CPU-flavored one.
+        if (cpuInput.checked && nameInput.value === `Trainer ${i + 1}`) {
+          nameInput.value = `CPU ${i + 1}`;
+        } else if (!cpuInput.checked && nameInput.value === `CPU ${i + 1}`) {
+          nameInput.value = `Trainer ${i + 1}`;
+        }
+      });
     }
   }
 
@@ -120,8 +137,10 @@
       const name = row.querySelector('.trainer-name-input').value.trim() || `Trainer ${i + 1}`;
       const starter = Number(row.dataset.starter);
       const trainer = row.dataset.trainer || 'red';
+      const isCpu = row.dataset.cpu === '1';
       const p = GameState.makePlayer(i, name, starter);
       p.trainerSprite = trainer;
+      p.isCpu = isCpu;
       // Starting inventory per Damon's rules
       GameState.giveItem(p, 'potion');
       GameState.giveItem(p, 'potion');
@@ -140,6 +159,7 @@
     document.getElementById('app').classList.remove('screen-setup');
     GameBoard.render();
     GameGame.start();
+    if (window.GameCpu) GameCpu.start();
   }
 
   function bindGlobalListeners() {

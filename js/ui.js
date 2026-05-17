@@ -276,7 +276,7 @@ GameUI.renderPlayerPanel = function () {
       <div class="tp-header">
         ${sprite}
         <div class="tp-headinfo">
-          <div class="tp-name" style="color:${p.color}">${p.name}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}</div>
+          <div class="tp-name" style="color:${p.color}">${p.name}${p.isCpu ? ' <span class="tp-cpu-tag">🤖 CPU</span>' : ''}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}</div>
           <div class="tp-pos">${area ? area.name : '?'} · Tile ${tileLabel}${p.completed ? ' · 🏆' : ''}</div>
         </div>
         <div class="tp-counts">

@@ -1147,6 +1147,39 @@ body {
   animation: tpTagBlink 1.2s ease-in-out infinite;
   box-shadow: 0 2px 4px rgba(255,156,0,0.4);
 }
+.tp-cpu-tag {
+  background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+  color: #04263a;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 99px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(14,165,233,0.4);
+}
+
+/* CPU toggle on setup screen */
+.cpu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: var(--bg-3);
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--ink-dim);
+  transition: all 0.15s;
+  user-select: none;
+}
+.cpu-toggle:hover { background: var(--bg-2); color: var(--ink); }
+.cpu-toggle-input { margin: 0; accent-color: #0ea5e9; }
+.trainer-row-v.is-cpu .cpu-toggle {
+  background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+  color: #04263a;
+  box-shadow: 0 2px 6px rgba(14,165,233,0.4);
+}
 @keyframes tpTagBlink {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.7; transform: scale(0.94); }
