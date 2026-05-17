@@ -1,0 +1,1826 @@
+{
+  "_note": "Board path is a sequence of tiles. Each tile has a type, an area, and a position. Branches let the player pick between two next tiles. Catch rates and encounter pools are defined per area.",
+  "areas": {
+    "pallet": {
+      "name": "Pallet Town",
+      "color": "#7ed957",
+      "bg": "linear-gradient(135deg, #8be07d, #5fb04f)",
+      "music": "pallet.mp3",
+      "catchRates": {
+        "pokeball": 4,
+        "greatball": 5,
+        "ultraball": 6,
+        "masterball": 6
+      },
+      "encounters": [
+        {
+          "id": 1,
+          "weight": 100
+        },
+        {
+          "id": 4,
+          "weight": 100
+        },
+        {
+          "id": 7,
+          "weight": 100
+        },
+        {
+          "id": 25,
+          "weight": 100
+        },
+        {
+          "id": 172,
+          "weight": 100
+        },
+        {
+          "id": 175,
+          "weight": 100
+        },
+        {
+          "id": 133,
+          "weight": 150
+        },
+        {
+          "id": 10,
+          "weight": 50
+        },
+        {
+          "id": 13,
+          "weight": 50
+        },
+        {
+          "id": 16,
+          "weight": 50
+        },
+        {
+          "id": 19,
+          "weight": 50
+        },
+        {
+          "id": 23,
+          "weight": 50
+        },
+        {
+          "id": 27,
+          "weight": 50
+        },
+        {
+          "id": 39,
+          "weight": 50
+        },
+        {
+          "id": 52,
+          "weight": 50
+        },
+        {
+          "id": 56,
+          "weight": 50
+        },
+        {
+          "id": 69,
+          "weight": 50
+        },
+        {
+          "id": 74,
+          "weight": 50
+        },
+        {
+          "id": 161,
+          "weight": 50
+        },
+        {
+          "id": 163,
+          "weight": 50
+        },
+        {
+          "id": 167,
+          "weight": 50
+        },
+        {
+          "id": 144,
+          "weight": 1
+        },
+        {
+          "id": 145,
+          "weight": 1
+        },
+        {
+          "id": 146,
+          "weight": 1
+        },
+        {
+          "id": 147,
+          "weight": 1
+        },
+        {
+          "id": 148,
+          "weight": 1
+        },
+        {
+          "id": 149,
+          "weight": 1
+        },
+        {
+          "id": 150,
+          "weight": 1
+        },
+        {
+          "id": 151,
+          "weight": 1
+        },
+        {
+          "id": 243,
+          "weight": 1
+        },
+        {
+          "id": 244,
+          "weight": 1
+        },
+        {
+          "id": 245,
+          "weight": 1
+        },
+        {
+          "id": 248,
+          "weight": 1
+        },
+        {
+          "id": 249,
+          "weight": 1
+        },
+        {
+          "id": 250,
+          "weight": 1
+        },
+        {
+          "id": 251,
+          "weight": 1
+        }
+      ]
+    },
+    "seafoam": {
+      "name": "Seafoam Islands",
+      "color": "#5bc0eb",
+      "bg": "linear-gradient(135deg, #7ed5f0, #3a8fc9)",
+      "music": "seafoam.mp3",
+      "catchRates": {
+        "pokeball": 3,
+        "greatball": 4,
+        "ultraball": 5,
+        "masterball": 6
+      },
+      "encounters": [
+        {
+          "id": 7,
+          "weight": 100
+        },
+        {
+          "id": 8,
+          "weight": 100
+        },
+        {
+          "id": 98,
+          "weight": 100
+        },
+        {
+          "id": 116,
+          "weight": 100
+        },
+        {
+          "id": 120,
+          "weight": 100
+        },
+        {
+          "id": 72,
+          "weight": 100
+        },
+        {
+          "id": 60,
+          "weight": 100
+        },
+        {
+          "id": 61,
+          "weight": 100
+        },
+        {
+          "id": 129,
+          "weight": 100
+        },
+        {
+          "id": 86,
+          "weight": 100
+        },
+        {
+          "id": 87,
+          "weight": 100
+        },
+        {
+          "id": 90,
+          "weight": 100
+        },
+        {
+          "id": 91,
+          "weight": 100
+        },
+        {
+          "id": 118,
+          "weight": 100
+        },
+        {
+          "id": 54,
+          "weight": 100
+        },
+        {
+          "id": 79,
+          "weight": 100
+        },
+        {
+          "id": 81,
+          "weight": 100
+        },
+        {
+          "id": 134,
+          "weight": 100
+        },
+        {
+          "id": 230,
+          "weight": 100
+        },
+        {
+          "id": 144,
+          "weight": 1
+        },
+        {
+          "id": 145,
+          "weight": 1
+        },
+        {
+          "id": 146,
+          "weight": 1
+        },
+        {
+          "id": 147,
+          "weight": 1
+        },
+        {
+          "id": 148,
+          "weight": 1
+        },
+        {
+          "id": 149,
+          "weight": 1
+        },
+        {
+          "id": 150,
+          "weight": 1
+        },
+        {
+          "id": 151,
+          "weight": 1
+        },
+        {
+          "id": 243,
+          "weight": 1
+        },
+        {
+          "id": 244,
+          "weight": 1
+        },
+        {
+          "id": 245,
+          "weight": 1
+        },
+        {
+          "id": 248,
+          "weight": 1
+        },
+        {
+          "id": 249,
+          "weight": 1
+        },
+        {
+          "id": 250,
+          "weight": 1
+        },
+        {
+          "id": 251,
+          "weight": 1
+        }
+      ]
+    },
+    "safari": {
+      "name": "Safari Zone",
+      "color": "#d9a85c",
+      "bg": "linear-gradient(135deg, #e4b873, #b27d2e)",
+      "music": "safari.mp3",
+      "catchRates": {
+        "pokeball": 2,
+        "greatball": 3,
+        "ultraball": 4,
+        "masterball": 6
+      },
+      "encounters": [
+        {
+          "id": 15,
+          "weight": 100
+        },
+        {
+          "id": 113,
+          "weight": 100
+        },
+        {
+          "id": 106,
+          "weight": 100
+        },
+        {
+          "id": 107,
+          "weight": 100
+        },
+        {
+          "id": 115,
+          "weight": 100
+        },
+        {
+          "id": 111,
+          "weight": 100
+        },
+        {
+          "id": 112,
+          "weight": 100
+        },
+        {
+          "id": 128,
+          "weight": 100
+        },
+        {
+          "id": 127,
+          "weight": 100
+        },
+        {
+          "id": 123,
+          "weight": 100
+        },
+        {
+          "id": 214,
+          "weight": 100
+        },
+        {
+          "id": 234,
+          "weight": 100
+        },
+        {
+          "id": 190,
+          "weight": 100
+        },
+        {
+          "id": 196,
+          "weight": 100
+        },
+        {
+          "id": 197,
+          "weight": 100
+        },
+        {
+          "id": 41,
+          "weight": 100
+        },
+        {
+          "id": 42,
+          "weight": 100
+        },
+        {
+          "id": 74,
+          "weight": 100
+        },
+        {
+          "id": 95,
+          "weight": 100
+        },
+        {
+          "id": 104,
+          "weight": 100
+        },
+        {
+          "id": 108,
+          "weight": 100
+        },
+        {
+          "id": 217,
+          "weight": 100
+        },
+        {
+          "id": 144,
+          "weight": 1
+        },
+        {
+          "id": 145,
+          "weight": 1
+        },
+        {
+          "id": 146,
+          "weight": 1
+        },
+        {
+          "id": 147,
+          "weight": 1
+        },
+        {
+          "id": 148,
+          "weight": 1
+        },
+        {
+          "id": 149,
+          "weight": 1
+        },
+        {
+          "id": 150,
+          "weight": 1
+        },
+        {
+          "id": 151,
+          "weight": 1
+        },
+        {
+          "id": 243,
+          "weight": 1
+        },
+        {
+          "id": 244,
+          "weight": 1
+        },
+        {
+          "id": 245,
+          "weight": 1
+        },
+        {
+          "id": 248,
+          "weight": 1
+        },
+        {
+          "id": 249,
+          "weight": 1
+        },
+        {
+          "id": 250,
+          "weight": 1
+        },
+        {
+          "id": 251,
+          "weight": 1
+        }
+      ]
+    },
+    "temple": {
+      "name": "Ancient Temple",
+      "color": "#a86fce",
+      "bg": "linear-gradient(135deg, #b88adc, #6c3da3)",
+      "music": "temple.mp3",
+      "catchRates": {
+        "pokeball": 1,
+        "greatball": 2,
+        "ultraball": 3,
+        "masterball": 6
+      },
+      "encounters": [
+        {
+          "id": 144,
+          "weight": 100
+        },
+        {
+          "id": 145,
+          "weight": 100
+        },
+        {
+          "id": 146,
+          "weight": 100
+        },
+        {
+          "id": 147,
+          "weight": 100
+        },
+        {
+          "id": 148,
+          "weight": 100
+        },
+        {
+          "id": 149,
+          "weight": 100
+        },
+        {
+          "id": 150,
+          "weight": 100
+        },
+        {
+          "id": 151,
+          "weight": 100
+        },
+        {
+          "id": 243,
+          "weight": 100
+        },
+        {
+          "id": 244,
+          "weight": 100
+        },
+        {
+          "id": 245,
+          "weight": 100
+        },
+        {
+          "id": 248,
+          "weight": 100
+        },
+        {
+          "id": 249,
+          "weight": 100
+        },
+        {
+          "id": 250,
+          "weight": 100
+        },
+        {
+          "id": 251,
+          "weight": 100
+        }
+      ]
+    }
+  },
+  "gymLeaders": {
+    "brock": {
+      "name": "Brock",
+      "city": "Pewter City",
+      "color": "#cf8b4b",
+      "team": [
+        {
+          "id": 95,
+          "level": 12
+        },
+        {
+          "id": 74,
+          "level": 11
+        },
+        {
+          "id": 41,
+          "level": 10
+        }
+      ],
+      "reward": {
+        "items": 3,
+        "pokeballs": 2
+      },
+      "failPenalty": "back8"
+    },
+    "misty": {
+      "name": "Misty",
+      "city": "Cerulean City",
+      "color": "#5bc0eb",
+      "scaleMultiplier": 1.5,
+      "team": [
+        {
+          "id": 54,
+          "level": 18
+        },
+        {
+          "id": 121,
+          "level": 21
+        },
+        {
+          "id": 98,
+          "level": 17
+        }
+      ],
+      "reward": {
+        "items": 3,
+        "pokeballs": 3
+      },
+      "failPenalty": "back8"
+    },
+    "blaine": {
+      "name": "Blaine",
+      "city": "Cinnabar Island",
+      "color": "#d65b3a",
+      "team": [
+        {
+          "id": 26,
+          "level": 28
+        },
+        {
+          "id": 68,
+          "level": 30
+        },
+        {
+          "id": 34,
+          "level": 32
+        }
+      ],
+      "reward": {
+        "items": 3,
+        "pokeballs": 3
+      },
+      "failPenalty": "back56"
+    },
+    "giovanni": {
+      "name": "Giovanni",
+      "city": "Viridian City (Team Rocket)",
+      "color": "#cf3a3a",
+      "team": [
+        {
+          "id": 53,
+          "level": 50,
+          "scale": 1.0
+        },
+        {
+          "id": 229,
+          "level": 53,
+          "scale": 1.0
+        },
+        {
+          "id": 94,
+          "level": 56,
+          "scale": 1.0
+        },
+        {
+          "id": 244,
+          "level": 60,
+          "scale": 1.0
+        },
+        {
+          "id": 150,
+          "level": 65,
+          "scale": 1.0
+        },
+        {
+          "id": 149,
+          "level": 70,
+          "scale": 1.0
+        }
+      ],
+      "reward": {
+        "items": 5,
+        "pokeballs": 5,
+        "endsGame": true
+      },
+      "failPenalty": "back75"
+    }
+  },
+  "tiles": [
+    {
+      "i": 0,
+      "area": "pallet",
+      "type": "start",
+      "label": "Start"
+    },
+    {
+      "i": 1,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 2,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 3,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 4,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 5,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 6,
+      "area": "pallet",
+      "type": "item"
+    },
+    {
+      "i": 7,
+      "area": "pallet",
+      "type": "pokeball"
+    },
+    {
+      "i": 8,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 9,
+      "area": "pallet",
+      "type": "item"
+    },
+    {
+      "i": 10,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 11,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 12,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 13,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 14,
+      "area": "pallet",
+      "type": "item"
+    },
+    {
+      "i": 15,
+      "area": "pallet",
+      "type": "trade"
+    },
+    {
+      "i": 16,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 17,
+      "area": "pallet",
+      "type": "item"
+    },
+    {
+      "i": 18,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 19,
+      "area": "pallet",
+      "type": "pokemon"
+    },
+    {
+      "i": 20,
+      "area": "pallet",
+      "type": "gym",
+      "leader": "brock"
+    },
+    {
+      "i": 21,
+      "area": "seafoam",
+      "type": "pokemon"
+    },
+    {
+      "i": 22,
+      "area": "seafoam",
+      "type": "pokecentre"
+    },
+    {
+      "i": 23,
+      "area": "seafoam",
+      "type": "item"
+    },
+    {
+      "i": 24,
+      "area": "seafoam",
+      "type": "trade"
+    },
+    {
+      "i": 25,
+      "area": "seafoam",
+      "type": "pokemon"
+    },
+    {
+      "i": 26,
+      "area": "seafoam",
+      "type": "pokemon"
+    },
+    {
+      "i": 27,
+      "area": "seafoam",
+      "type": "pokeball"
+    },
+    {
+      "i": 28,
+      "area": "seafoam",
+      "type": "pokemon"
+    },
+    {
+      "i": 29,
+      "area": "seafoam",
+      "type": "item"
+    },
+    {
+      "i": 30,
+      "area": "seafoam",
+      "type": "fainted"
+    },
+    {
+      "i": 31,
+      "area": "seafoam",
+      "type": "pokemon"
+    },
+    {
+      "i": 32,
+      "area": "seafoam",
+      "type": "pokemon",
+      "branchTo": [
+        33,
+        40
+      ],
+      "labels": [
+        "Lower path",
+        "Upper path"
+      ]
+    },
+    {
+      "i": 33,
+      "area": "seafoam",
+      "type": "pokemon",
+      "displayLabel": "33a"
+    },
+    {
+      "i": 34,
+      "area": "seafoam",
+      "type": "pokemon",
+      "displayLabel": "34a"
+    },
+    {
+      "i": 35,
+      "area": "seafoam",
+      "type": "pokemon",
+      "displayLabel": "35a"
+    },
+    {
+      "i": 36,
+      "area": "seafoam",
+      "type": "specific",
+      "displayLabel": "36a",
+      "speciesId": 143
+    },
+    {
+      "i": 37,
+      "area": "seafoam",
+      "type": "pokemon",
+      "displayLabel": "37a"
+    },
+    {
+      "i": 38,
+      "area": "seafoam",
+      "type": "pokemon",
+      "labelOverride": "Snorlax",
+      "displayLabel": "38a",
+      "joinNext": 39
+    },
+    {
+      "i": 39,
+      "area": "seafoam",
+      "type": "pokemon",
+      "joinNext": 46
+    },
+    {
+      "i": 40,
+      "area": "seafoam",
+      "type": "item",
+      "displayLabel": "40b"
+    },
+    {
+      "i": 41,
+      "area": "seafoam",
+      "type": "pokeball",
+      "displayLabel": "41b"
+    },
+    {
+      "i": 42,
+      "area": "seafoam",
+      "type": "trade",
+      "displayLabel": "42b"
+    },
+    {
+      "i": 43,
+      "area": "seafoam",
+      "type": "item",
+      "displayLabel": "43b"
+    },
+    {
+      "i": 44,
+      "area": "seafoam",
+      "type": "masterball",
+      "displayLabel": "44b"
+    },
+    {
+      "i": 45,
+      "area": "seafoam",
+      "type": "item",
+      "displayLabel": "45b",
+      "joinNext": 39
+    },
+    {
+      "i": 46,
+      "area": "seafoam",
+      "type": "gym",
+      "leader": "misty"
+    },
+    {
+      "i": 47,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 48,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 49,
+      "area": "safari",
+      "type": "item"
+    },
+    {
+      "i": 50,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 51,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 52,
+      "area": "safari",
+      "type": "pokecentre"
+    },
+    {
+      "i": 53,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 54,
+      "area": "safari",
+      "type": "pokemon"
+    },
+    {
+      "i": 55,
+      "area": "safari",
+      "type": "trade"
+    },
+    {
+      "i": 56,
+      "area": "safari",
+      "type": "pokemon",
+      "branchTo": [
+        57,
+        200
+      ],
+      "labels": [
+        "Lower path",
+        "Upper path"
+      ]
+    },
+    {
+      "i": 57,
+      "area": "safari",
+      "type": "masterball",
+      "displayLabel": "57a"
+    },
+    {
+      "i": 58,
+      "area": "safari",
+      "type": "fainted",
+      "displayLabel": "58a",
+      "returnTo": 52
+    },
+    {
+      "i": 59,
+      "area": "safari",
+      "type": "pokeball",
+      "displayLabel": "59a"
+    },
+    {
+      "i": 60,
+      "area": "safari",
+      "type": "fainted",
+      "displayLabel": "60a",
+      "returnTo": 52
+    },
+    {
+      "i": 61,
+      "area": "safari",
+      "type": "pokeball",
+      "displayLabel": "61a"
+    },
+    {
+      "i": 62,
+      "area": "safari",
+      "type": "fainted",
+      "displayLabel": "62a",
+      "returnTo": 52
+    },
+    {
+      "i": 63,
+      "area": "safari",
+      "type": "masterball",
+      "displayLabel": "63a",
+      "joinNext": 64
+    },
+    {
+      "i": 64,
+      "area": "safari",
+      "type": "specific",
+      "speciesId": 143,
+      "joinNext": 65
+    },
+    {
+      "i": 65,
+      "area": "safari",
+      "type": "item"
+    },
+    {
+      "i": 66,
+      "area": "safari",
+      "type": "trade"
+    },
+    {
+      "i": 67,
+      "area": "safari",
+      "type": "item"
+    },
+    {
+      "i": 68,
+      "area": "safari",
+      "type": "gym",
+      "leader": "blaine"
+    },
+    {
+      "i": 69,
+      "area": "temple",
+      "type": "item"
+    },
+    {
+      "i": 70,
+      "area": "temple",
+      "type": "pokemon"
+    },
+    {
+      "i": 71,
+      "area": "temple",
+      "type": "pokeball"
+    },
+    {
+      "i": 72,
+      "area": "temple",
+      "type": "pokemon"
+    },
+    {
+      "i": 73,
+      "area": "temple",
+      "type": "pokemon",
+      "joinNext": 75
+    },
+    {
+      "i": 75,
+      "area": "temple",
+      "type": "pokemon",
+      "branchTo": [
+        76,
+        209
+      ],
+      "labels": [
+        "Lower path",
+        "Upper path"
+      ]
+    },
+    {
+      "i": 76,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "76a"
+    },
+    {
+      "i": 77,
+      "area": "temple",
+      "type": "item",
+      "displayLabel": "77a"
+    },
+    {
+      "i": 78,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "78a"
+    },
+    {
+      "i": 79,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "79a"
+    },
+    {
+      "i": 80,
+      "area": "temple",
+      "type": "masterball",
+      "displayLabel": "80a",
+      "joinNext": 81
+    },
+    {
+      "i": 81,
+      "area": "temple",
+      "type": "trade",
+      "joinNext": 82
+    },
+    {
+      "i": 82,
+      "area": "temple",
+      "type": "fainted",
+      "returnTo": 75
+    },
+    {
+      "i": 83,
+      "area": "temple",
+      "type": "pokemon",
+      "branchTo": [
+        84,
+        95
+      ],
+      "labels": [
+        "Down (84a)",
+        "Up (84b)"
+      ]
+    },
+    {
+      "i": 84,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "84a",
+      "joinNext": 96
+    },
+    {
+      "i": 89,
+      "area": "temple",
+      "type": "fainted",
+      "returnTo": 83
+    },
+    {
+      "i": 90,
+      "area": "temple",
+      "type": "gym",
+      "leader": "giovanni"
+    },
+    {
+      "i": 95,
+      "area": "temple",
+      "type": "fainted",
+      "displayLabel": "84b",
+      "joinNext": 100,
+      "returnTo": 75
+    },
+    {
+      "i": 96,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "85a"
+    },
+    {
+      "i": 97,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "86a"
+    },
+    {
+      "i": 98,
+      "area": "temple",
+      "type": "trade",
+      "displayLabel": "87a"
+    },
+    {
+      "i": 99,
+      "area": "temple",
+      "type": "item",
+      "displayLabel": "88a",
+      "joinNext": 89
+    },
+    {
+      "i": 100,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "85b"
+    },
+    {
+      "i": 101,
+      "area": "temple",
+      "type": "item",
+      "displayLabel": "86b"
+    },
+    {
+      "i": 102,
+      "area": "temple",
+      "type": "pokeball",
+      "displayLabel": "87b",
+      "joinNext": 99
+    },
+    {
+      "i": 200,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "57b"
+    },
+    {
+      "i": 201,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "58b"
+    },
+    {
+      "i": 202,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "59b"
+    },
+    {
+      "i": 203,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "60b"
+    },
+    {
+      "i": 204,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "61b"
+    },
+    {
+      "i": 205,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "62b"
+    },
+    {
+      "i": 206,
+      "area": "safari",
+      "type": "pokemon",
+      "displayLabel": "63b",
+      "joinNext": 64
+    },
+    {
+      "i": 209,
+      "area": "temple",
+      "type": "pokemon",
+      "displayLabel": "76b"
+    },
+    {
+      "i": 210,
+      "area": "temple",
+      "type": "battle",
+      "displayLabel": "77b"
+    },
+    {
+      "i": 211,
+      "area": "temple",
+      "type": "pokecentre",
+      "displayLabel": "78b",
+      "joinNext": 81
+    }
+  ],
+  "tilePositions": {
+    "0": {
+      "x": 85,
+      "y": 1130
+    },
+    "1": {
+      "x": 161,
+      "y": 1128
+    },
+    "2": {
+      "x": 245,
+      "y": 1128
+    },
+    "3": {
+      "x": 320,
+      "y": 1129
+    },
+    "4": {
+      "x": 399,
+      "y": 1127
+    },
+    "5": {
+      "x": 473,
+      "y": 1128
+    },
+    "6": {
+      "x": 557,
+      "y": 1129
+    },
+    "7": {
+      "x": 635,
+      "y": 1127
+    },
+    "8": {
+      "x": 711,
+      "y": 1126
+    },
+    "9": {
+      "x": 790,
+      "y": 1125
+    },
+    "10": {
+      "x": 868,
+      "y": 1127
+    },
+    "11": {
+      "x": 948,
+      "y": 1127
+    },
+    "12": {
+      "x": 1023,
+      "y": 1128
+    },
+    "13": {
+      "x": 1094,
+      "y": 1131
+    },
+    "14": {
+      "x": 1096,
+      "y": 1049
+    },
+    "15": {
+      "x": 1095,
+      "y": 970
+    },
+    "16": {
+      "x": 1018,
+      "y": 972
+    },
+    "17": {
+      "x": 944,
+      "y": 970
+    },
+    "18": {
+      "x": 864,
+      "y": 973
+    },
+    "19": {
+      "x": 784,
+      "y": 966
+    },
+    "20": {
+      "x": 666,
+      "y": 968
+    },
+    "21": {
+      "x": 543,
+      "y": 972
+    },
+    "22": {
+      "x": 471,
+      "y": 966
+    },
+    "23": {
+      "x": 402,
+      "y": 970
+    },
+    "24": {
+      "x": 314,
+      "y": 972
+    },
+    "25": {
+      "x": 237,
+      "y": 973
+    },
+    "26": {
+      "x": 156,
+      "y": 970
+    },
+    "27": {
+      "x": 87,
+      "y": 966
+    },
+    "28": {
+      "x": 92,
+      "y": 895
+    },
+    "29": {
+      "x": 91,
+      "y": 814
+    },
+    "30": {
+      "x": 83,
+      "y": 745
+    },
+    "31": {
+      "x": 151,
+      "y": 749
+    },
+    "32": {
+      "x": 237,
+      "y": 745
+    },
+    "33": {
+      "x": 241,
+      "y": 826
+    },
+    "34": {
+      "x": 324,
+      "y": 820
+    },
+    "35": {
+      "x": 398,
+      "y": 822
+    },
+    "36": {
+      "x": 483,
+      "y": 824
+    },
+    "37": {
+      "x": 563,
+      "y": 819
+    },
+    "38": {
+      "x": 631,
+      "y": 824
+    },
+    "39": {
+      "x": 631,
+      "y": 745
+    },
+    "40": {
+      "x": 241,
+      "y": 671
+    },
+    "41": {
+      "x": 327,
+      "y": 667
+    },
+    "42": {
+      "x": 402,
+      "y": 671
+    },
+    "43": {
+      "x": 480,
+      "y": 669
+    },
+    "44": {
+      "x": 559,
+      "y": 669
+    },
+    "45": {
+      "x": 638,
+      "y": 666
+    },
+    "46": {
+      "x": 719,
+      "y": 738
+    },
+    "47": {
+      "x": 861,
+      "y": 749
+    },
+    "48": {
+      "x": 936,
+      "y": 748
+    },
+    "49": {
+      "x": 1020,
+      "y": 752
+    },
+    "50": {
+      "x": 1101,
+      "y": 745
+    },
+    "51": {
+      "x": 1098,
+      "y": 660
+    },
+    "52": {
+      "x": 1099,
+      "y": 587
+    },
+    "53": {
+      "x": 1104,
+      "y": 511
+    },
+    "54": {
+      "x": 1107,
+      "y": 431
+    },
+    "55": {
+      "x": 1036,
+      "y": 436
+    },
+    "56": {
+      "x": 952,
+      "y": 437
+    },
+    "57": {
+      "x": 944,
+      "y": 513
+    },
+    "58": {
+      "x": 867,
+      "y": 519
+    },
+    "59": {
+      "x": 784,
+      "y": 508
+    },
+    "60": {
+      "x": 710,
+      "y": 506
+    },
+    "61": {
+      "x": 636,
+      "y": 507
+    },
+    "62": {
+      "x": 568,
+      "y": 511
+    },
+    "63": {
+      "x": 483,
+      "y": 514
+    },
+    "64": {
+      "x": 486,
+      "y": 427
+    },
+    "65": {
+      "x": 408,
+      "y": 431
+    },
+    "66": {
+      "x": 337,
+      "y": 429
+    },
+    "67": {
+      "x": 245,
+      "y": 429
+    },
+    "68": {
+      "x": 133,
+      "y": 431
+    },
+    "69": {
+      "x": 89,
+      "y": 316
+    },
+    "70": {
+      "x": 90,
+      "y": 235
+    },
+    "71": {
+      "x": 86,
+      "y": 161
+    },
+    "72": {
+      "x": 91,
+      "y": 85
+    },
+    "73": {
+      "x": 166,
+      "y": 81
+    },
+    "74": {
+      "x": 337,
+      "y": 429
+    },
+    "75": {
+      "x": 249,
+      "y": 83
+    },
+    "76": {
+      "x": 245,
+      "y": 161
+    },
+    "77": {
+      "x": 251,
+      "y": 236
+    },
+    "78": {
+      "x": 322,
+      "y": 236
+    },
+    "79": {
+      "x": 398,
+      "y": 237
+    },
+    "80": {
+      "x": 478,
+      "y": 235
+    },
+    "81": {
+      "x": 478,
+      "y": 162
+    },
+    "82": {
+      "x": 560,
+      "y": 163
+    },
+    "83": {
+      "x": 641,
+      "y": 157
+    },
+    "84": {
+      "x": 640,
+      "y": 243
+    },
+    "85": {
+      "x": 322,
+      "y": 236
+    },
+    "86": {
+      "x": 401,
+      "y": 239
+    },
+    "87": {
+      "x": 472,
+      "y": 237
+    },
+    "88": {
+      "x": 478,
+      "y": 162
+    },
+    "89": {
+      "x": 951,
+      "y": 159
+    },
+    "90": {
+      "x": 1065,
+      "y": 157
+    },
+    "91": {
+      "x": 477,
+      "y": 86
+    },
+    "92": {
+      "x": 560,
+      "y": 163
+    },
+    "93": {
+      "x": 641,
+      "y": 157
+    },
+    "94": {
+      "x": 640,
+      "y": 243
+    },
+    "95": {
+      "x": 625,
+      "y": 84
+    },
+    "96": {
+      "x": 710,
+      "y": 235
+    },
+    "97": {
+      "x": 787,
+      "y": 237
+    },
+    "98": {
+      "x": 866,
+      "y": 235
+    },
+    "99": {
+      "x": 871,
+      "y": 164
+    },
+    "100": {
+      "x": 701,
+      "y": 77
+    },
+    "101": {
+      "x": 785,
+      "y": 84
+    },
+    "102": {
+      "x": 867,
+      "y": 73
+    },
+    "200": {
+      "x": 946,
+      "y": 354
+    },
+    "201": {
+      "x": 869,
+      "y": 354
+    },
+    "202": {
+      "x": 801,
+      "y": 357
+    },
+    "203": {
+      "x": 722,
+      "y": 357
+    },
+    "204": {
+      "x": 635,
+      "y": 357
+    },
+    "205": {
+      "x": 551,
+      "y": 349
+    },
+    "206": {
+      "x": 478,
+      "y": 348
+    },
+    "209": {
+      "x": 313,
+      "y": 82
+    },
+    "210": {
+      "x": 400,
+      "y": 84
+    },
+    "211": {
+      "x": 477,
+      "y": 86
+    }
+  },
+  "decorativeSprites": [
+    {
+      "x": 758,
+      "y": 161,
+      "speciesId": 144,
+      "region": "temple"
+    },
+    {
+      "x": 370,
+      "y": 175,
+      "speciesId": 146,
+      "region": "temple"
+    },
+    {
+      "x": 172,
+      "y": 250,
+      "speciesId": 150,
+      "region": "temple"
+    },
+    {
+      "x": 1057,
+      "y": 341,
+      "speciesId": 244,
+      "region": "temple"
+    },
+    {
+      "x": 331,
+      "y": 568,
+      "speciesId": 107,
+      "region": "safari"
+    },
+    {
+      "x": 730,
+      "y": 424,
+      "speciesId": 115,
+      "region": "safari"
+    },
+    {
+      "x": 1017,
+      "y": 506,
+      "speciesId": 95,
+      "region": "safari"
+    },
+    {
+      "x": 1037,
+      "y": 856,
+      "speciesId": 54,
+      "region": "safari"
+    },
+    {
+      "x": 137,
+      "y": 604,
+      "speciesId": 74,
+      "region": "safari"
+    },
+    {
+      "x": 427,
+      "y": 743,
+      "speciesId": 62,
+      "region": "seafoam"
+    },
+    {
+      "x": 159,
+      "y": 825,
+      "speciesId": 120,
+      "region": "seafoam"
+    },
+    {
+      "x": 258,
+      "y": 1052,
+      "speciesId": 25,
+      "region": "pallet"
+    },
+    {
+      "x": 942,
+      "y": 1050,
+      "speciesId": 113,
+      "region": "pallet"
+    }
+  ]
+}

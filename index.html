@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pokemon Board Game</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="app" class="screen-setup">
+
+  <!-- =====================  SETUP SCREEN  ===================== -->
+  <section id="setup" class="setup">
+    <header class="setup-header">
+      <h1>Pokemon Board Game</h1>
+      <p class="tagline">The physical card adventure. Now with a digital board.</p>
+    </header>
+
+    <div class="setup-card">
+      <h2>How many trainers?</h2>
+      <div class="player-count-buttons" id="playerCountButtons">
+        <button class="count-btn" data-count="2">2</button>
+        <button class="count-btn active" data-count="3">3</button>
+        <button class="count-btn" data-count="4">4</button>
+        <button class="count-btn" data-count="5">5</button>
+        <button class="count-btn" data-count="6">6</button>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h2>Trainer names &amp; starters</h2>
+      <div id="trainerSetup" class="trainer-setup"></div>
+    </div>
+
+    <div class="setup-card">
+      <h2>Options</h2>
+      <label class="row">
+        <input type="checkbox" id="optMusic" checked />
+        <span>Background music per area</span>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="optSfx" checked />
+        <span>Sound effects (encounters, hits, captures)</span>
+      </label>
+    </div>
+
+    <div class="setup-actions">
+      <button id="loadSaveBtn" class="ghost-btn">Resume last game</button>
+      <button id="hallOfFameBtn" class="ghost-btn">Hall of Fame</button>
+      <button id="startGameBtn" class="primary-btn">Start adventure</button>
+    </div>
+  </section>
+
+  <!-- =====================  GAME SCREEN  ===================== -->
+  <section id="game" class="game" hidden>
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="area-pill" id="areaPill">Pallet Town</span>
+        <span class="turn-pill" id="turnPill">Turn 1</span>
+      </div>
+      <div class="topbar-center"></div>
+      <div class="topbar-right">
+        <button id="audioToggle" class="icon-btn" title="Toggle music">♪</button>
+        <button id="saveBtn" class="icon-btn" title="Save game">💾</button>
+        <button id="quitBtn" class="icon-btn" title="Quit to setup">✕</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="board-pane" id="boardPane">
+        <div id="boardWrap" class="board-wrap">
+          <svg id="boardSvg" class="board-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+
+      <aside class="side-pane">
+        <div class="trainer-panels" id="trainerPanels"></div>
+
+        <div class="actions" id="actionsBar">
+          <button id="rollMoveBtn" class="primary-btn">🎲 Roll the dice</button>
+        </div>
+        <!-- Manual dice row kept hidden so any code paths that reference it
+             still resolve without errors. -->
+        <div id="manualDiceRow" hidden>
+          <button class="dice-btn" data-roll="1">1</button>
+          <button class="dice-btn" data-roll="2">2</button>
+          <button class="dice-btn" data-roll="3">3</button>
+          <button class="dice-btn" data-roll="4">4</button>
+          <button class="dice-btn" data-roll="5">5</button>
+          <button class="dice-btn" data-roll="6">6</button>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Hidden but kept for backward-compat with GameUI.log() calls -->
+    <div class="logbar" id="logbar" hidden>
+      <div class="log" id="log"></div>
+    </div>
+    <!-- End turn button hidden — auto-advances now -->
+    <button id="endTurnBtn" hidden>End turn</button>
+    <!-- Per-player card / partyGrid / inv lists — kept hidden for code paths
+         that reference them while we transition. -->
+    <div hidden>
+      <div id="currentPlayerCard"></div>
+      <div id="playerStrip"></div>
+      <div id="partyGrid"></div>
+      <ul id="itemList"></ul>
+      <ul id="ballList"></ul>
+      <span id="partyCount"></span>
+    </div>
+  </section>
+
+  <!-- =====================  ENCOUNTER MODAL  ===================== -->
+  <div id="encounterModal" class="modal" hidden>
+    <div class="modal-card encounter-card">
+      <div class="encounter-flash" id="encounterFlash"></div>
+      <h2 id="encounterTitle">A wild Pokemon appeared!</h2>
+      <div class="encounter-stage">
+        <img id="encounterSprite" class="wild-sprite" alt="" />
+        <div class="encounter-name" id="encounterName"></div>
+        <div class="encounter-types" id="encounterTypes"></div>
+        <div id="ballThrowAnim" class="ball-throw" hidden></div>
+        <div id="diceRollAnim" class="dice-roll" hidden>?</div>
+      </div>
+      <div class="encounter-actions">
+        <div class="catch-rate-display" id="catchRateDisplay"></div>
+        <h3>Throw a ball</h3>
+        <div class="ball-row" id="ballRow"></div>
+        <button id="encounterAutoRollBtn" class="primary-btn">🎲 Roll the dice</button>
+        <button id="encounterFleeBtn" class="ghost-btn">Run away</button>
+      </div>
+      <div id="encounterResult" class="encounter-result"></div>
+    </div>
+  </div>
+
+  <!-- =====================  BATTLE MODAL  ===================== -->
+  <div id="battleModal" class="modal" hidden>
+    <div class="modal-card battle-card">
+      <div class="battle-header">
+        <img id="battleLeaderSprite" class="battle-leader-sprite" alt="" hidden />
+        <div class="battle-header-text">
+          <h2 id="battleTitle">Battle</h2>
+          <span id="battleSubtitle" class="hint"></span>
+        </div>
+      </div>
+
+      <div class="battle-arena">
+        <div class="combatant opponent">
+          <div class="hp-bar">
+            <div class="hp-name" id="oppName"></div>
+            <div class="hp-track"><div class="hp-fill" id="oppHpFill"></div></div>
+            <div class="hp-text" id="oppHpText"></div>
+          </div>
+          <img id="oppSprite" class="battle-sprite front" alt="" />
+        </div>
+        <div class="combatant player">
+          <img id="playerSprite" class="battle-sprite back" alt="" />
+          <div class="hp-bar">
+            <div class="hp-name" id="playerName"></div>
+            <div class="hp-track"><div class="hp-fill" id="playerHpFill"></div></div>
+            <div class="hp-text" id="playerHpText"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-message" id="battleMessage">Choose a move.</div>
+
+      <div class="battle-actions">
+        <div class="move-row" id="moveRow"></div>
+        <div class="battle-controls">
+          <button id="switchBtn" class="ghost-btn">Switch Pokemon</button>
+          <button id="useItemBtn" class="ghost-btn">Use item</button>
+          <button id="forfeitBtn" class="ghost-btn">Forfeit</button>
+        </div>
+        <div id="battleDicePrompt" class="battle-dice" hidden>
+          <p class="dice-prompt-text" id="dicePromptText"></p>
+          <div class="dice-row big" id="battleDiceRow">
+            <button class="dice-btn" data-roll="1">1</button>
+            <button class="dice-btn" data-roll="2">2</button>
+            <button class="dice-btn" data-roll="3">3</button>
+            <button class="dice-btn" data-roll="4">4</button>
+            <button class="dice-btn" data-roll="5">5</button>
+            <button class="dice-btn" data-roll="6">6</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-team" id="battleTeam"></div>
+    </div>
+  </div>
+
+  <!-- =====================  TILE INFO MODAL  ===================== -->
+  <div id="tileModal" class="modal" hidden>
+    <div class="modal-card tile-card">
+      <h2 id="tileTitle"></h2>
+      <p id="tileDescription"></p>
+      <div id="tileBody"></div>
+      <div class="tile-actions">
+        <button id="tileResolveBtn" class="primary-btn">Resolve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  BRANCH MODAL  ===================== -->
+  <div id="branchModal" class="modal" hidden>
+    <div class="modal-card branch-card">
+      <h2>Pick your path</h2>
+      <p>The road forks. Both reconverge later but the journey is different.</p>
+      <div id="branchOptions" class="branch-options"></div>
+    </div>
+  </div>
+
+  <!-- =====================  TRADE MODAL  ===================== -->
+  <div id="tradeModal" class="modal" hidden>
+    <div class="modal-card trade-card">
+      <h2>Trade Pokemon</h2>
+      <div class="trade-row">
+        <div class="trade-half">
+          <h3 id="tradeFromName"></h3>
+          <p class="hint">Choose one of your Pokemon to offer</p>
+          <div id="tradeFromParty" class="party-grid"></div>
+        </div>
+        <div class="trade-arrows">⇄</div>
+        <div class="trade-half">
+          <h3>Trade with</h3>
+          <div id="tradeTargetSelect" class="trainer-select"></div>
+          <p class="hint" id="tradeTargetHint">Pick who to trade with</p>
+          <div class="trade-offer-tabs" id="tradeOfferTabs" hidden>
+            <button type="button" class="trade-tab active" data-offer="pokemon">Pokemon</button>
+            <button type="button" class="trade-tab" data-offer="items">Items / Balls</button>
+          </div>
+          <div id="tradeTargetParty" class="party-grid"></div>
+          <div id="tradeTargetItems" class="item-grid" hidden></div>
+        </div>
+      </div>
+      <div class="trade-actions">
+        <button id="tradeCancelBtn" class="ghost-btn">Skip trade</button>
+        <button id="tradeForceBtn" class="ghost-btn">Force trade</button>
+        <button id="tradeConfirmBtn" class="primary-btn" disabled>Confirm trade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= TRADE CONFIRM (3s countdown) ============= -->
+  <div id="tradeConfirmModal" class="modal" hidden>
+    <div class="modal-card trade-confirm-card">
+      <h2>Are you sure?</h2>
+      <p class="hint" id="tradeConfirmSummary"></p>
+      <div class="trade-confirm-stage">
+        <div class="trade-confirm-side" id="tradeConfirmFromSide"></div>
+        <div class="trade-confirm-arrow">⇄</div>
+        <div class="trade-confirm-side" id="tradeConfirmTargetSide"></div>
+      </div>
+      <p class="trade-confirm-note">Either trainer can cancel. Trade completes when the countdown ends.</p>
+      <div class="trade-confirm-actions">
+        <button id="tradeConfirmCancelBtn" class="ghost-btn">Cancel trade</button>
+        <button id="tradeConfirmGoBtn" class="primary-btn" disabled>Confirming in 3s</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  PVP CHOOSE PRIZE  ===================== -->
+  <div id="pvpModal" class="modal" hidden>
+    <div class="modal-card pvp-card">
+      <h2>Trainer battle</h2>
+      <p id="pvpIntro"></p>
+      <div class="pvp-section">
+        <h3>Pick the prize Pokemon</h3>
+        <p class="hint">If you lose, this Pokemon goes to your opponent.</p>
+        <div id="pvpPrizePicker" class="party-grid"></div>
+      </div>
+      <div class="pvp-actions">
+        <button id="pvpStartBtn" class="primary-btn" disabled>Begin battle</button>
+        <button id="pvpCancelBtn" class="ghost-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  EVOLUTION PICKER  ===================== -->
+  <div id="evolvePickerModal" class="modal" hidden>
+    <div class="modal-card evolve-picker-card">
+      <h2>Rare Candy · Pick a Pokemon to evolve or boost</h2>
+      <p class="hint">Pokemon with a next evolution evolve. Pokemon that have peaked get a +25% HP / move power boost (stackable).</p>
+      <div id="evolvePickerGrid" class="evolve-grid"></div>
+      <div class="modal-actions">
+        <button id="evolvePickerCancel" class="ghost-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  EVOLUTION ANIMATION  ===================== -->
+  <div id="evolveAnimModal" class="modal" hidden>
+    <div class="modal-card evolve-anim-card">
+      <h2 id="evolveAnimTitle">What?</h2>
+      <div class="evolve-stage">
+        <div class="evolve-sprite-wrap">
+          <img id="evolveSpriteBefore" class="evolve-sprite" alt="" />
+          <img id="evolveSpriteAfter" class="evolve-sprite evolve-sprite-after" alt="" />
+          <div class="evolve-flash"></div>
+        </div>
+        <div id="evolveAnimMessage" class="evolve-anim-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  TILE EDITOR  ===================== -->
+  <div id="tileEditModal" class="modal" hidden>
+    <div class="modal-card tile-edit-card">
+      <h2 id="tileEditTitle">Edit tile</h2>
+      <p class="hint" id="tileEditHint"></p>
+      <div class="tile-edit-grid">
+        <label>Type
+          <select id="tileEditType">
+            <option value="pokemon">Wild encounter (random)</option>
+            <option value="specific">Specific Pokemon</option>
+            <option value="item">Item (draw 2)</option>
+            <option value="pokeball">Pokeball (draw 3)</option>
+            <option value="masterball">Master Ball</option>
+            <option value="trade">Trade</option>
+            <option value="pokecentre">Pokemon Center (heal)</option>
+            <option value="fainted">Fainted (back to PC)</option>
+            <option value="gym">Gym battle</option>
+            <option value="battle">PvP battle</option>
+            <option value="branch">Branch (path fork)</option>
+          </select>
+        </label>
+        <label>Area
+          <select id="tileEditArea">
+            <option value="pallet">Pallet Town</option>
+            <option value="seafoam">Seafoam Islands</option>
+            <option value="safari">Safari Zone</option>
+            <option value="temple">Ancient Temple</option>
+          </select>
+        </label>
+        <label id="tileEditSpeciesRow" hidden>Specific Pokemon
+          <select id="tileEditSpecies"></select>
+        </label>
+        <label id="tileEditLeaderRow" hidden>Gym Leader
+          <select id="tileEditLeader">
+            <option value="brock">Brock</option>
+            <option value="misty">Misty</option>
+            <option value="blaine">Blaine</option>
+            <option value="giovanni">Giovanni</option>
+          </select>
+        </label>
+        <label id="tileEditBranchRow" hidden>Branch target tile IDs (comma sep, 2 IDs)
+          <input id="tileEditBranchTo" type="text" placeholder="e.g. 36, 41" />
+        </label>
+        <label id="tileEditBranchLabelsRow" hidden>Branch labels (comma sep)
+          <input id="tileEditBranchLabels" type="text" placeholder="Lower path, Upper path" />
+        </label>
+        <label>joinNext (skip to this tile after, optional)
+          <input id="tileEditJoinNext" type="number" placeholder="e.g. 46" />
+        </label>
+        <label>Position X / Y
+          <span style="display:flex;gap:6px;">
+            <input id="tileEditX" type="number" style="width:80px;" />
+            <input id="tileEditY" type="number" style="width:80px;" />
+          </span>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button id="tileEditDelete" class="ghost-btn" style="color:#f87171;">Delete tile</button>
+        <button id="tileEditCancel" class="ghost-btn">Cancel</button>
+        <button id="tileEditSave" class="primary-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  HALL OF FAME  ===================== -->
+  <div id="hofModal" class="modal" hidden>
+    <div class="modal-card hof-card">
+      <h2>Hall of Fame</h2>
+      <div id="hofList" class="hof-list"></div>
+      <div class="hof-actions">
+        <button id="hofCloseBtn" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  ITEM PICKER  ===================== -->
+  <div id="itemPickerModal" class="modal" hidden>
+    <div class="modal-card item-picker-card">
+      <h2 id="itemPickerTitle">Pick an item</h2>
+      <p class="hint" id="itemPickerHint"></p>
+      <div id="itemPickerGrid" class="item-grid"></div>
+      <div class="modal-actions">
+        <button id="itemPickerCancel" class="ghost-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  CARD DRAW REVEAL  ===================== -->
+  <div id="drawModal" class="modal" hidden>
+    <div class="modal-card draw-card">
+      <h2 id="drawTitle">You drew...</h2>
+      <div id="drawReveal" class="draw-reveal"></div>
+      <div class="modal-actions">
+        <button id="drawContinueBtn" class="primary-btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  RELEASE / GOODBYE  ===================== -->
+  <div id="releaseModal" class="modal" hidden>
+    <div class="modal-card release-card">
+      <h2 id="releaseTitle">Say goodbye?</h2>
+      <div class="release-stage">
+        <div class="release-sparkle"></div>
+        <img id="releaseSprite" class="release-sprite" alt="" />
+        <div class="release-tear">💧</div>
+      </div>
+      <p class="release-message" id="releaseMessage"></p>
+      <div class="release-reward" id="releaseReward"></div>
+      <div id="releaseBonus" class="release-bonus" hidden></div>
+      <div class="release-actions">
+        <button id="releaseCancelBtn" class="ghost-btn">Keep them</button>
+        <button id="releaseGoBtn" class="primary-btn release-go">Release</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  OUT OF BALLS POPUP  ===================== -->
+  <div id="noBallsModal" class="modal" hidden>
+    <div class="modal-card no-balls-card">
+      <h2>🥲 Out of Pokeballs!</h2>
+      <p class="no-balls-message" id="noBallsMessage"></p>
+    </div>
+  </div>
+
+  <!-- =====================  FAINTED POPUP  ===================== -->
+  <div id="faintedModal" class="modal" hidden>
+    <div class="modal-card fainted-card">
+      <h2>💔 All Pokemon fainted!</h2>
+      <div class="fainted-stage">
+        <img id="faintedSprite" class="fainted-sprite" alt="" />
+        <div class="fainted-label">× FAINTED ×</div>
+      </div>
+      <p class="fainted-message" id="faintedMessage"></p>
+    </div>
+  </div>
+
+  <!-- =====================  VICTORY  ===================== -->
+  <div id="victoryModal" class="modal" hidden>
+    <div class="modal-card victory-card">
+      <h1>HALL OF FAME</h1>
+      <p class="winner-name" id="winnerName"></p>
+      <p class="hint">Defeated Giovanni and entered the Hall of Fame</p>
+      <div class="winner-team" id="winnerTeam"></div>
+      <div class="modal-actions">
+        <button id="victoryContinueBtn" class="primary-btn">Return to title</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<audio id="bgMusic" loop preload="none"></audio>
+<audio id="sfx" preload="none"></audio>
+
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/board.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/encounter.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/items.js"></script>
+<script src="js/trade.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

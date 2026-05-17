@@ -1,0 +1,2720 @@
+{
+  "1": {
+    "name": "Bulbasaur",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Leech Seed",
+        "power": 20,
+        "type": "grass"
+      },
+      {
+        "name": "Vine Whip",
+        "power": 35,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "2": {
+    "name": "Ivysaur",
+    "hp": 90,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Leech Seed",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Vine Whip",
+        "power": 50,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "3": {
+    "name": "Venusaur",
+    "hp": 150,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Vine Whip",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Dangerous Toxwhip",
+        "power": 60,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "4": {
+    "name": "Charmander",
+    "hp": 60,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Blazing Destruction",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Steady Firebreathing",
+        "power": 35,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "5": {
+    "name": "Charmeleon",
+    "hp": 90,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Combustion",
+        "power": 20,
+        "type": "fire"
+      },
+      {
+        "name": "Fire Blast",
+        "power": 50,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "6": {
+    "name": "Charizard",
+    "hp": 150,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Brave Wing",
+        "power": 35,
+        "type": "fire"
+      },
+      {
+        "name": "Explosive Vortex",
+        "power": 65,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "7": {
+    "name": "Squirtle",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Withdraw",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Skull Bash",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "8": {
+    "name": "Wartortle",
+    "hp": 90,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Free Diving",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Spinning Attack",
+        "power": 45,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "9": {
+    "name": "Blastoise",
+    "hp": 150,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Water Gun",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Twin Cannons",
+        "power": 60,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "10": {
+    "name": "Caterpie",
+    "hp": 50,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Leaf Munch",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "String Shot",
+        "power": 30,
+        "type": "bug",
+        "gated": true
+      }
+    ]
+  },
+  "11": {
+    "name": "Metapod",
+    "hp": 75,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Defensive Posture",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Tackle",
+        "power": 30,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "12": {
+    "name": "Butterfree",
+    "hp": 100,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Bye-Bye Flight",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Whirlwind",
+        "power": 45,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "13": {
+    "name": "Weedle",
+    "hp": 50,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Ram",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Bug Bite",
+        "power": 30,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "14": {
+    "name": "Kakuna",
+    "hp": 75,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Zzzt",
+        "power": 20,
+        "type": "grass"
+      },
+      {
+        "name": "Harden",
+        "power": 35,
+        "type": "bug",
+        "gated": true
+      }
+    ]
+  },
+  "15": {
+    "name": "Beedrill",
+    "hp": 100,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Nadir Needle",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Pierce",
+        "power": 55,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "16": {
+    "name": "Pidgey",
+    "hp": 50,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Call for Family",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Tackle",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "17": {
+    "name": "Pidgeotto",
+    "hp": 75,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Flap",
+        "power": 20,
+        "type": "normal"
+      },
+      {
+        "name": "Tackle",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "18": {
+    "name": "Pidgeot",
+    "hp": 100,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Flap",
+        "power": 30,
+        "type": "normal"
+      },
+      {
+        "name": "Fly",
+        "power": 60,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "19": {
+    "name": "Rattata",
+    "hp": 50,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Gnaw the Wound",
+        "power": 20,
+        "type": "normal"
+      },
+      {
+        "name": "Quick Attack",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "20": {
+    "name": "Raticate",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Second Bite",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Tackle",
+        "power": 45,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "21": {
+    "name": "Spearow",
+    "hp": 50,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Speed Dive",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Peck",
+        "power": 30,
+        "type": "flying",
+        "gated": true
+      }
+    ]
+  },
+  "22": {
+    "name": "Fearow",
+    "hp": 75,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Beak Catch",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Speed Dive",
+        "power": 45,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "23": {
+    "name": "Ekans",
+    "hp": 60,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Acid Spray",
+        "power": 25,
+        "type": "dark"
+      },
+      {
+        "name": "Wrap",
+        "power": 35,
+        "type": "poison",
+        "gated": true
+      }
+    ]
+  },
+  "24": {
+    "name": "Arbok",
+    "hp": 150,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Bind Down",
+        "power": 35,
+        "type": "dark"
+      },
+      {
+        "name": "Menacing Fangs",
+        "power": 60,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "25": {
+    "name": "Pikachu",
+    "hp": 60,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Charge",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Pika Punch",
+        "power": 45,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "26": {
+    "name": "Raichu",
+    "hp": 100,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Thunder Shock",
+        "power": 25,
+        "type": "electric"
+      },
+      {
+        "name": "Thunder",
+        "power": 60,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "27": {
+    "name": "Sandshrew",
+    "hp": 60,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Scratch",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Sand Attack",
+        "power": 35,
+        "type": "ground",
+        "gated": true
+      }
+    ]
+  },
+  "28": {
+    "name": "Sandslash",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Rumble",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Spike Rend",
+        "power": 50,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "29": {
+    "name": "Nidoran ♀",
+    "hp": 60,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Poison Horn",
+        "power": 20,
+        "type": "dark"
+      },
+      {
+        "name": "Scratch",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "30": {
+    "name": "Nidorina",
+    "hp": 75,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Fetch Family",
+        "power": 15,
+        "type": "dark"
+      },
+      {
+        "name": "Sharp Fang",
+        "power": 45,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "31": {
+    "name": "Nidoqueen",
+    "hp": 125,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Queen Press",
+        "power": 35,
+        "type": "dark"
+      },
+      {
+        "name": "Lunge Out",
+        "power": 60,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "32": {
+    "name": "Nidoran ♂",
+    "hp": 60,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Horn Attack",
+        "power": 20,
+        "type": "dark"
+      },
+      {
+        "name": "Horn Attack",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "33": {
+    "name": "Nidorino",
+    "hp": 75,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Sharp Fang",
+        "power": 25,
+        "type": "dark"
+      },
+      {
+        "name": "Superpowered Horns",
+        "power": 55,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "34": {
+    "name": "Nidoking",
+    "hp": 125,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Bite",
+        "power": 25,
+        "type": "dark"
+      },
+      {
+        "name": "Venomous Impact",
+        "power": 65,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "35": {
+    "name": "Clefairy",
+    "hp": 60,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Moon-Viewing Invitation",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "Smack",
+        "power": 30,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "36": {
+    "name": "Clefable",
+    "hp": 90,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Follow Me",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "More Moon",
+        "power": 45,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "37": {
+    "name": "Vulpix",
+    "hp": 60,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Super Singe",
+        "power": 20,
+        "type": "fire"
+      },
+      {
+        "name": "Ember",
+        "power": 35,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "38": {
+    "name": "Ninetales",
+    "hp": 135,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Heat Wave",
+        "power": 25,
+        "type": "fire"
+      },
+      {
+        "name": "Mirrored Flames",
+        "power": 50,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "39": {
+    "name": "Jigglypuff",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Lead",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Stompy Stomp",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "40": {
+    "name": "Wigglytuff",
+    "hp": 135,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Tackle",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Friend Tackle",
+        "power": 50,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "41": {
+    "name": "Zubat",
+    "hp": 50,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Bite",
+        "power": 15,
+        "type": "dark"
+      },
+      {
+        "name": "Leech Life",
+        "power": 30,
+        "type": "bug",
+        "gated": true
+      }
+    ]
+  },
+  "42": {
+    "name": "Golbat",
+    "hp": 75,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Skill Dive",
+        "power": 15,
+        "type": "dark"
+      },
+      {
+        "name": "Bite",
+        "power": 35,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "43": {
+    "name": "Oddish",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Razor Leaf",
+        "power": 20,
+        "type": "grass"
+      },
+      {
+        "name": "Absorb",
+        "power": 35,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "44": {
+    "name": "Gloom",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Drool",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Vine Whip",
+        "power": 45,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "45": {
+    "name": "Vileplume",
+    "hp": 110,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Vine Whip",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Solar Beam",
+        "power": 50,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "46": {
+    "name": "Paras",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Stampede",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Spore Ball",
+        "power": 30,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "47": {
+    "name": "Parasect",
+    "hp": 100,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Spread Filaments",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Claw Slash",
+        "power": 45,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "48": {
+    "name": "Venonat",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Gnaw",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Beam",
+        "power": 35,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "49": {
+    "name": "Venomoth",
+    "hp": 75,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Perplexing Powder",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Speed Wing",
+        "power": 50,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "50": {
+    "name": "Diglett",
+    "hp": 50,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Headbutt Bounce",
+        "power": 15,
+        "type": "fighting"
+      },
+      {
+        "name": "Mud-Slap",
+        "power": 35,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "51": {
+    "name": "Dugtrio",
+    "hp": 75,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Headbutt Bounce",
+        "power": 30,
+        "type": "fighting"
+      },
+      {
+        "name": "Mud Bomb",
+        "power": 50,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "52": {
+    "name": "Meowth",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Come Here Right Meow",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Dig Claws",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "53": {
+    "name": "Persian",
+    "hp": 90,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Tackle",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Slash",
+        "power": 50,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "54": {
+    "name": "Psyduck",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Overthink",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Water Gun",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "55": {
+    "name": "Golduck",
+    "hp": 90,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Aquatic Rescue",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Super Splash",
+        "power": 55,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "56": {
+    "name": "Mankey",
+    "hp": 60,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Thrash",
+        "power": 20,
+        "type": "fighting"
+      },
+      {
+        "name": "Scratch",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "57": {
+    "name": "Primeape",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Rant and Rave",
+        "power": 30,
+        "type": "fighting"
+      },
+      {
+        "name": "Raging Smash",
+        "power": 60,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "58": {
+    "name": "Growlithe",
+    "hp": 75,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Vaporize",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Bite",
+        "power": 30,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "59": {
+    "name": "Arcanine",
+    "hp": 110,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Torrid Torrent",
+        "power": 25,
+        "type": "fire"
+      },
+      {
+        "name": "Dynamite Fang",
+        "power": 65,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "60": {
+    "name": "Poliwag",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Bubble",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Bubble",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "61": {
+    "name": "Poliwhirl",
+    "hp": 75,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Wave Splash",
+        "power": 20,
+        "type": "water"
+      },
+      {
+        "name": "Frog Hop",
+        "power": 35,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "62": {
+    "name": "Poliwrath",
+    "hp": 110,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Bubble Beam",
+        "power": 30,
+        "type": "water"
+      },
+      {
+        "name": "Heroic Punch",
+        "power": 55,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "63": {
+    "name": "Abra",
+    "hp": 50,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Psyshot",
+        "power": 20,
+        "type": "psychic"
+      },
+      {
+        "name": "Confusion",
+        "power": 35,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "64": {
+    "name": "Kadabra",
+    "hp": 75,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Teleportation Attack",
+        "power": 25,
+        "type": "psychic"
+      },
+      {
+        "name": "Confusion",
+        "power": 45,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "65": {
+    "name": "Alakazam",
+    "hp": 150,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Mind Jack",
+        "power": 35,
+        "type": "psychic"
+      },
+      {
+        "name": "Dimensional Hand",
+        "power": 55,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "66": {
+    "name": "Machop",
+    "hp": 60,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Mountain Mashing",
+        "power": 15,
+        "type": "fighting"
+      },
+      {
+        "name": "Punch",
+        "power": 35,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "67": {
+    "name": "Machoke",
+    "hp": 90,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Mountain Ramming",
+        "power": 30,
+        "type": "fighting"
+      },
+      {
+        "name": "Karate Chop",
+        "power": 50,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "68": {
+    "name": "Machamp",
+    "hp": 125,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Karate Chop",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Mountain Chopping",
+        "power": 55,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "69": {
+    "name": "Bellsprout",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Cut",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Bind Down",
+        "power": 30,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "70": {
+    "name": "Weepinbell",
+    "hp": 75,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Cut",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Spray Fluid",
+        "power": 45,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "71": {
+    "name": "Victreebel",
+    "hp": 110,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Spit Up",
+        "power": 30,
+        "type": "grass"
+      },
+      {
+        "name": "Slow-Acting Acid",
+        "power": 55,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "72": {
+    "name": "Tentacool",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Tingle",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Watering",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "73": {
+    "name": "Tentacruel",
+    "hp": 100,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Poisonous Whip",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Tentacular Panic",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "74": {
+    "name": "Geodude",
+    "hp": 75,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Stiffen",
+        "power": 15,
+        "type": "fighting"
+      },
+      {
+        "name": "Knuckle Punch",
+        "power": 30,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "75": {
+    "name": "Graveler",
+    "hp": 90,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Rock Cannon",
+        "power": 30,
+        "type": "fighting"
+      },
+      {
+        "name": "Heavy Impact",
+        "power": 45,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "76": {
+    "name": "Golem",
+    "hp": 150,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Dynamic Roll",
+        "power": 30,
+        "type": "fighting"
+      },
+      {
+        "name": "Rock Blaster",
+        "power": 60,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "77": {
+    "name": "Ponyta",
+    "hp": 60,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Collect",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Flop",
+        "power": 35,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "78": {
+    "name": "Rapidash",
+    "hp": 90,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Singe",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Mach Turn",
+        "power": 50,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "79": {
+    "name": "Slowpoke",
+    "hp": 75,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Sea Bathing",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "Headbutt",
+        "power": 30,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "80": {
+    "name": "Slowbro",
+    "hp": 100,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Big Yawn",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "Laid-Back Tackle",
+        "power": 60,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "81": {
+    "name": "Magnemite",
+    "hp": 60,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Tiny Charge",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Big Explosion",
+        "power": 45,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "82": {
+    "name": "Magneton",
+    "hp": 75,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Junk Magnet",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Head Bolt",
+        "power": 45,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "83": {
+    "name": "Farfetch'd",
+    "hp": 75,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Package Deal",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Leek Clobber",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "84": {
+    "name": "Doduo",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Reckless Charge",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Peck",
+        "power": 35,
+        "type": "flying",
+        "gated": true
+      }
+    ]
+  },
+  "85": {
+    "name": "Dodrio",
+    "hp": 90,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Ballistic Beak",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Tackle",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "86": {
+    "name": "Seel",
+    "hp": 75,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Chilly",
+        "power": 20,
+        "type": "water"
+      },
+      {
+        "name": "Headbutt",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "87": {
+    "name": "Dewgong",
+    "hp": 100,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Dual Splash",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Aurora Beam",
+        "power": 55,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "88": {
+    "name": "Grimer",
+    "hp": 75,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Gummy Press",
+        "power": 15,
+        "type": "dark"
+      },
+      {
+        "name": "Pound",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "89": {
+    "name": "Muk",
+    "hp": 110,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Sticky Jail",
+        "power": 25,
+        "type": "dark"
+      },
+      {
+        "name": "Sludge Bomb",
+        "power": 60,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "90": {
+    "name": "Shellder",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Shell Press",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Withdraw",
+        "power": 35,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "91": {
+    "name": "Cloyster",
+    "hp": 100,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Water Gun",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Protect Charge",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "92": {
+    "name": "Gastly",
+    "hp": 50,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Suffocating Gas",
+        "power": 20,
+        "type": "psychic"
+      },
+      {
+        "name": "Lick",
+        "power": 35,
+        "type": "ghost",
+        "gated": true
+      }
+    ]
+  },
+  "93": {
+    "name": "Haunter",
+    "hp": 75,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Mumble",
+        "power": 25,
+        "type": "psychic"
+      },
+      {
+        "name": "Confusion",
+        "power": 45,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "94": {
+    "name": "Gengar",
+    "hp": 100,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Poltergeist",
+        "power": 30,
+        "type": "psychic"
+      },
+      {
+        "name": "Hollow Dive",
+        "power": 55,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "95": {
+    "name": "Onix",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Thumpalanche",
+        "power": 35,
+        "type": "fighting"
+      },
+      {
+        "name": "Heavy Impact",
+        "power": 55,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "96": {
+    "name": "Drowzee",
+    "hp": 75,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Zen Headbutt",
+        "power": 25,
+        "type": "psychic"
+      },
+      {
+        "name": "Confusion",
+        "power": 35,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "97": {
+    "name": "Hypno",
+    "hp": 90,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Confusion",
+        "power": 25,
+        "type": "psychic"
+      },
+      {
+        "name": "Super Psy Bolt",
+        "power": 55,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "98": {
+    "name": "Krabby",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Salt Water",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Crabhammer",
+        "power": 45,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "99": {
+    "name": "Kingler",
+    "hp": 110,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Hammer Arm",
+        "power": 35,
+        "type": "water"
+      },
+      {
+        "name": "Guillotine",
+        "power": 65,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "100": {
+    "name": "Voltorb",
+    "hp": 60,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Tumbling Attack",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Tackle",
+        "power": 30,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "101": {
+    "name": "Electrode",
+    "hp": 75,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Bang Boom Chain",
+        "power": 20,
+        "type": "electric"
+      },
+      {
+        "name": "Electro Ball",
+        "power": 50,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "102": {
+    "name": "Exeggcute",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Ball Roll",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Confusion",
+        "power": 35,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "103": {
+    "name": "Exeggutor",
+    "hp": 110,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Psychic",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Hammer In",
+        "power": 55,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "104": {
+    "name": "Cubone",
+    "hp": 60,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Hit Twice",
+        "power": 15,
+        "type": "fighting"
+      },
+      {
+        "name": "Bone Club",
+        "power": 30,
+        "type": "ground",
+        "gated": true
+      }
+    ]
+  },
+  "105": {
+    "name": "Marowak",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Bone Throw",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Boundless Power",
+        "power": 55,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "106": {
+    "name": "Hitmonlee",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Twister Kick",
+        "power": 15,
+        "type": "fighting"
+      },
+      {
+        "name": "Low Kick",
+        "power": 55,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "107": {
+    "name": "Hitmonchan",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Karate Chop",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Excited Punch",
+        "power": 45,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "108": {
+    "name": "Lickitung",
+    "hp": 90,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Tackle",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Tongue-Tied",
+        "power": 50,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "109": {
+    "name": "Koffing",
+    "hp": 60,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Suspicious Gas",
+        "power": 20,
+        "type": "dark"
+      },
+      {
+        "name": "Smog",
+        "power": 35,
+        "type": "poison",
+        "gated": true
+      }
+    ]
+  },
+  "110": {
+    "name": "Weezing",
+    "hp": 90,
+    "type": "dark",
+    "moves": [
+      {
+        "name": "Spinning Fumes",
+        "power": 30,
+        "type": "dark"
+      },
+      {
+        "name": "Bite",
+        "power": 50,
+        "type": "dark",
+        "gated": true
+      }
+    ]
+  },
+  "111": {
+    "name": "Rhyhorn",
+    "hp": 90,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Push Down",
+        "power": 20,
+        "type": "fighting"
+      },
+      {
+        "name": "Boulder Crush",
+        "power": 50,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "112": {
+    "name": "Rhydon",
+    "hp": 100,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Wrack Down",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Charismatic Drill",
+        "power": 35,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "113": {
+    "name": "Chansey",
+    "hp": 90,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Tackle",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Gentle Slap",
+        "power": 50,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "114": {
+    "name": "Tangela",
+    "hp": 75,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Tactful Tangling",
+        "power": 15,
+        "type": "grass"
+      },
+      {
+        "name": "Bind",
+        "power": 30,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "115": {
+    "name": "Kangaskhan",
+    "hp": 135,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Triple Draw",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Incessant Punching",
+        "power": 55,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "116": {
+    "name": "Horsea",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Rain Splash",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Sharp Fin",
+        "power": 35,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "117": {
+    "name": "Seadra",
+    "hp": 75,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Blinding Ink",
+        "power": 30,
+        "type": "water"
+      },
+      {
+        "name": "Water Gun",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "118": {
+    "name": "Goldeen",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Triple Strike",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Sprinkle Water",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "119": {
+    "name": "Seaking",
+    "hp": 90,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Swim Freely",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Aqua Horn",
+        "power": 45,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "120": {
+    "name": "Staryu",
+    "hp": 60,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Swift",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Tackle",
+        "power": 35,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "121": {
+    "name": "Starmie",
+    "hp": 75,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Speed Attack",
+        "power": 30,
+        "type": "water"
+      },
+      {
+        "name": "Water Gun",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "122": {
+    "name": "Mr. Mime",
+    "hp": 75,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Psypower",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "Confusion",
+        "power": 35,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "123": {
+    "name": "Scyther",
+    "hp": 60,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Helpful Slash",
+        "power": 20,
+        "type": "grass"
+      },
+      {
+        "name": "Slicing Blade",
+        "power": 50,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "124": {
+    "name": "Jynx",
+    "hp": 125,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Heart-Stopping Kiss",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Icy Wind",
+        "power": 55,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "125": {
+    "name": "Electabuzz",
+    "hp": 75,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Electro Combo",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Light Punch",
+        "power": 35,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "126": {
+    "name": "Magmar",
+    "hp": 75,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Live Coal",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Flare Combo",
+        "power": 50,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "127": {
+    "name": "Pinsir",
+    "hp": 100,
+    "type": "grass",
+    "moves": [
+      {
+        "name": "Vise Grip",
+        "power": 25,
+        "type": "grass"
+      },
+      {
+        "name": "Reckless Throw",
+        "power": 50,
+        "type": "grass",
+        "gated": true
+      }
+    ]
+  },
+  "128": {
+    "name": "Tauros",
+    "hp": 100,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Gather the Crew",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Rage",
+        "power": 35,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "129": {
+    "name": "Magikarp",
+    "hp": 50,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Splashy Splash",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Tackle",
+        "power": 30,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "130": {
+    "name": "Gyarados",
+    "hp": 125,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Water Gun",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Hyper Beam",
+        "power": 65,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "131": {
+    "name": "Lapras",
+    "hp": 90,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Hop on My Back",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Aqua Edge",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "132": {
+    "name": "Ditto",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Splup",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Transform",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "133": {
+    "name": "Eevee",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Colorful Friends",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Skip",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "134": {
+    "name": "Vaporeon",
+    "hp": 100,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Spiral Drain",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Fighting Whirlpool",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "135": {
+    "name": "Jolteon",
+    "hp": 90,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Linear Attack",
+        "power": 15,
+        "type": "electric"
+      },
+      {
+        "name": "Fighting Lightning",
+        "power": 50,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "136": {
+    "name": "Flareon",
+    "hp": 100,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Destructive Flame",
+        "power": 25,
+        "type": "fire"
+      },
+      {
+        "name": "Fighting Blaze",
+        "power": 50,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "137": {
+    "name": "Porygon",
+    "hp": 60,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Conversion 4",
+        "power": 15,
+        "type": "normal"
+      },
+      {
+        "name": "Conversion",
+        "power": 30,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "138": {
+    "name": "Omanyte",
+    "hp": 90,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Tentacular Return",
+        "power": 30,
+        "type": "water"
+      },
+      {
+        "name": "Withdraw",
+        "power": 45,
+        "type": "rock",
+        "gated": true
+      }
+    ]
+  },
+  "139": {
+    "name": "Omastar",
+    "hp": 110,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Water Gun",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Aqua Split",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "140": {
+    "name": "Kabuto",
+    "hp": 75,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Scratch",
+        "power": 20,
+        "type": "rock"
+      },
+      {
+        "name": "Double Scratch",
+        "power": 50,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "141": {
+    "name": "Kabutops",
+    "hp": 110,
+    "type": "fighting",
+    "moves": [
+      {
+        "name": "Karate Chop",
+        "power": 25,
+        "type": "fighting"
+      },
+      {
+        "name": "Draining Blade",
+        "power": 55,
+        "type": "fighting",
+        "gated": true
+      }
+    ]
+  },
+  "142": {
+    "name": "Aerodactyl",
+    "hp": 100,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Glide",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Devolution Ray",
+        "power": 55,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "143": {
+    "name": "Snorlax",
+    "hp": 110,
+    "type": "normal",
+    "moves": [
+      {
+        "name": "Tackle",
+        "power": 25,
+        "type": "normal"
+      },
+      {
+        "name": "Thudding Press",
+        "power": 55,
+        "type": "normal",
+        "gated": true
+      }
+    ]
+  },
+  "144": {
+    "name": "Articuno",
+    "hp": 100,
+    "type": "water",
+    "moves": [
+      {
+        "name": "Water Gun",
+        "power": 25,
+        "type": "water"
+      },
+      {
+        "name": "Blizzard",
+        "power": 55,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "145": {
+    "name": "Zapdos",
+    "hp": 125,
+    "type": "electric",
+    "moves": [
+      {
+        "name": "Thunder Shock",
+        "power": 25,
+        "type": "electric"
+      },
+      {
+        "name": "Multishot Lightning",
+        "power": 55,
+        "type": "electric",
+        "gated": true
+      }
+    ]
+  },
+  "146": {
+    "name": "Moltres",
+    "hp": 100,
+    "type": "fire",
+    "moves": [
+      {
+        "name": "Blazing Flight",
+        "power": 15,
+        "type": "fire"
+      },
+      {
+        "name": "Ember",
+        "power": 35,
+        "type": "fire",
+        "gated": true
+      }
+    ]
+  },
+  "147": {
+    "name": "Dratini",
+    "hp": 60,
+    "type": "dragon",
+    "moves": [
+      {
+        "name": "Beat",
+        "power": 15,
+        "type": "water"
+      },
+      {
+        "name": "Draconic Whip",
+        "power": 35,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "148": {
+    "name": "Dragonair",
+    "hp": 90,
+    "type": "dragon",
+    "moves": [
+      {
+        "name": "Beat",
+        "power": 20,
+        "type": "water"
+      },
+      {
+        "name": "Aqua Slash",
+        "power": 50,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "149": {
+    "name": "Dragonite",
+    "hp": 125,
+    "type": "dragon",
+    "moves": [
+      {
+        "name": "Dragon Rage",
+        "power": 25,
+        "type": "dragon"
+      },
+      {
+        "name": "Dragon Pulse",
+        "power": 60,
+        "type": "water",
+        "gated": true
+      }
+    ]
+  },
+  "150": {
+    "name": "Mewtwo",
+    "hp": 100,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Reflective Barrier",
+        "power": 20,
+        "type": "psychic"
+      },
+      {
+        "name": "Psyslash",
+        "power": 55,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  },
+  "151": {
+    "name": "Mew",
+    "hp": 125,
+    "type": "psychic",
+    "moves": [
+      {
+        "name": "Genome Hacking",
+        "power": 15,
+        "type": "psychic"
+      },
+      {
+        "name": "Pound",
+        "power": 30,
+        "type": "psychic",
+        "gated": true
+      }
+    ]
+  }
+}
