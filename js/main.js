@@ -179,6 +179,35 @@
         location.reload();
       }
     });
+
+    // Fullscreen toggle — works in topbar AND setup screen
+    const toggleFullscreen = () => {
+      const el = document.documentElement;
+      if (!document.fullscreenElement) {
+        (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen).call(el).catch(() => {});
+      } else {
+        (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen).call(document).catch(() => {});
+      }
+    };
+    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+    const setupFsBtn = document.getElementById('setupFullscreenBtn');
+    if (setupFsBtn) setupFsBtn.addEventListener('click', toggleFullscreen);
+
+    // Tap the board (outside tiles) to roll the dice. Same guards as the
+    // big Roll button — busy / pending tile resolution / any modal open.
+    const boardPane = document.getElementById('boardPane');
+    boardPane.addEventListener('click', (e) => {
+      // Ignore taps on tiles (they have their own handlers) or on the SVG
+      // tile groups.
+      if (e.target.closest('.board-tile, .token, button')) return;
+      const rollBtn = document.getElementById('rollMoveBtn');
+      if (!rollBtn || rollBtn.disabled) return;
+      if (GameState.busy || GameState.pendingTileResolution) return;
+      const anyModalOpen = Array.from(document.querySelectorAll('.modal'))
+        .some(m => !m.hidden);
+      if (anyModalOpen) return;
+      rollBtn.click();
+    });
   }
 
   // Expose for tile clicks if needed

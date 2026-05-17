@@ -5,6 +5,24 @@ window.GameUI = {};
 
 GameUI.el = function (id) { return document.getElementById(id); };
 
+// Toggle the "Tap board to roll" hint based on whether the player can roll.
+GameUI._refreshTapHint = function () {
+  const pane = GameUI.el('boardPane');
+  if (!pane) return;
+  const rollBtn = GameUI.el('rollMoveBtn');
+  const anyModalOpen = Array.from(document.querySelectorAll('.modal'))
+    .some(m => !m.hidden);
+  const canRoll = rollBtn && !rollBtn.disabled
+    && !GameState.busy
+    && !GameState.pendingTileResolution
+    && !anyModalOpen;
+  pane.classList.toggle('can-roll', !!canRoll);
+};
+
+// Poll every 400ms so the hint stays accurate during async flows
+// (animations, modals opening/closing, auto-end-turn busy window, etc.).
+setInterval(() => { GameUI._refreshTapHint(); }, 400);
+
 GameUI.log = function (msg, cls) {
   const log = GameUI.el('log');
   const entry = document.createElement('div');
@@ -357,6 +375,7 @@ GameUI.renderPlayerPanel = function () {
 GameUI.refreshAll = function () {
   GameUI.renderPlayerPanel();
   GameBoard.renderTokens();
+  GameUI._refreshTapHint();
 };
 
 // ============================== ENCOUNTER ==============================
