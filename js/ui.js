@@ -1254,6 +1254,14 @@ GameUI.showEvolutionPicker = function (eligible, onPick) {
 GameUI.playEvolutionAnimation = function (fromSpeciesId, toSpeciesId, fromName, toName, onComplete) {
   GameUI._unspectate('evolveAnimModal');
   const modal = GameUI.el('evolveAnimModal');
+  // Stash the species IDs on the modal so the multiplayer modal-capture can
+  // ship them across the wire — spectators need them to render the right
+  // before/after sprites (without, they'd see whatever was in the img tags
+  // from a previous animation, or empty).
+  modal.dataset.fromSpeciesId = String(fromSpeciesId);
+  modal.dataset.toSpeciesId = String(toSpeciesId);
+  modal.dataset.fromName = fromName || '';
+  modal.dataset.toName = toName || '';
   const before = GameUI.el('evolveSpriteBefore');
   const after = GameUI.el('evolveSpriteAfter');
   const stage = modal.querySelector('.evolve-stage');
