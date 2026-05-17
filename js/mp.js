@@ -214,9 +214,13 @@ GameMP._captureModal = function () {
       },
     };
   }
-  // Otherwise find any visible synced modal
+  // Find a visible synced modal that we ourselves OWN (not a spectator copy
+  // of someone else's modal). Without this filter, the host could re-emit
+  // the spectator drawModal mirroring player 2's draws, which player 2
+  // would then re-apply to their own drawModal — marking it spectator and
+  // disabling its Continue button.
   const visible = GameMP._SYNC_MODAL_IDS.map(id => document.getElementById(id))
-    .find(el => el && !el.hidden);
+    .find(el => el && !el.hidden && el.dataset.spectator !== '1');
   if (!visible) return null;
   switch (visible.id) {
     case 'encounterModal': {
@@ -248,6 +252,25 @@ GameMP._captureModal = function () {
 };
 
 GameMP._applyModal = function (modal) {
+  // If THIS device is the active player, the incoming state's modal field
+  // represents either nothing or something already shown locally. Never
+  // render it as a spectator copy on the active player's screen — that
+  // would mark our own modals as spectator and disable their buttons.
+  if (GameMP.isLocalDeviceActive()) {
+    // But still close any leftover spectator modals from before this device
+    // became active.
+    GameMP._SYNC_MODAL_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.dataset.spectator === '1') {
+        el.hidden = true;
+        delete el.dataset.spectator;
+      }
+    });
+    if (window.GameBattle && GameBattle.active && GameBattle.active._spectator) {
+      GameBattle.active = null;
+    }
+    return;
+  }
   // 1) Close any synced modals we currently have open as spectator that the
   //    remote no longer reports (or that switched type).
   if (!modal || modal.type !== 'battle') {
