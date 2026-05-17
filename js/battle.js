@@ -460,6 +460,13 @@ GameBattle.useItemInBattle = function () {
 };
 
 GameBattle.forfeit = function () {
+  // CPU players skip the confirm dialog (it blocks the event loop and
+  // soft-locks the AI watchdog).
+  const player = GameState.currentPlayer && GameState.currentPlayer();
+  if (player && player.isCpu) {
+    GameBattle.end(false);
+    return;
+  }
   if (!confirm('Forfeit the battle? This counts as a loss.')) return;
   GameBattle.end(false);
 };

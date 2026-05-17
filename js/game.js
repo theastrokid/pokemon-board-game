@@ -307,6 +307,9 @@ GameGame.gymWin = function (tile, leader) {
     GameUI.log(`<span class="win">${player.name} DEFEATED ${leader.name} and entered the HALL OF FAME!</span>`, 'win');
     player.completed = true;
     GameState.addToHallOfFame(player);
+    // Clear pendingTileResolution so the victory modal's "Continue" button can
+    // actually hand off the turn (endTurn refuses to run while pending).
+    GameState.pendingTileResolution = false;
     GameUI.refreshAll();
     GameUI.showVictory(player, leader);
     return;

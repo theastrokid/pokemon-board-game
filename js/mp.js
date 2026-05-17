@@ -175,7 +175,17 @@ GameMP._applyState = function (state) {
   }
   GameMP._suspendBroadcast = true;
   try {
+    // If THIS device is mid-battle and owns the active player, protect our
+    // own slot from being overwritten by a peer's stale snapshot. The
+    // battle's playerTeam holds the authoritative HP/PP/fainted; spamming a
+    // peer-sent state could revert mid-battle damage.
+    const protectOwnSlot = GameMP.isLocalDeviceActive()
+      && window.GameBattle && GameBattle.active && !GameBattle.active._spectator
+      && GameMP.localSlot != null
+      && GameState.players[GameMP.localSlot];
+    const ownSlotPreserve = protectOwnSlot ? GameState.players[GameMP.localSlot] : null;
     GameState.players = state.players || GameState.players;
+    if (protectOwnSlot) GameState.players[GameMP.localSlot] = ownSlotPreserve;
     GameState.activePlayerIdx = state.activePlayerIdx ?? GameState.activePlayerIdx;
     GameState.turnCount = state.turnCount ?? GameState.turnCount;
     GameState.pendingTileResolution = !!state.pendingTileResolution;
@@ -413,9 +423,24 @@ GameMP._onMessage = function (event) {
     case 'state':
       // The remote pushed a full state. Replace ours.
       if (msg.state) GameMP._applyState(msg.state);
-      if (GameMP.localSlot == null && GameState.players && GameState.players.length > 1) {
-        GameMP.localSlot = 1;
-        GameMP.send({ type: 'hello', playerSlot: 1, isHost: false });
+      // First-time slot assignment for guests: pick the lowest human slot
+      // that no peer has claimed yet. Skip CPU slots and the host (slot 0).
+      if (GameMP.localSlot == null && GameState.players && GameState.players.length > 0) {
+        const claimed = new Set(GameMP.peers.filter(p => p.hello && p.hello.playerSlot != null).map(p => p.hello.playerSlot));
+        claimed.add(0); // host always owns slot 0
+        let assigned = null;
+        for (let i = 0; i < GameState.players.length; i++) {
+          if (claimed.has(i)) continue;
+          if (GameState.players[i] && GameState.players[i].isCpu) continue;
+          assigned = i;
+          break;
+        }
+        if (assigned == null) {
+          // Fallback: claim slot 1 even if it's a CPU/claimed (better than null).
+          assigned = 1;
+        }
+        GameMP.localSlot = assigned;
+        GameMP.send({ type: 'hello', playerSlot: assigned, isHost: false });
       }
       break;
     case 'player-update':

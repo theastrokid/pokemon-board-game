@@ -120,9 +120,19 @@ export class GameRoom {
           }));
         } catch (e) {}
       } else if (msg.type === 'player-update') {
-        // Partial update — patch the cached state's player slot so late
-        // joiners see the latest, then broadcast to peers.
-        if (this.lastState && this.lastState.players && msg.slot != null && msg.player) {
+        // Ownership check: a session can only update the slot they claimed
+        // via their hello message. Prevents a misconfigured / hostile peer
+        // from rewriting another player's party / items / balls.
+        if (!session.hello || session.hello.playerSlot !== msg.slot) {
+          return;
+        }
+        if (msg.slot != null && msg.player) {
+          // If we don't have a cached full state yet (rare: guest sends an
+          // off-turn update before the host's first full broadcast),
+          // initialize a minimal stub so late joiners still merge correctly.
+          if (!this.lastState) this.lastState = { players: [] };
+          if (!this.lastState.players) this.lastState.players = [];
+          while (this.lastState.players.length <= msg.slot) this.lastState.players.push(null);
           this.lastState.players[msg.slot] = msg.player;
         }
         this.broadcast(msg, session);

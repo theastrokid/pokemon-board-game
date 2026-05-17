@@ -25,16 +25,22 @@ GameCpu.stop = function () {
 GameCpu._maybeAct = function () {
   const p = GameState.currentPlayer && GameState.currentPlayer();
   if (!p || !p.isCpu) return;
-  // Multiplayer: only the host drives CPUs (avoids divergence — guest's
-  // direct rollAndMove call would mutate their state independently).
-  // Single-device mode: always drive CPUs.
   if (window.GameMP && GameMP.enabled && !GameMP.isHost) return;
   if (Date.now() - GameCpu._lastActionTime < GameCpu.COOLDOWN_MS) return;
   const fire = GameCpu._chooseAction();
   if (!fire) return;
   GameCpu._lastActionTime = Date.now();
-  if (window.console) console.log('[cpu]', p.name, 'host=' + (window.GameMP && GameMP.isHost), 'active=' + GameState.activePlayerIdx, 'acting');
-  setTimeout(fire, 250 + Math.floor(Math.random() * 250));
+  // Capture the CPU we INTENDED to act for. The setTimeout delay can span a
+  // turn handoff (state sync, opponent finishing fast), so re-validate before
+  // firing so the host can't accidentally roll dice on a human guest's turn.
+  const expected = p;
+  setTimeout(() => {
+    const now = GameState.currentPlayer && GameState.currentPlayer();
+    if (now !== expected) return;
+    if (!now || !now.isCpu) return;
+    if (window.GameMP && GameMP.enabled && !GameMP.isHost) return;
+    fire();
+  }, 250 + Math.floor(Math.random() * 250));
 };
 
 // Returns a function that performs the next CPU action, or null if there's
@@ -112,13 +118,19 @@ GameCpu._handleBattle = function () {
   if (pMon.hp / pMon.maxHp <= 0.25) {
     if (GameCpu._tryUseHealInBattle()) return;
   }
-  // Pick the strongest usable move (PP > 0). Prefer gated (strong) when available.
+  // Pick the strongest usable move (PP > 0).
   const usable = pMon.moves
     .map((mv, i) => ({ mv, i, pp: (mv.pp || 0) }))
     .filter(x => x.pp > 0);
   if (usable.length === 0) {
-    // All PP exhausted — switch if possible, else struggle by clicking move 0 (will trigger struggle in opponentTurn... actually for player we have no struggle)
-    GameCpu._click('switchBtn');
+    // All PP exhausted on the lead. Look for ANY party member with usable PP.
+    const haveAlternate = b.playerTeam.some((m, i) => i !== b.playerActive && !m.fainted && m.moves.some(mv => (mv.pp || 0) > 0));
+    if (haveAlternate) {
+      GameCpu._click('switchBtn');
+    } else {
+      // No alternate has PP either — forfeit so we don't softlock on switches.
+      GameBattle.forfeit();
+    }
     return;
   }
   usable.sort((a, b2) => b2.mv.power - a.mv.power);
