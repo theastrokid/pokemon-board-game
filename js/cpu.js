@@ -25,14 +25,15 @@ GameCpu.stop = function () {
 GameCpu._maybeAct = function () {
   const p = GameState.currentPlayer && GameState.currentPlayer();
   if (!p || !p.isCpu) return;
-  // Multiplayer ownership: the host drives every CPU. Other devices' CPU
-  // watchdog stays passive so we don't double-fire actions.
+  // Multiplayer: only the host drives CPUs (avoids divergence — guest's
+  // direct rollAndMove call would mutate their state independently).
+  // Single-device mode: always drive CPUs.
   if (window.GameMP && GameMP.enabled && !GameMP.isHost) return;
   if (Date.now() - GameCpu._lastActionTime < GameCpu.COOLDOWN_MS) return;
   const fire = GameCpu._chooseAction();
   if (!fire) return;
   GameCpu._lastActionTime = Date.now();
-  // Small human-feel delay before the actual click so observers can follow.
+  if (window.console) console.log('[cpu]', p.name, 'host=' + (window.GameMP && GameMP.isHost), 'active=' + GameState.activePlayerIdx, 'acting');
   setTimeout(fire, 250 + Math.floor(Math.random() * 250));
 };
 
@@ -45,15 +46,16 @@ GameCpu._chooseAction = function () {
   if (battleModal && !battleModal.hidden && GameBattle.active && !GameBattle.active._spectator) {
     return () => GameCpu._handleBattle();
   }
-  // 2. Other modals
+  // 2. Other modals (skip the ones the spectator mirrors — those aren't ours
+  //    to interact with)
   const openModal = Array.from(document.querySelectorAll('.modal'))
     .find(m => !m.hidden && m.dataset.spectator !== '1');
   if (openModal) {
     switch (openModal.id) {
       case 'encounterModal':   return () => GameCpu._handleEncounter();
       case 'drawModal':        return () => GameCpu._click('drawContinueBtn');
-      case 'noBallsModal':     return null; // auto-closes
-      case 'faintedModal':     return null; // auto-closes
+      case 'noBallsModal':     return null;
+      case 'faintedModal':     return null;
       case 'branchModal':      return () => GameCpu._handleBranch();
       case 'tradeModal':       return () => GameCpu._click('tradeCancelBtn');
       case 'pvpModal':         return () => GameCpu._click('pvpCancelBtn');
@@ -66,10 +68,16 @@ GameCpu._chooseAction = function () {
       default:                 return null;
     }
   }
-  // 3. No modal, no battle, no busy → take a turn (roll the dice)
+  // 3. No modal, not busy → roll. Call GameGame.rollAndMove() DIRECTLY rather
+  //    than clicking the button, so we don't depend on the multiplayer button
+  //    gate being open at the exact moment we fire.
   if (!GameState.busy && !GameState.pendingTileResolution) {
-    const rollBtn = document.getElementById('rollMoveBtn');
-    if (rollBtn && !rollBtn.disabled) return () => rollBtn.click();
+    return () => {
+      if (window.console) console.log('[cpu] firing rollAndMove for', GameState.currentPlayer().name);
+      // Spectator-cleanup: in MP, the host might have a spectator modal
+      // lingering. Skip the click route — direct call.
+      GameGame.rollAndMove();
+    };
   }
   return null;
 };
