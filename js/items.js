@@ -51,6 +51,15 @@ GameItems.applyBattleBuff = function (item, player) {
 
 GameItems.useItem = function (itemId, playerOverride) {
   const player = playerOverride || GameState.currentPlayer();
+  // Multiplayer guard: only the owner of this player slot (the device whose
+  // GameMP.localSlot points at this player, plus the host for CPUs) may use
+  // their items. Prevents a spectator from spending another trainer's items.
+  if (window.GameMP && GameMP.enabled) {
+    const slotIdx = GameState.players.indexOf(player);
+    const owned = (GameMP.localSlot != null && slotIdx === GameMP.localSlot)
+      || (player && player.isCpu && GameMP.isHost);
+    if (!owned) return;
+  }
   const item = GameData.getItem(itemId);
   if (!item || !player.items[itemId]) return;
   GameItems.applyItem(item, player, {});

@@ -33,10 +33,22 @@ GameCpu._humanDelayMs = function () { return 450 + Math.floor(Math.random() * 35
 
 GameCpu._currentSignature = function () {
   // Tracks what the CPU is currently looking at: turn, modal, busy, etc.
+  // Must include enough modal detail to detect repeat attempts in the SAME
+  // modal — e.g. encounter retries after a missed ball throw, where the
+  // modal ID and player are unchanged but the result text + button state
+  // shift.
   const p = GameState.currentPlayer();
   const b = window.GameBattle && GameBattle.active;
   const openModal = Array.from(document.querySelectorAll('.modal'))
     .find(m => !m.hidden);
+  let modalDetail = null;
+  if (openModal) {
+    const resultEl = openModal.querySelector('#encounterResult, #battleMessage, #drawTitle');
+    const enabledList = Array.from(openModal.querySelectorAll('button:not([disabled])'))
+      .map(btn => btn.id || btn.dataset.ball || btn.textContent.slice(0, 10))
+      .join(',');
+    modalDetail = (resultEl ? resultEl.textContent : '') + '|' + enabledList;
+  }
   return JSON.stringify({
     pid: p ? p.id : null,
     turn: GameState.turnCount,
@@ -44,6 +56,7 @@ GameCpu._currentSignature = function () {
     pending: GameState.pendingTileResolution,
     busy: GameState.busy,
     modal: openModal ? openModal.id : null,
+    modalDetail,
     battle: b ? { kind: b.kind, pAct: b.playerActive, oAct: b.oppActive, opPend: !!b.opponentPending, msg: b.message } : null,
   });
 };

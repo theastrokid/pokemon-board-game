@@ -441,6 +441,10 @@ GameBattle.switchTo = function (idx) {
 };
 
 GameBattle.useItemInBattle = function () {
+  // Multiplayer: this device shouldn't be able to use the active player's
+  // items unless they ARE the active player.
+  if (GameBattle.active && GameBattle.active._spectator) return;
+  if (window.GameMP && GameMP.enabled && !GameMP.isLocalDeviceActive()) return;
   GameUI.showItemPicker(
     item => item.type === 'heal' || item.type === 'revive' || item.type === 'buff',
     'Use item in battle',
