@@ -116,22 +116,27 @@ GameMP.broadcastState = function () {
 };
 
 GameMP._lastSentSig = '';
+GameMP._lastBroadcastActiveIdx = null;
 GameMP._doSend = function () {
   GameMP._lastBroadcastTs = Date.now();
   let msg;
-  if (GameMP.isLocalDeviceActive()) {
+  // If activePlayerIdx changed since our last send (most importantly: turn
+  // just ended on this device), the previously-active player MUST push a
+  // full snapshot so peers learn about the new turn owner. Partial slot
+  // updates can't carry activePlayerIdx, so without this every endTurn on
+  // the host stranded player 2 watching forever.
+  const activeChanged = GameMP._lastBroadcastActiveIdx !== GameState.activePlayerIdx;
+  if (GameMP.isLocalDeviceActive() || activeChanged) {
     msg = { type: 'state', state: GameMP._serializeState() };
   } else if (GameMP.localSlot != null && GameState.players[GameMP.localSlot]) {
     msg = { type: 'player-update', slot: GameMP.localSlot, player: GameState.players[GameMP.localSlot] };
   } else {
     return;
   }
-  // Dedupe — skip if the payload (excluding timestamps) is identical to the
-  // previous send. Keeps the per-200ms poll from flooding the wire while
-  // still letting it discover modal opens/closes that don't trigger refreshAll.
   const sig = JSON.stringify(msg);
   if (sig === GameMP._lastSentSig) return;
   GameMP._lastSentSig = sig;
+  GameMP._lastBroadcastActiveIdx = GameState.activePlayerIdx;
   msg.ts = Date.now();
   GameMP.send(msg);
 };
@@ -171,8 +176,9 @@ GameMP._applyState = function (state) {
     if (window.GameUI && GameUI.refreshAll) GameUI.refreshAll();
     if (window.GameBoard && GameBoard.renderTokens) GameBoard.renderTokens();
     GameMP._applyModal(state.modal || null);
-    // Seed _lastSentSig with what WE would now send back. Prevents the next
-    // poll from echoing identical data we just received.
+    // Seed dedupe state so the next poll doesn't echo identical data we
+    // just received OR think the active player just changed.
+    GameMP._lastBroadcastActiveIdx = GameState.activePlayerIdx;
     if (GameMP.localSlot != null && GameState.players && GameState.players[GameMP.localSlot]) {
       GameMP._lastSentSig = JSON.stringify({
         type: 'player-update',
