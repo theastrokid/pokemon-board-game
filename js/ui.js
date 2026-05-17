@@ -894,6 +894,11 @@ GameUI.showDraws = function (title, draws, onContinue) {
 GameUI.showPokemonDetail = function (mon, player) {
   const slotIdx = GameState.players.indexOf(player);
   const owned = GameUI.isLocallyOwned(player, slotIdx);
+  const currentPartyIdx = player.party.findIndex(m => m.instanceId === mon.instanceId);
+  // Position buttons let the user tap to move a mon into another party slot.
+  // Slots 1-3 are battle slots (highlighted gold), 4-6 are storage. Empty
+  // slots beyond the current party length are clamped down by reorder.
+  const canReorder = owned && player.party.length > 1 && currentPartyIdx >= 0;
   // Offer a Release button inside the detail modal so tapping a party
   // Pokemon gives a clear discard path — the small ✕ overlay on the party
   // card itself is easy to miss on tablet/mobile.
@@ -902,6 +907,34 @@ GameUI.showPokemonDetail = function (mon, player) {
     ? null
     : (player.party.length <= 1 ? 'Cannot release your last Pokemon.'
         : (mon.fainted ? 'Revive before releasing.' : null));
+  const positionRowHtml = canReorder ? (() => {
+    const buttons = [];
+    for (let i = 0; i < 6; i++) {
+      const isCurrent = i === currentPartyIdx;
+      const isBattle = i < 3;
+      const beyondParty = i > player.party.length - 1;
+      const label = isBattle ? `Battle ${i + 1}` : `Storage ${i - 2}`;
+      const bg = isCurrent ? '#0ea5e9' : (isBattle ? '#f59e0b22' : '#39424e');
+      const border = isCurrent ? '#0ea5e9' : (isBattle ? '#f59e0b' : '#4b5563');
+      const color = isCurrent ? '#fff' : (isBattle ? '#fbbf24' : '#e5e7eb');
+      buttons.push(`
+        <button type="button" class="pos-btn" data-target-slot="${i}" ${isCurrent ? 'disabled' : ''}
+          style="flex:1;min-width:60px;background:${bg};border:1.5px solid ${border};color:${color};
+                 padding:8px 4px;border-radius:6px;font-size:11px;font-weight:bold;
+                 ${beyondParty ? 'opacity:0.7;' : ''}
+                 ${isCurrent ? 'cursor:default;' : 'cursor:pointer;'}">
+          ${label}${isCurrent ? '<br><span style="font-size:9px;opacity:0.8;">(here)</span>' : ''}
+        </button>
+      `);
+    }
+    return `
+      <div style="margin-top:16px;">
+        <h3 style="margin:0 0 8px;color:var(--pop);font-size:14px;">PARTY POSITION</h3>
+        <p class="hint" style="margin:0 0 8px;font-size:11px;">Slots 1-3 fight in battle. Tap a slot to move ${mon.name} there.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">${buttons.join('')}</div>
+      </div>
+    `;
+  })() : '';
   const html = `
     <div style="display:flex;gap:16px;align-items:center;">
       <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" style="width:96px;height:96px;image-rendering:pixelated;" />
@@ -910,6 +943,7 @@ GameUI.showPokemonDetail = function (mon, player) {
         <div style="margin-top:4px;">${mon.types.map(GameUI.typePill).join('')}</div>
         <div style="margin-top:6px;font-size:13px;">HP: <strong>${mon.hp} / ${mon.maxHp}</strong></div>
         ${mon.fainted ? '<div style="color:#f87171;font-weight:bold;margin-top:4px;">FAINTED</div>' : ''}
+        ${currentPartyIdx >= 0 ? `<div style="margin-top:4px;font-size:11px;color:var(--ink-dim);">Slot ${currentPartyIdx + 1}${currentPartyIdx < 3 ? ' (battle)' : ' (storage)'}</div>` : ''}
       </div>
     </div>
     <div style="margin-top:16px;">
@@ -924,6 +958,7 @@ GameUI.showPokemonDetail = function (mon, player) {
         </div>
       `;}).join('')}
     </div>
+    ${positionRowHtml}
     ${canRelease ? `
       <div style="margin-top:16px;text-align:center;">
         <button id="pokemonDetailReleaseBtn" class="primary-btn" style="background:#dc2626;border-color:#b91c1c;color:#fff;font-weight:bold;padding:10px 20px;">
@@ -946,6 +981,16 @@ GameUI.showPokemonDetail = function (mon, player) {
         if (idx >= 0) GameUI.discardPartyMember(player, idx);
       };
     }
+  }
+  if (canReorder) {
+    document.querySelectorAll('#tileBody .pos-btn').forEach(btn => {
+      btn.onclick = () => {
+        const target = Number(btn.dataset.targetSlot);
+        if (Number.isNaN(target) || target === currentPartyIdx) return;
+        GameUI.el('tileModal').hidden = true;
+        GameUI.reorderPartyByDrop(player, currentPartyIdx, target);
+      };
+    });
   }
 };
 
