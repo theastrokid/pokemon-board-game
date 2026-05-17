@@ -291,16 +291,16 @@ GameMP._captureModal = function () {
     case 'victoryModal':
       return { type: 'victory', data: { winnerHtml: GameUI.el('winnerName').innerHTML, teamHtml: GameUI.el('winnerTeam').innerHTML } };
     case 'evolveAnimModal':
+      // Capture the sprite SRCs directly off the active player's img tags
+      // rather than re-deriving from species IDs on the spectator side.
+      // playEvolutionAnimation always sets these img.src values (even in
+      // older deployed builds), so this works regardless of which version
+      // the active player's device is running.
       return { type: 'evolve', data: {
         title: GameUI.el('evolveAnimTitle').textContent,
         message: GameUI.el('evolveAnimMessage').textContent,
-        // Ship the species + name pair so the spectator's modal can render
-        // the right before/after sprites. Without these the spectator
-        // shows stale sprites from a previous animation (or empty).
-        fromSpeciesId: Number(visible.dataset.fromSpeciesId) || null,
-        toSpeciesId: Number(visible.dataset.toSpeciesId) || null,
-        fromName: visible.dataset.fromName || '',
-        toName: visible.dataset.toName || '',
+        fromSpriteSrc: GameUI.el('evolveSpriteBefore').getAttribute('src') || '',
+        toSpriteSrc: GameUI.el('evolveSpriteAfter').getAttribute('src') || '',
       } };
     default:
       return { type: 'generic', data: { id: visible.id } };
@@ -432,24 +432,21 @@ GameMP._renderSpectatorEvolve = function (d) {
   modal.dataset.spectator = '1';
   GameUI.el('evolveAnimTitle').textContent = d.title || '';
   GameUI.el('evolveAnimMessage').textContent = d.message || '';
-  // Sprite + animation only need to be reset when we first open this
-  // spectator modal OR when the species pair changes (a different mon
-  // started evolving). Re-running the CSS animation on every state poll
-  // would restart it mid-transition and look like a stutter.
-  const fromId = d.fromSpeciesId || null;
-  const toId = d.toSpeciesId || null;
-  const currentFrom = Number(modal.dataset.specFromSpeciesId) || null;
-  const currentTo = Number(modal.dataset.specToSpeciesId) || null;
-  const speciesChanged = currentFrom !== fromId || currentTo !== toId;
-  if ((wasHidden || speciesChanged) && fromId && toId) {
+  // Sprite + animation only need to be reset on first open OR when the
+  // sprite pair changes (a different mon started evolving). Re-running
+  // the CSS animation on every state poll would stutter mid-transition.
+  const fromSrc = d.fromSpriteSrc || '';
+  const toSrc = d.toSpriteSrc || '';
+  const currentFromSrc = modal.dataset.specFromSrc || '';
+  const currentToSrc = modal.dataset.specToSrc || '';
+  const spritesChanged = fromSrc !== currentFromSrc || toSrc !== currentToSrc;
+  if ((wasHidden || spritesChanged) && fromSrc && toSrc) {
     const before = GameUI.el('evolveSpriteBefore');
     const after = GameUI.el('evolveSpriteAfter');
-    before.src = GameData.spriteFront(fromId);
-    before.onerror = () => { before.src = GameData.spriteStatic(fromId); };
-    after.src = GameData.spriteFront(toId);
-    after.onerror = () => { after.src = GameData.spriteStatic(toId); };
-    modal.dataset.specFromSpeciesId = String(fromId);
-    modal.dataset.specToSpeciesId = String(toId);
+    before.src = fromSrc;
+    after.src = toSrc;
+    modal.dataset.specFromSrc = fromSrc;
+    modal.dataset.specToSrc = toSrc;
     const stage = modal.querySelector('.evolve-stage');
     if (stage) {
       stage.classList.remove('evolve-running');

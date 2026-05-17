@@ -394,7 +394,13 @@ GameItems.promptDiscardForRoom = function (incomingSpeciesId, onKeep, onSkip) {
       }
       const bonusTag = n > 1 ? ` <span class="crit">(×${n} ${bonus.reasons.join(' + ')})</span>` : '';
       GameUI.log(`Discarded <strong>${mon.name}</strong>. Drew ${n} item${n>1?'s':''} + ${n} pokeball${n>1?'s':''}${bonusTag}.`);
-      const title = n > 1 ? `Reward draws · ×${n} bonus` : 'Reward draws';
+      // Title shows the released mon's sprite + name + the incoming Pokemon
+      // — synced via drawTitle.innerHTML so spectators see exactly what was
+      // swapped, not just "Reward draws".
+      const releasedSpriteHtml = `<img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" style="width:48px;height:48px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`;
+      const incomingSpriteHtml = `<img src="${GameData.spriteFront(incomingSpeciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(incomingSpeciesId)}'" alt="${incoming.name}" style="width:48px;height:48px;image-rendering:pixelated;vertical-align:middle;margin:0 6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`;
+      const bonusHtml = n > 1 ? ` <span class="crit">· ×${n} bonus</span>` : '';
+      const title = `${releasedSpriteHtml}<strong>${mon.name}</strong> released, ${incomingSpriteHtml}<strong>${incoming.name}</strong> joined${bonusHtml}`;
       GameUI.showDraws(title, draws, onKeep);
     };
     grid.appendChild(card);

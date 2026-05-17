@@ -305,7 +305,12 @@ GameUI.discardPartyMember = function (player, idx) {
     const bonusTag = n > 1 ? ` <span class="crit">(×${n} ${bonus.reasons.join(' + ')})</span>` : '';
     GameUI.log(`${player.name} released <strong>${mon.name}</strong>. Drew ${n} item${n>1?'s':''} + ${n} pokeball${n>1?'s':''}${bonusTag}.`, 'crit');
     GameUI.refreshAll();
-    const title = n > 1 ? `Reward for releasing · ×${n} bonus` : 'Reward for releasing';
+    // Title carries the released mon's sprite + name so the synced showDraws
+    // capture (which ships drawTitle.innerHTML to spectators) tells them
+    // exactly WHO was released — not just that some Pokemon was.
+    const releasedSpriteHtml = `<img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" style="width:56px;height:56px;image-rendering:pixelated;vertical-align:middle;margin-right:10px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`;
+    const bonusHtml = n > 1 ? ` <span class="crit">· ×${n} bonus</span>` : '';
+    const title = `${releasedSpriteHtml}${player.name} released <strong>${mon.name}</strong>${bonusHtml}`;
     GameUI.showDraws(title, draws);
   });
 };
