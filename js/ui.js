@@ -118,6 +118,7 @@ GameUI.renderParty = function (player) {
 };
 
 GameUI._attachPartyDragHandlers = function (el, player, idx, isEmpty) {
+  // ===== Desktop HTML5 drag-and-drop =====
   el.addEventListener('dragstart', (e) => {
     if (isEmpty) { e.preventDefault(); return; }
     e.dataTransfer.effectAllowed = 'move';
@@ -126,7 +127,7 @@ GameUI._attachPartyDragHandlers = function (el, player, idx, isEmpty) {
   });
   el.addEventListener('dragend', () => {
     el.classList.remove('dragging');
-    document.querySelectorAll('.party-card.drag-over').forEach(c => c.classList.remove('drag-over'));
+    document.querySelectorAll('.tp-mon.drag-over, .party-card.drag-over').forEach(c => c.classList.remove('drag-over'));
   });
   el.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -143,6 +144,96 @@ GameUI._attachPartyDragHandlers = function (el, player, idx, isEmpty) {
     if (isNaN(fromIdx) || fromIdx === idx) return;
     GameUI.reorderPartyByDrop(player, fromIdx, idx);
   });
+
+  // ===== Touch drag (mobile / tablet) — long-press to start, drag to swap =====
+  if (isEmpty) return;
+  let startX = 0, startY = 0;
+  let dragging = false;
+  let hoverEl = null;
+  let pressTimer = null;
+  const PRESS_MS = 220;    // hold this long before drag mode engages
+  const MOVE_THRESHOLD = 8; // px movement before treating as drag
+
+  const beginDrag = () => {
+    dragging = true;
+    el.classList.add('dragging');
+  };
+
+  const clearHover = () => {
+    document.querySelectorAll('.tp-mon.drag-over').forEach(c => c.classList.remove('drag-over'));
+    hoverEl = null;
+  };
+
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    dragging = false;
+    if (pressTimer) clearTimeout(pressTimer);
+    pressTimer = setTimeout(beginDrag, PRESS_MS);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const dist = Math.hypot(dx, dy);
+    if (!dragging) {
+      // Cancel the long-press if user scrolls before holding long enough.
+      if (dist > MOVE_THRESHOLD) {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      }
+      return;
+    }
+    // Active drag — stop the page from scrolling while we move the mon.
+    e.preventDefault();
+    const target = document.elementFromPoint(t.clientX, t.clientY);
+    const slot = target && target.closest('.tp-mon');
+    if (slot && slot !== el) {
+      if (hoverEl && hoverEl !== slot) hoverEl.classList.remove('drag-over');
+      slot.classList.add('drag-over');
+      hoverEl = slot;
+    } else if (!slot && hoverEl) {
+      clearHover();
+    }
+  }, { passive: false });
+
+  const endTouch = () => {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    el.classList.remove('dragging');
+    if (!dragging) { clearHover(); return; }
+    if (hoverEl) {
+      const toIdx = parseInt(hoverEl.dataset.partyIdx, 10);
+      if (!isNaN(toIdx) && toIdx !== idx) {
+        // Mark so the subsequent synthetic click on this mon doesn't open the
+        // Pokemon detail modal.
+        el.dataset.justDragged = String(Date.now());
+      }
+      clearHover();
+      if (!isNaN(toIdx) && toIdx !== idx) GameUI.reorderPartyByDrop(player, idx, toIdx);
+    } else {
+      clearHover();
+    }
+    dragging = false;
+  };
+  el.addEventListener('touchend', endTouch);
+  el.addEventListener('touchcancel', endTouch);
+};
+
+// Suppress the synthetic click that fires after a touch-drag finishes
+// (otherwise dropping on the same / nearby card opens the detail modal).
+GameUI._suppressClickIfJustDragged = function (el) {
+  const stamp = Number(el.dataset.justDragged || 0);
+  if (!stamp) return false;
+  const dt = Date.now() - stamp;
+  if (dt < 500) {
+    delete el.dataset.justDragged;
+    return true;
+  }
+  delete el.dataset.justDragged;
+  return false;
 };
 
 GameUI.reorderPartyByDrop = function (player, fromIdx, toIdx) {
@@ -309,6 +400,7 @@ GameUI.renderPlayerPanel = function () {
         `;
         card.addEventListener('click', (e) => {
           if (e.target.closest('.tp-mon-x')) return;
+          if (GameUI._suppressClickIfJustDragged(card)) return;
           GameUI.showPokemonDetail(mon, p);
         });
         const x = card.querySelector('.tp-mon-x');

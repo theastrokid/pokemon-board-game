@@ -1218,6 +1218,20 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 .tp-mon:hover { transform: translateY(-2px); border-color: var(--pop); box-shadow: 0 4px 10px rgba(255,203,5,0.25); }
+.tp-mon[draggable="true"] { touch-action: manipulation; }
+.tp-mon.dragging {
+  opacity: 0.6;
+  transform: scale(1.06);
+  box-shadow: 0 8px 22px rgba(255,203,5,0.55);
+  z-index: 5;
+  touch-action: none;
+}
+.tp-mon.drag-over {
+  outline: 3px dashed var(--pop);
+  outline-offset: 3px;
+  background: linear-gradient(135deg, #3d5a82, #243d5e);
+  transform: scale(1.04);
+}
 .tp-mon.fainted { opacity: 0.4; filter: grayscale(80%); }
 .tp-mon.battle-slot {
   border-color: rgba(255,203,5,0.6);
