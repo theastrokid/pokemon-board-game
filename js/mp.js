@@ -119,12 +119,15 @@ GameMP._lastSentSig = '';
 GameMP._lastBroadcastActiveIdx = null;
 GameMP._doSend = function () {
   GameMP._lastBroadcastTs = Date.now();
+  // SAFETY: never broadcast an uninitialised / empty state. The guest's
+  // setInterval poll can fire BEFORE the host's initial state arrives,
+  // and if we sent our empty GameState (players=[]) it would clobber the
+  // host on receive.
+  if (!GameState.players || GameState.players.length === 0) return;
   let msg;
   // If activePlayerIdx changed since our last send (most importantly: turn
   // just ended on this device), the previously-active player MUST push a
-  // full snapshot so peers learn about the new turn owner. Partial slot
-  // updates can't carry activePlayerIdx, so without this every endTurn on
-  // the host stranded player 2 watching forever.
+  // full snapshot so peers learn about the new turn owner.
   const activeChanged = GameMP._lastBroadcastActiveIdx !== GameState.activePlayerIdx;
   if (GameMP.isLocalDeviceActive() || activeChanged) {
     msg = { type: 'state', state: GameMP._serializeState() };
@@ -164,6 +167,12 @@ GameMP._serializeState = function () {
 };
 
 GameMP._applyState = function (state) {
+  // Refuse to apply a state with no players — that's a peer who broadcast
+  // before they were properly set up, and we'd erase our valid game state.
+  if (!state || !state.players || state.players.length === 0) {
+    if (window.console) console.warn('[mp] ignoring empty state from peer');
+    return;
+  }
   GameMP._suspendBroadcast = true;
   try {
     GameState.players = state.players || GameState.players;
@@ -413,7 +422,7 @@ GameMP._onMessage = function (event) {
       // Partial update — replace just one slot. Used for off-turn party
       // management (discard, item use, reorder) so the sender doesn't clobber
       // the active player's authoritative state.
-      if (msg.slot != null && msg.player && GameState.players) {
+      if (msg.slot != null && msg.player && GameState.players && GameState.players.length > msg.slot) {
         GameMP._suspendBroadcast = true;
         try {
           GameState.players[msg.slot] = msg.player;
