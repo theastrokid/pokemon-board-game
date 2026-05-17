@@ -115,20 +115,35 @@ GameMP.broadcastState = function () {
   }, GameMP.THROTTLE_MS - elapsed);
 };
 
+GameMP._lastSentSig = '';
 GameMP._doSend = function () {
   GameMP._lastBroadcastTs = Date.now();
+  let msg;
   if (GameMP.isLocalDeviceActive()) {
-    const snapshot = GameMP._serializeState();
-    GameMP.send({ type: 'state', state: snapshot, ts: Date.now() });
+    msg = { type: 'state', state: GameMP._serializeState() };
   } else if (GameMP.localSlot != null && GameState.players[GameMP.localSlot]) {
-    GameMP.send({
-      type: 'player-update',
-      slot: GameMP.localSlot,
-      player: GameState.players[GameMP.localSlot],
-      ts: Date.now(),
-    });
+    msg = { type: 'player-update', slot: GameMP.localSlot, player: GameState.players[GameMP.localSlot] };
+  } else {
+    return;
   }
+  // Dedupe — skip if the payload (excluding timestamps) is identical to the
+  // previous send. Keeps the per-200ms poll from flooding the wire while
+  // still letting it discover modal opens/closes that don't trigger refreshAll.
+  const sig = JSON.stringify(msg);
+  if (sig === GameMP._lastSentSig) return;
+  GameMP._lastSentSig = sig;
+  msg.ts = Date.now();
+  GameMP.send(msg);
 };
+
+// Poll the active player's state every 200ms so modal opens (encounter,
+// battle, draws, branch, fainted, victory) propagate to spectators even when
+// the show* function didn't trigger a refreshAll. Throttled + deduped, so a
+// quiet game costs nothing extra.
+setInterval(() => {
+  if (!GameMP.enabled || !GameMP.ws) return;
+  GameMP.broadcastState();
+}, 200);
 
 GameMP._serializeState = function () {
   return {
@@ -155,8 +170,16 @@ GameMP._applyState = function (state) {
     GameState.candiedInstancesThisTurn = state.candiedInstancesThisTurn || {};
     if (window.GameUI && GameUI.refreshAll) GameUI.refreshAll();
     if (window.GameBoard && GameBoard.renderTokens) GameBoard.renderTokens();
-    // Open / update / close spectator modals to mirror the active player.
     GameMP._applyModal(state.modal || null);
+    // Seed _lastSentSig with what WE would now send back. Prevents the next
+    // poll from echoing identical data we just received.
+    if (GameMP.localSlot != null && GameState.players && GameState.players[GameMP.localSlot]) {
+      GameMP._lastSentSig = JSON.stringify({
+        type: 'player-update',
+        slot: GameMP.localSlot,
+        player: GameState.players[GameMP.localSlot],
+      });
+    }
   } finally {
     GameMP._suspendBroadcast = false;
   }
