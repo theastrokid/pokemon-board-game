@@ -7,12 +7,15 @@
 // =============================================================
 window.GameCpu = {};
 
-// Polling watchdog — re-checks every 250ms which state the CPU should react to.
-GameCpu._lastSignature = null;
+// Polling watchdog. Simple cooldown — no signature dedupe — so it can't get
+// stuck when state transitions briefly leave the world in a "between" state
+// (button just enabled, modal just opened, etc.).
+GameCpu._lastActionTime = 0;
+GameCpu.COOLDOWN_MS = 700;
 
 GameCpu.start = function () {
   if (GameCpu._tick) clearInterval(GameCpu._tick);
-  GameCpu._tick = setInterval(GameCpu._maybeAct, 250);
+  GameCpu._tick = setInterval(GameCpu._maybeAct, 200);
 };
 
 GameCpu.stop = function () {
@@ -22,86 +25,53 @@ GameCpu.stop = function () {
 GameCpu._maybeAct = function () {
   const p = GameState.currentPlayer && GameState.currentPlayer();
   if (!p || !p.isCpu) return;
-  // Build a state signature so we don't re-fire the same action.
-  const sig = GameCpu._currentSignature();
-  if (sig === GameCpu._lastSignature) return;
-  GameCpu._lastSignature = sig;
-  setTimeout(() => GameCpu._dispatch(), GameCpu._humanDelayMs());
+  // Multiplayer ownership: the host drives every CPU. Other devices' CPU
+  // watchdog stays passive so we don't double-fire actions.
+  if (window.GameMP && GameMP.enabled && !GameMP.isHost) return;
+  if (Date.now() - GameCpu._lastActionTime < GameCpu.COOLDOWN_MS) return;
+  const fire = GameCpu._chooseAction();
+  if (!fire) return;
+  GameCpu._lastActionTime = Date.now();
+  // Small human-feel delay before the actual click so observers can follow.
+  setTimeout(fire, 250 + Math.floor(Math.random() * 250));
 };
 
-GameCpu._humanDelayMs = function () { return 450 + Math.floor(Math.random() * 350); };
-
-GameCpu._currentSignature = function () {
-  // Tracks what the CPU is currently looking at: turn, modal, busy, etc.
-  // Must include enough modal detail to detect repeat attempts in the SAME
-  // modal — e.g. encounter retries after a missed ball throw, where the
-  // modal ID and player are unchanged but the result text + button state
-  // shift.
-  const p = GameState.currentPlayer();
-  const b = window.GameBattle && GameBattle.active;
-  const openModal = Array.from(document.querySelectorAll('.modal'))
-    .find(m => !m.hidden);
-  let modalDetail = null;
-  if (openModal) {
-    const resultEl = openModal.querySelector('#encounterResult, #battleMessage, #drawTitle');
-    const enabledList = Array.from(openModal.querySelectorAll('button:not([disabled])'))
-      .map(btn => btn.id || btn.dataset.ball || btn.textContent.slice(0, 10))
-      .join(',');
-    modalDetail = (resultEl ? resultEl.textContent : '') + '|' + enabledList;
-  }
-  // Include rollBtn.disabled so the watchdog re-fires the moment the
-  // multiplayer gate re-enables the Roll button after a turn handoff
-  // — otherwise the CPU clicks too early, button is still disabled, the
-  // click is a no-op, and the sig stays identical so dedupe blocks retry.
-  const rollBtn = document.getElementById('rollMoveBtn');
-  const rollDisabled = rollBtn ? rollBtn.disabled : null;
-  return JSON.stringify({
-    pid: p ? p.id : null,
-    turn: GameState.turnCount,
-    tile: p ? p.tile : null,
-    pending: GameState.pendingTileResolution,
-    busy: GameState.busy,
-    rollDisabled,
-    modal: openModal ? openModal.id : null,
-    modalDetail,
-    battle: b ? { kind: b.kind, pAct: b.playerActive, oAct: b.oppActive, opPend: !!b.opponentPending, msg: b.message } : null,
-  });
-};
-
-GameCpu._dispatch = function () {
-  const p = GameState.currentPlayer && GameState.currentPlayer();
-  if (!p || !p.isCpu) return;
-  // 1. Battle (highest priority)
-  const battleModal = GameUI.el('battleModal');
-  if (battleModal && !battleModal.hidden && GameBattle.active) {
-    GameCpu._handleBattle();
-    return;
+// Returns a function that performs the next CPU action, or null if there's
+// nothing actionable right now. Called every 200ms — always picks based on
+// the LIVE state.
+GameCpu._chooseAction = function () {
+  // 1. Battle in progress
+  const battleModal = document.getElementById('battleModal');
+  if (battleModal && !battleModal.hidden && GameBattle.active && !GameBattle.active._spectator) {
+    return () => GameCpu._handleBattle();
   }
   // 2. Other modals
-  const openModal = Array.from(document.querySelectorAll('.modal')).find(m => !m.hidden);
+  const openModal = Array.from(document.querySelectorAll('.modal'))
+    .find(m => !m.hidden && m.dataset.spectator !== '1');
   if (openModal) {
     switch (openModal.id) {
-      case 'encounterModal':   return GameCpu._handleEncounter();
-      case 'drawModal':        return GameCpu._click('drawContinueBtn');
-      case 'noBallsModal':     return; // auto-closes via timer
-      case 'faintedModal':     return; // auto-closes via timer
-      case 'branchModal':      return GameCpu._handleBranch();
-      case 'tradeModal':       return GameCpu._click('tradeCancelBtn'); // CPU skips trades
-      case 'pvpModal':         return GameCpu._click('pvpCancelBtn');   // CPU skips PvP for now
-      case 'evolvePickerModal':return GameCpu._click('evolvePickerCancel');
-      case 'releaseModal':     return GameCpu._click('releaseCancelBtn');
-      case 'tileModal':        return GameCpu._click('tileResolveBtn');
-      case 'victoryModal':     return GameCpu._click('victoryContinueBtn');
-      case 'hofModal':         return GameCpu._click('hofCloseBtn');
-      case 'itemPickerModal':  return GameCpu._click('itemPickerCancel');
-      default: return;
+      case 'encounterModal':   return () => GameCpu._handleEncounter();
+      case 'drawModal':        return () => GameCpu._click('drawContinueBtn');
+      case 'noBallsModal':     return null; // auto-closes
+      case 'faintedModal':     return null; // auto-closes
+      case 'branchModal':      return () => GameCpu._handleBranch();
+      case 'tradeModal':       return () => GameCpu._click('tradeCancelBtn');
+      case 'pvpModal':         return () => GameCpu._click('pvpCancelBtn');
+      case 'evolvePickerModal':return () => GameCpu._click('evolvePickerCancel');
+      case 'releaseModal':     return () => GameCpu._click('releaseCancelBtn');
+      case 'tileModal':        return () => GameCpu._click('tileResolveBtn');
+      case 'victoryModal':     return () => GameCpu._click('victoryContinueBtn');
+      case 'hofModal':         return () => GameCpu._click('hofCloseBtn');
+      case 'itemPickerModal':  return () => GameCpu._click('itemPickerCancel');
+      default:                 return null;
     }
   }
   // 3. No modal, no battle, no busy → take a turn (roll the dice)
   if (!GameState.busy && !GameState.pendingTileResolution) {
-    const rollBtn = GameUI.el('rollMoveBtn');
-    if (rollBtn && !rollBtn.disabled) rollBtn.click();
+    const rollBtn = document.getElementById('rollMoveBtn');
+    if (rollBtn && !rollBtn.disabled) return () => rollBtn.click();
   }
+  return null;
 };
 
 GameCpu._click = function (id) {
