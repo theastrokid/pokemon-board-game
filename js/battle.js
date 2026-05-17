@@ -449,14 +449,92 @@ GameBattle.useItemInBattle = function () {
     item => item.type === 'heal' || item.type === 'revive' || item.type === 'buff',
     'Use item in battle',
     'Heal, revive, or buff during the fight.',
-    item => {
-      GameItems.applyItem(item, GameState.currentPlayer(), { inBattle: true, battle: GameBattle.active });
-      GameBattle.syncBackToParty();
-      GameBattle.renderBattle(GameBattle.active);
-      // opponent gets a turn
-      setTimeout(() => GameBattle.opponentTurn(), 500);
-    }
+    item => GameBattle._applyItemAction(item)
   );
+};
+
+// In-battle item-use handlers. Each one applies the effect first and ONLY
+// THEN hands the turn to the opponent — the old code called the generic
+// GameItems.applyItem (which opens an async target picker) and then
+// immediately scheduled opponentTurn(), so for heals/revives the opponent
+// attacked before the player had picked a target. Result: heals never
+// landed in time and the player died with a potion still in hand.
+GameBattle._applyItemAction = function (item) {
+  const b = GameBattle.active;
+  if (!b) return;
+  const player = GameState.currentPlayer();
+  if (item.type === 'heal') return GameBattle._healInBattle(item, player, b);
+  if (item.type === 'revive') return GameBattle._reviveInBattle(item, player, b);
+  if (item.type === 'buff') return GameBattle._buffInBattle(item, player, b);
+};
+
+GameBattle._yieldToOpponent = function (b) {
+  b.opponentPending = true;
+  GameBattle.renderBattle(b);
+  setTimeout(() => GameBattle.opponentTurn(), 500);
+};
+
+GameBattle._healInBattle = function (item, player, b) {
+  // In battle, the only legal heal target is the active mon — no picker,
+  // so the opponent can't sneak in a hit between "click potion" and "pick
+  // who to heal".
+  const target = b.playerTeam[b.playerActive];
+  if (!target || target.fainted) {
+    GameUI.log(`No active Pokemon to heal.`, 'system');
+    return; // no turn consumed
+  }
+  if (target.hp >= target.maxHp) {
+    GameUI.log(`${target.name} is already at full HP.`, 'system');
+    return; // no turn consumed
+  }
+  if (item.amount >= 999) target.hp = target.maxHp;
+  else target.hp = Math.min(target.maxHp, target.hp + item.amount);
+  if (target.hp >= target.maxHp) GameState.resetMoves(target);
+  GameState.consumeItem(player, item.id);
+  GameUI.log(`${player.name} used <strong>${item.name}</strong> on ${target.name}. HP now ${target.hp}/${target.maxHp}.`);
+  GameAudio.sfx.heal();
+  GameBattle.syncBackToParty();
+  GameUI.refreshAll();
+  GameBattle._yieldToOpponent(b);
+};
+
+GameBattle._reviveInBattle = function (item, player, b) {
+  const fainted = b.playerTeam.filter(m => m.fainted);
+  if (fainted.length === 0) {
+    GameUI.log(`No fainted Pokemon to revive.`, 'system');
+    return; // no turn consumed
+  }
+  const applyTo = (target) => {
+    target.fainted = false;
+    target.hp = Math.max(1, Math.round(target.maxHp * (item.amount || 0.5)));
+    if (target.hp >= target.maxHp) GameState.resetMoves(target);
+    GameState.consumeItem(player, item.id);
+    GameUI.log(`${player.name} revived ${target.name}. HP ${target.hp}/${target.maxHp}.`);
+    GameAudio.sfx.heal();
+    GameBattle.syncBackToParty();
+    GameUI.refreshAll();
+    GameBattle._yieldToOpponent(b);
+  };
+  if (fainted.length === 1) return applyTo(fainted[0]);
+  // Multiple fainted — show picker. Opponent only acts after a real pick;
+  // if the player cancels (Done), no item is consumed and no turn passes.
+  GameItems.promptPickPartyMember(fainted, applyTo, {
+    title: `Use ${item.name}`,
+    hint: 'Pick a fainted Pokemon to revive — Cancel to back out.',
+  });
+};
+
+GameBattle._buffInBattle = function (item, player, b) {
+  if (item.stat === 'attack') {
+    player.flags.xAttack = true;
+    GameUI.log(`${player.name} powered up with ${item.name}. Next move deals +25%.`);
+  } else if (item.stat === 'defense') {
+    player.flags.xDefend = true;
+    GameUI.log(`${player.name} braced with ${item.name}. Next hit incoming takes -25%.`);
+  }
+  GameState.consumeItem(player, item.id);
+  GameUI.refreshAll();
+  GameBattle._yieldToOpponent(b);
 };
 
 GameBattle.forfeit = function () {
