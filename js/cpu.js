@@ -102,10 +102,21 @@ GameCpu._handleEncounter = function () {
     GameCpu._click('encounterFleeBtn');
     return;
   }
-  // Pick a ball — prefer the cheapest one that still has good odds for this area.
-  // Default to whatever's already auto-selected.
+  // If a regular ball is auto-selected (pendingEncounterBall), use the roll
+  // button. Otherwise — the player only has Master Balls, which the auto-roll
+  // flow refuses ("Pick a ball first") — click the Master Ball directly so it
+  // resolves via the dedicated guaranteed-catch path.
   const rollBtn = GameUI.el('encounterAutoRollBtn');
-  if (rollBtn && !rollBtn.disabled) rollBtn.click();
+  if (GameState.pendingEncounterBall && rollBtn && !rollBtn.disabled) {
+    rollBtn.click();
+    return;
+  }
+  if ((player.balls.masterball || 0) > 0) {
+    const mbBtn = document.querySelector('#ballRow .ball-btn[data-ball="masterball"]');
+    if (mbBtn && !mbBtn.disabled) { mbBtn.click(); return; }
+  }
+  // Nothing playable — flee so we don't infinite-loop on "Pick a ball first".
+  GameCpu._click('encounterFleeBtn');
 };
 
 // ============== BATTLE ==============
@@ -149,15 +160,25 @@ GameCpu._tryUseHealInBattle = function () {
   const b = GameBattle.active;
   const pMon = b.playerTeam[b.playerActive];
   if (pMon.hp >= pMon.maxHp) return false;
-  // Apply directly using the in-battle item flow
-  try {
-    GameItems.applyItem(GameData.getItem(healId), player, { inBattle: true, battle: b });
-    GameBattle.syncBackToParty && GameBattle.syncBackToParty();
-    GameBattle.renderBattle(b);
-    // Opponent still gets a turn
-    setTimeout(() => GameBattle.opponentTurn(), 500);
-    return true;
-  } catch (e) { return false; }
+  const item = GameData.getItem(healId);
+  // BYPASS the heal picker: GameItems.applyHeal opens itemPickerModal so a
+  // human can choose which party member to heal. For the CPU, opening that
+  // picker is fatal — the watchdog's next tick fires the "open modal? click
+  // Cancel" branch, which cancels the heal AND consumes the CPU's turn (the
+  // setTimeout below has already scheduled opponentTurn()). Apply the heal
+  // directly to the active battle mon and consume the item ourselves.
+  if (item.amount >= 999) pMon.hp = pMon.maxHp;
+  else pMon.hp = Math.min(pMon.maxHp, pMon.hp + item.amount);
+  if (pMon.hp >= pMon.maxHp) GameState.resetMoves(pMon);
+  GameState.consumeItem(player, healId);
+  GameUI.log(`${player.name} used <strong>${item.name}</strong> on ${pMon.name}. HP now ${pMon.hp}/${pMon.maxHp}.`);
+  GameAudio.sfx.heal();
+  GameBattle.syncBackToParty && GameBattle.syncBackToParty();
+  GameBattle.renderBattle(b);
+  GameUI.refreshAll();
+  // Opponent still gets a turn (item use consumes the action).
+  setTimeout(() => GameBattle.opponentTurn(), 500);
+  return true;
 };
 
 // ============== BRANCH ==============
