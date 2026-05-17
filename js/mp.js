@@ -88,14 +88,37 @@ GameMP.send = function (msg) {
   try { GameMP.ws.send(JSON.stringify(msg)); } catch (e) {}
 };
 
-// ============== STATE SYNC ==============
-// Broadcasts the full GameState snapshot. Called after every state-mutating
-// action by the active player's client.
-GameMP.broadcastState = function (extra) {
+// ============== STATE SYNC (throttled) ==============
+// Active player's device captures + sends the full snapshot after every
+// state-mutating refreshAll(). Throttled to ~80ms so the burst of refreshes
+// during animations doesn't flood the wire.
+GameMP._broadcastTimer = null;
+GameMP._lastBroadcastTs = 0;
+GameMP.THROTTLE_MS = 80;
+
+GameMP.broadcastState = function () {
   if (!GameMP.enabled || !GameMP.ws) return;
   if (GameMP._suspendBroadcast) return;
+  // Only the active player (or host driving CPU) broadcasts. Spectators
+  // never re-broadcast — eliminates an entire half of the chatter.
+  if (!GameMP.isLocalDeviceActive()) return;
+  const now = Date.now();
+  const elapsed = now - GameMP._lastBroadcastTs;
+  if (elapsed >= GameMP.THROTTLE_MS) {
+    GameMP._doSend();
+    return;
+  }
+  if (GameMP._broadcastTimer) return; // already scheduled
+  GameMP._broadcastTimer = setTimeout(() => {
+    GameMP._broadcastTimer = null;
+    GameMP._doSend();
+  }, GameMP.THROTTLE_MS - elapsed);
+};
+
+GameMP._doSend = function () {
+  GameMP._lastBroadcastTs = Date.now();
   const snapshot = GameMP._serializeState();
-  GameMP.send({ type: 'state', state: snapshot, ts: Date.now(), extra: extra || null });
+  GameMP.send({ type: 'state', state: snapshot, ts: Date.now() });
 };
 
 GameMP._serializeState = function () {
@@ -107,6 +130,7 @@ GameMP._serializeState = function () {
     busy: GameState.busy,
     lastPokecentreForPlayer: GameState.lastPokecentreForPlayer,
     candiedInstancesThisTurn: GameState.candiedInstancesThisTurn,
+    modal: GameMP._captureModal(),
   };
 };
 
@@ -122,9 +146,174 @@ GameMP._applyState = function (state) {
     GameState.candiedInstancesThisTurn = state.candiedInstancesThisTurn || {};
     if (window.GameUI && GameUI.refreshAll) GameUI.refreshAll();
     if (window.GameBoard && GameBoard.renderTokens) GameBoard.renderTokens();
+    // Open / update / close spectator modals to mirror the active player.
+    GameMP._applyModal(state.modal || null);
   } finally {
     GameMP._suspendBroadcast = false;
   }
+};
+
+// ============== MODAL CAPTURE / SPECTATOR RENDER ==============
+GameMP._SYNC_MODAL_IDS = ['battleModal', 'encounterModal', 'drawModal', 'branchModal', 'faintedModal', 'victoryModal', 'evolveAnimModal'];
+
+GameMP._captureModal = function () {
+  // Battle takes priority since it has its own object source-of-truth
+  if (window.GameBattle && GameBattle.active && !GameBattle.active._spectator) {
+    const b = GameBattle.active;
+    return {
+      type: 'battle',
+      data: {
+        kind: b.kind,
+        opponentLabel: b.opponentLabel,
+        opponentColor: b.opponentColor,
+        playerTeam: b.playerTeam,
+        oppTeam: b.oppTeam,
+        playerActive: b.playerActive,
+        oppActive: b.oppActive,
+        message: b.message,
+        opponentPending: !!b.opponentPending,
+        leaderId: b.opts && b.opts.leader ? b.opts.leader.name.toLowerCase() : null,
+      },
+    };
+  }
+  // Otherwise find any visible synced modal
+  const visible = GameMP._SYNC_MODAL_IDS.map(id => document.getElementById(id))
+    .find(el => el && !el.hidden);
+  if (!visible) return null;
+  switch (visible.id) {
+    case 'encounterModal': {
+      return {
+        type: 'encounter',
+        data: {
+          title: GameUI.el('encounterTitle').textContent,
+          name: GameUI.el('encounterName').textContent,
+          spriteSrc: GameUI.el('encounterSprite').getAttribute('src'),
+          typesHtml: GameUI.el('encounterTypes').innerHTML,
+          result: GameUI.el('encounterResult').textContent,
+          resultClass: GameUI.el('encounterResult').className,
+        },
+      };
+    }
+    case 'drawModal':
+      return { type: 'draws', data: { titleHtml: GameUI.el('drawTitle').innerHTML, revealHtml: GameUI.el('drawReveal').innerHTML } };
+    case 'faintedModal':
+      return { type: 'fainted', data: { msg: GameUI.el('faintedMessage').textContent, spriteSrc: GameUI.el('faintedSprite').getAttribute('src') } };
+    case 'branchModal':
+      return { type: 'branch', data: { optionsHtml: GameUI.el('branchOptions').innerHTML } };
+    case 'victoryModal':
+      return { type: 'victory', data: { winnerHtml: GameUI.el('winnerName').innerHTML, teamHtml: GameUI.el('winnerTeam').innerHTML } };
+    case 'evolveAnimModal':
+      return { type: 'evolve', data: { title: GameUI.el('evolveAnimTitle').textContent, message: GameUI.el('evolveAnimMessage').textContent } };
+    default:
+      return { type: 'generic', data: { id: visible.id } };
+  }
+};
+
+GameMP._applyModal = function (modal) {
+  // 1) Close any synced modals we currently have open as spectator that the
+  //    remote no longer reports (or that switched type).
+  if (!modal || modal.type !== 'battle') {
+    if (window.GameBattle && GameBattle.active && GameBattle.active._spectator) {
+      const bm = GameUI.el('battleModal');
+      if (bm) { bm.hidden = true; delete bm.dataset.spectator; }
+      GameBattle.active = null;
+    }
+  }
+  GameMP._SYNC_MODAL_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.dataset.spectator !== '1') return;
+    // It's a spectator-owned modal — close if remote doesn't have this same type open
+    const idToType = { battleModal:'battle', encounterModal:'encounter', drawModal:'draws', branchModal:'branch', faintedModal:'fainted', victoryModal:'victory', evolveAnimModal:'evolve' };
+    if (!modal || idToType[id] !== modal.type) {
+      el.hidden = true;
+      delete el.dataset.spectator;
+    }
+  });
+
+  if (!modal) return;
+  // 2) Open / update the spectator modal for the type the remote reports.
+  switch (modal.type) {
+    case 'battle':     return GameMP._renderSpectatorBattle(modal.data);
+    case 'encounter':  return GameMP._renderSpectatorEncounter(modal.data);
+    case 'draws':      return GameMP._renderSpectatorDraws(modal.data);
+    case 'branch':     return GameMP._renderSpectatorBranch(modal.data);
+    case 'fainted':    return GameMP._renderSpectatorFainted(modal.data);
+    case 'victory':    return GameMP._renderSpectatorVictory(modal.data);
+    case 'evolve':     return GameMP._renderSpectatorEvolve(modal.data);
+    default:           return; // unknown — fall back to status banner
+  }
+};
+
+GameMP._renderSpectatorBattle = function (d) {
+  GameBattle.active = Object.assign({}, d, { _spectator: true, opts: d.leaderId ? { leader: { name: d.leaderId.charAt(0).toUpperCase() + d.leaderId.slice(1) } } : {} });
+  const modal = GameUI.el('battleModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameBattle.renderBattle(GameBattle.active);
+  // Disable interaction
+  modal.querySelectorAll('button').forEach(b => { b.disabled = true; });
+  modal.querySelectorAll('.move-btn, .team-slot').forEach(b => { b.style.pointerEvents = 'none'; });
+};
+
+GameMP._renderSpectatorEncounter = function (d) {
+  const modal = GameUI.el('encounterModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('encounterTitle').textContent = d.title || '';
+  GameUI.el('encounterName').textContent = d.name || '';
+  if (d.spriteSrc) GameUI.el('encounterSprite').src = d.spriteSrc;
+  GameUI.el('encounterTypes').innerHTML = d.typesHtml || '';
+  GameUI.el('encounterResult').textContent = d.result || '';
+  GameUI.el('encounterResult').className = d.resultClass || 'encounter-result';
+  // Lock all controls
+  modal.querySelectorAll('button').forEach(b => b.disabled = true);
+};
+
+GameMP._renderSpectatorDraws = function (d) {
+  const modal = GameUI.el('drawModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('drawTitle').innerHTML = d.titleHtml || '';
+  GameUI.el('drawReveal').innerHTML = d.revealHtml || '';
+  modal.querySelectorAll('button').forEach(b => b.disabled = true);
+};
+
+GameMP._renderSpectatorBranch = function (d) {
+  const modal = GameUI.el('branchModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('branchOptions').innerHTML = d.optionsHtml || '';
+  // Strip click handlers by replacing options with non-clickable copies
+  GameUI.el('branchOptions').querySelectorAll('.branch-option').forEach(o => {
+    const c = o.cloneNode(true);
+    o.replaceWith(c);
+  });
+};
+
+GameMP._renderSpectatorFainted = function (d) {
+  const modal = GameUI.el('faintedModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('faintedMessage').textContent = d.msg || '';
+  if (d.spriteSrc) GameUI.el('faintedSprite').src = d.spriteSrc;
+};
+
+GameMP._renderSpectatorVictory = function (d) {
+  const modal = GameUI.el('victoryModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('winnerName').innerHTML = d.winnerHtml || '';
+  GameUI.el('winnerTeam').innerHTML = d.teamHtml || '';
+  modal.querySelectorAll('button').forEach(b => b.disabled = true);
+};
+
+GameMP._renderSpectatorEvolve = function (d) {
+  const modal = GameUI.el('evolveAnimModal');
+  modal.hidden = false;
+  modal.dataset.spectator = '1';
+  GameUI.el('evolveAnimTitle').textContent = d.title || '';
+  GameUI.el('evolveAnimMessage').textContent = d.message || '';
 };
 
 // ============== MESSAGE HANDLER ==============

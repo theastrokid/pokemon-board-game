@@ -252,6 +252,7 @@ GameBattle.renderBattle = function (b) {
 GameBattle.choosePlayerMove = function (moveIdx) {
   const b = GameBattle.active;
   if (!b || b.opponentPending) return;
+  if (b._spectator) return; // multiplayer spectator view — no interaction
   const pMon = b.playerTeam[b.playerActive];
   const move = pMon.moves[moveIdx];
   GameBattle.ensurePP(pMon);
