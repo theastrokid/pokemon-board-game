@@ -80,10 +80,16 @@
         </button>
       `).join('');
 
+      // Default the trainer's name to the sprite label so the setup row
+      // reads "Red" / "Leaf" / "Cynthia" out of the box instead of the
+      // dull "Trainer 1". Still editable — and a custom-typed name is
+      // preserved across sprite changes.
+      const initialTrainer = TRAINERS.find(t => t.id === row.dataset.trainer) || TRAINERS[i % TRAINERS.length];
+      const defaultName = initialTrainer.label;
       row.innerHTML = `
         <div class="trainer-row-header">
           <span class="trainer-color" style="background:${colors[i]}"></span>
-          <input type="text" class="trainer-name-input" placeholder="Trainer ${i + 1}" value="Trainer ${i + 1}" />
+          <input type="text" class="trainer-name-input" placeholder="${defaultName}" value="${defaultName}" />
           <label class="cpu-toggle">
             <input type="checkbox" class="cpu-toggle-input" />
             <span class="cpu-toggle-label">🤖 CPU</span>
@@ -100,12 +106,30 @@
       `;
       wrap.appendChild(row);
 
-      // Bind clicks
+      const nameInput = row.querySelector('.trainer-name-input');
+      const cpuInput = row.querySelector('.cpu-toggle-input');
+      // Track every "default-shape" name we've ever shown for this row, so
+      // we can tell whether the input still holds a default we may safely
+      // overwrite vs. a user-typed value we must preserve.
+      const knownDefaults = new Set([defaultName]);
+      const isDefaultName = () => knownDefaults.has(nameInput.value);
+      const setDefault = (name) => {
+        if (isDefaultName()) {
+          nameInput.value = name;
+          nameInput.placeholder = name;
+        }
+        knownDefaults.add(name);
+      };
+
+      // Sprite click → select + update name if still on a default
       row.querySelectorAll('.trainer-sprite-pick').forEach(btn => {
         btn.addEventListener('click', () => {
           row.querySelectorAll('.trainer-sprite-pick').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           row.dataset.trainer = btn.dataset.trainer;
+          const pickedLabel = TRAINERS.find(t => t.id === btn.dataset.trainer)?.label || nameInput.value;
+          const baseName = cpuInput.checked ? `CPU ${pickedLabel}` : pickedLabel;
+          setDefault(baseName);
         });
       });
       row.querySelectorAll('.starter-pick').forEach(btn => {
@@ -115,18 +139,13 @@
           row.dataset.starter = btn.dataset.starter;
         });
       });
-      // CPU toggle: visual state + label name suggestion
-      const cpuInput = row.querySelector('.cpu-toggle-input');
-      const nameInput = row.querySelector('.trainer-name-input');
+      // CPU toggle: visual state + name swap (only if still on a default).
       cpuInput.addEventListener('change', () => {
         row.dataset.cpu = cpuInput.checked ? '1' : '0';
         row.classList.toggle('is-cpu', cpuInput.checked);
-        // If the user hasn't customized the name, set a CPU-flavored one.
-        if (cpuInput.checked && nameInput.value === `Trainer ${i + 1}`) {
-          nameInput.value = `CPU ${i + 1}`;
-        } else if (!cpuInput.checked && nameInput.value === `CPU ${i + 1}`) {
-          nameInput.value = `Trainer ${i + 1}`;
-        }
+        const currentTrainer = TRAINERS.find(t => t.id === row.dataset.trainer) || initialTrainer;
+        const baseName = cpuInput.checked ? `CPU ${currentTrainer.label}` : currentTrainer.label;
+        setDefault(baseName);
       });
     }
   }
