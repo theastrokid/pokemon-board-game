@@ -2284,7 +2284,7 @@
       "types": [
         "normal"
       ],
-      "hp": 90,
+      "hp": 200,
       "moves": [
         {
           "name": "Tackle",
@@ -2649,7 +2649,7 @@
         "water",
         "ice"
       ],
-      "hp": 90,
+      "hp": 130,
       "moves": [
         {
           "name": "Hop on My Back",
@@ -2889,7 +2889,7 @@
       "types": [
         "normal"
       ],
-      "hp": 110,
+      "hp": 160,
       "moves": [
         {
           "name": "Tackle",
@@ -4096,7 +4096,7 @@
       "types": [
         "psychic"
       ],
-      "hp": 190,
+      "hp": 200,
       "moves": [
         {
           "name": "Confusion",
@@ -4158,7 +4158,7 @@
         "bug",
         "steel"
       ],
-      "hp": 75,
+      "hp": 100,
       "moves": [
         {
           "name": "Bug Bite",
@@ -4220,7 +4220,7 @@
         "steel",
         "ground"
       ],
-      "hp": 75,
+      "hp": 120,
       "moves": [
         {
           "name": "Metal Claw",
@@ -4323,7 +4323,7 @@
         "bug",
         "rock"
       ],
-      "hp": 20,
+      "hp": 140,
       "moves": [
         {
           "name": "Bug Bite",
@@ -4446,7 +4446,7 @@
         "fire",
         "rock"
       ],
-      "hp": 60,
+      "hp": 85,
       "moves": [
         {
           "name": "Ember",
@@ -4612,7 +4612,7 @@
         "steel",
         "flying"
       ],
-      "hp": 65,
+      "hp": 100,
       "moves": [
         {
           "name": "Metal Claw",

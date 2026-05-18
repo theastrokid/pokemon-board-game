@@ -234,7 +234,7 @@ GameItems.applyBuff = function (item, player) {
 };
 
 // Lookup of evolutions for the dex we ship. Source-of-truth for evolutions.
-// Multi-evolution cases (Eevee, Slowpoke) listed in GameItems.multiEvolutions.
+// Multi-evolution cases (Eevee, Slowpoke, Tyrogue) live in GameItems.multiEvolutions.
 GameItems.evolutions = {
   // Gen 1 (1-151)
   1: 2, 2: 3, 4: 5, 5: 6, 7: 8, 8: 9, 10: 11, 11: 12, 13: 14, 14: 15,
@@ -245,19 +245,44 @@ GameItems.evolutions = {
   72: 73, 74: 75, 75: 76, 77: 78, 81: 82, 84: 85, 86: 87, 88: 89,
   90: 91, 92: 93, 93: 94, 96: 97, 98: 99, 100: 101, 102: 103, 104: 105,
   109: 110, 111: 112, 116: 117, 118: 119, 120: 121,
-  123: 212, 129: 130, 138: 139, 140: 141, 147: 148, 148: 149,
-  // Gen 2 cross-evolutions of Gen 1 (only those whose target is in the dataset)
-  42: 169, // Golbat → Crobat (overridden via multi below)
-  // Gen 2 pre-evolutions
-  155: 157, // Cyndaquil → Typhlosion (skips Quilava if not in dex)
-  158: 160, // Totodile → Feraligatr (skips Croconaw if not in dex)
+  123: 212, 129: 130, 137: 233, // Porygon → Porygon2
+  138: 139, 140: 141, 147: 148, 148: 149,
+  // Gen 2 cross-evolutions FROM Gen 1
+  42: 169,  // Golbat → Crobat
+  113: 242, // Chansey → Blissey
+
+  // Gen 2 starter chains — now that the middle stages exist in the dex
+  152: 153, 153: 154, // Chikorita → Bayleef → Meganium
+  155: 156, 156: 157, // Cyndaquil → Quilava → Typhlosion
+  158: 159, 159: 160, // Totodile → Croconaw → Feraligatr
+
+  // Gen 2 single + double evolutions
   161: 162, // Sentret → Furret
   163: 164, // Hoothoot → Noctowl
+  165: 166, // Ledyba → Ledian
   167: 168, // Spinarak → Ariados
+  170: 171, // Chinchou → Lanturn
+  174: 39,  // Igglybuff → Jigglypuff
   172: 25,  // Pichu → Pikachu
   173: 35,  // Cleffa → Clefairy
   175: 176, // Togepi → Togetic
-  179: 181, // Mareep → Ampharos (skips Flaaffy)
+  177: 178, // Natu → Xatu
+  179: 180, 180: 181, // Mareep → Flaaffy → Ampharos
+  183: 184, // Marill → Azumarill
+  187: 188, 188: 189, // Hoppip → Skiploom → Jumpluff
+  191: 192, // Sunkern → Sunflora
+  194: 195, // Wooper → Quagsire
+  204: 205, // Pineco → Forretress
+  209: 210, // Snubbull → Granbull
+  216: 217, // Teddiursa → Ursaring
+  218: 219, // Slugma → Magcargo
+  220: 221, // Swinub → Piloswine
+  223: 224, // Remoraid → Octillery
+  228: 229, // Houndour → Houndoom
+  231: 232, // Phanpy → Donphan
+  238: 124, // Smoochum → Jynx
+  239: 125, // Elekid → Electabuzz
+  240: 126, // Magby → Magmar
   246: 247, 247: 248, // Larvitar → Pupitar → Tyranitar
 };
 
@@ -265,10 +290,13 @@ GameItems.evolutions = {
 GameItems.multiEvolutions = {
   79:  [80, 199],                  // Slowpoke → Slowbro or Slowking
   133: [134, 135, 136, 196, 197],  // Eevee → Vaporeon/Jolteon/Flareon/Espeon/Umbreon
+  236: [106, 107, 237],            // Tyrogue → Hitmonlee/Hitmonchan/Hitmontop
 };
 
 // 42 (Golbat) appears in `evolutions` but Crobat is the only target — kept simple.
 // 79 (Slowpoke) uses multiEvolutions so the 79: 80 entry was removed from `evolutions`.
+// 198 Murkrow, 200 Misdreavus, 207 Gligar, 215 Sneasel, 226 Mantine evolve in
+// Gen 4 — left out until/unless we add Gen 3+ to the dex.
 
 GameItems.getEvolution = function (speciesId) {
   const next = GameItems.evolutions[speciesId];
