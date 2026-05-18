@@ -1509,17 +1509,145 @@ GameUI.showHallOfFame = function () {
   if (GameState.hallOfFame.length === 0) {
     list.innerHTML = `<div class="hint">No champions yet. Beat Giovanni to enter the Hall.</div>`;
   } else {
-    GameState.hallOfFame.forEach(entry => {
+    GameState.hallOfFame.forEach((entry, entryIdx) => {
       const div = document.createElement('div');
       div.className = 'hof-entry';
       const date = new Date(entry.date).toLocaleDateString();
+      const trainerImg = entry.trainerSprite
+        ? `<img class="hof-trainer-sprite" src="sprites/trainers/${entry.trainerSprite}.png" alt="${entry.name}" onerror="this.style.display='none'" />`
+        : '';
+      // Career-report ribbon: total items + balls used + best streak
+      const itemTotal = Object.values(entry.itemsUsed || {}).reduce((s, n) => s + n, 0);
+      const ballTotal = Object.values(entry.ballsUsed || {}).reduce((s, n) => s + n, 0);
+      const ribbonBits = [];
+      if (entry.turns) ribbonBits.push(`<span>${entry.turns} turns</span>`);
+      if (itemTotal) ribbonBits.push(`<span>${itemTotal} items used</span>`);
+      if (ballTotal) ribbonBits.push(`<span>${ballTotal} balls thrown</span>`);
+      if (entry.bestCatchStreak) ribbonBits.push(`<span>🔥 best streak ×${entry.bestCatchStreak}</span>`);
+      const ribbon = ribbonBits.length ? `<div class="hof-ribbon">${ribbonBits.join(' · ')}</div>` : '';
       div.innerHTML = `
-        <h3 style="color:${entry.color};">${entry.name}</h3>
-        <div class="hof-date">Champion on ${date}</div>
-        <div class="hof-team">${entry.party.map(m => `<img src="${GameData.spriteStatic(m.speciesId)}" title="${m.name}" />`).join('')}</div>
+        <div class="hof-entry-head">
+          ${trainerImg}
+          <div>
+            <h3 style="color:${entry.color};">${entry.name}</h3>
+            <div class="hof-date">Champion on ${date}</div>
+          </div>
+        </div>
+        ${ribbon}
+        <div class="hof-team"></div>
       `;
+      const teamRow = div.querySelector('.hof-team');
+      entry.party.forEach((m, monIdx) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'hof-mon-btn' + (m.isShiny ? ' shiny' : '');
+        card.title = `${m.isShiny ? '✨ ' : ''}${m.name} — click for stats`;
+        card.innerHTML = `<img src="${GameData.spriteFront(m.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(m.speciesId)}'" alt="${m.name}" />`;
+        card.onclick = () => GameUI.showHallOfFameDetail(entryIdx, monIdx);
+        teamRow.appendChild(card);
+      });
       list.appendChild(div);
     });
   }
   GameUI.el('hofCloseBtn').onclick = () => { modal.hidden = true; };
+};
+
+// Detail view: a single champion's Pokemon + the trainer's item usage during
+// the championship run. Opens on top of the HoF list.
+GameUI.showHallOfFameDetail = function (entryIdx, monIdx) {
+  const entry = GameState.hallOfFame[entryIdx];
+  if (!entry) return;
+  const mon = entry.party[monIdx];
+  if (!mon) return;
+  let modal = document.getElementById('hofDetailModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'hofDetailModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-card hof-detail-card">
+        <div id="hofDetailBody"></div>
+        <div style="text-align:right;margin-top:12px;">
+          <button id="hofDetailClose" class="primary-btn">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  // Build mon block
+  const types = (mon.types || []).map(t => GameUI.typePill(t)).join('');
+  const moves = (mon.moves || []).map(mv => {
+    const maxPp = mv.maxPp != null ? mv.maxPp : (mv.gated ? 3 : 20);
+    return `
+      <div class="hof-move">
+        <div class="hof-move-name">${mv.name}${mv.gated ? ' <span class="badge" style="font-size:9px;background:var(--pop);color:var(--bg);padding:1px 4px;border-radius:4px;">STRONG</span>' : ''}</div>
+        <div class="hof-move-sub">${mv.type} type · Power ${mv.power} · PP ${maxPp}</div>
+      </div>
+    `;
+  }).join('');
+  // Build item-usage tally — sorted by count desc, link names through GameData
+  const itemRows = Object.entries(entry.itemsUsed || {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, n]) => {
+      const it = GameData.getItem(id);
+      const name = it ? it.name : id;
+      const desc = it ? it.description : '';
+      return `
+        <li>
+          <img src="${GameData.spriteItem(id)}" onerror="this.style.display='none'" alt="" />
+          <span class="hof-use-name">${name}</span>
+          <span class="hof-use-count">×${n}</span>
+          <span class="hof-use-desc">${desc}</span>
+        </li>
+      `;
+    }).join('');
+  const ballRows = Object.entries(entry.ballsUsed || {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, n]) => {
+      const ball = GameData.getPokeball(id);
+      const name = ball ? ball.name : id;
+      return `
+        <li>
+          <img src="${GameData.spriteBall(id)}" onerror="this.style.display='none'" alt="" />
+          <span class="hof-use-name">${name}</span>
+          <span class="hof-use-count">×${n}</span>
+        </li>
+      `;
+    }).join('');
+  const badgeChips = (entry.badges || []).map(b => `<span class="hof-badge-chip">🏅 ${b}</span>`).join('');
+  const headlineStats = [];
+  if (mon.boostCount && mon.boostCount > 0) headlineStats.push(`<span class="hof-mon-flag">+25% Rare Candy boost</span>`);
+  if (mon.isShiny) headlineStats.push(`<span class="hof-mon-flag shiny-flag">✨ Shiny</span>`);
+  document.getElementById('hofDetailBody').innerHTML = `
+    <div class="hof-detail-head">
+      <img class="hof-detail-sprite${mon.isShiny ? ' shiny' : ''}" src="${GameData.spriteFront(mon.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" />
+      <div>
+        <h2 style="margin:0;color:${entry.color};">${mon.isShiny ? '✨ ' : ''}${mon.name}</h2>
+        <div class="hint">${entry.name}'s champion team</div>
+        <div style="margin-top:6px;">${types}</div>
+        <div style="margin-top:4px;font-size:13px;">HP <strong>${mon.maxHp}</strong></div>
+        <div class="hof-mon-flags">${headlineStats.join('')}</div>
+      </div>
+    </div>
+    <div class="hof-detail-section">
+      <h3>Moves</h3>
+      ${moves}
+    </div>
+    <div class="hof-detail-section">
+      <h3>${entry.name}'s career report</h3>
+      ${badgeChips ? `<div class="hof-badge-row">${badgeChips}</div>` : ''}
+      <div class="hof-use-cols">
+        <div>
+          <h4>Items used (${Object.values(entry.itemsUsed || {}).reduce((s,n)=>s+n,0)})</h4>
+          <ul class="hof-use-list">${itemRows || '<li class="hint">No items used.</li>'}</ul>
+        </div>
+        <div>
+          <h4>Pokeballs thrown (${Object.values(entry.ballsUsed || {}).reduce((s,n)=>s+n,0)})</h4>
+          <ul class="hof-use-list">${ballRows || '<li class="hint">No balls used.</li>'}</ul>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.hidden = false;
+  document.getElementById('hofDetailClose').onclick = () => { modal.hidden = true; };
 };

@@ -175,6 +175,9 @@ GameState.consumeItem = function (player, itemId) {
   if (!player.items[itemId]) return false;
   player.items[itemId]--;
   if (player.items[itemId] <= 0) delete player.items[itemId];
+  // Per-run usage tally — surfaced in the Hall of Fame "career report".
+  player.itemsUsed = player.itemsUsed || {};
+  player.itemsUsed[itemId] = (player.itemsUsed[itemId] || 0) + 1;
   return true;
 };
 
@@ -182,6 +185,8 @@ GameState.consumeBall = function (player, ballId) {
   if (!player.balls[ballId]) return false;
   player.balls[ballId]--;
   if (player.balls[ballId] <= 0) delete player.balls[ballId];
+  player.ballsUsed = player.ballsUsed || {};
+  player.ballsUsed[ballId] = (player.ballsUsed[ballId] || 0) + 1;
   return true;
 };
 
@@ -287,7 +292,28 @@ GameState.addToHallOfFame = function (player) {
   GameState.hallOfFame.unshift({
     name: player.name,
     color: player.color,
-    party: player.party.map(m => ({ name: m.name, speciesId: m.speciesId })),
+    trainerSprite: player.trainerSprite || null,
+    // Save the full mon record (moves/HP/shiny/boost flags) so the Hall of
+    // Fame detail view can show exactly what beat Giovanni.
+    party: player.party.map(m => ({
+      name: m.name,
+      speciesId: m.speciesId,
+      types: (m.types || []).slice(),
+      hp: m.hp, maxHp: m.maxHp,
+      moves: (m.moves || []).map(mv => ({
+        name: mv.name, power: mv.power, type: mv.type, gated: !!mv.gated,
+        pp: mv.pp, maxPp: mv.maxPp,
+      })),
+      isShiny: !!m.isShiny,
+      boostCount: m.boostCount || 0,
+      fainted: !!m.fainted,
+    })),
+    // Career report — full per-run item / ball tally + headline stats.
+    itemsUsed: player.itemsUsed || {},
+    ballsUsed: player.ballsUsed || {},
+    badges: (player.badges || []).slice(),
+    bestCatchStreak: player.bestCatchStreak || 0,
+    turns: GameState.turnCount,
     date: new Date().toISOString(),
   });
   if (GameState.hallOfFame.length > 50) GameState.hallOfFame.length = 50;

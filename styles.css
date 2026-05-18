@@ -2669,3 +2669,102 @@ body {
 .gym-prep-slot.fainted { opacity: 0.5; }
 .gym-prep-actions { text-align: right; margin-top: 16px; }
 .gym-prep-actions .primary-btn { font-size: 15px; padding: 10px 24px; }
+
+/* =================== HALL OF FAME (enhanced) =================== */
+.hof-entry-head {
+  display: flex; align-items: center; gap: 10px;
+}
+.hof-trainer-sprite {
+  width: 56px; height: 56px; image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+.hof-ribbon {
+  background: rgba(255,203,5,0.08);
+  border-left: 3px solid var(--pop, #ffcb05);
+  padding: 6px 10px; border-radius: 4px;
+  font-size: 11px; color: var(--ink-dim, #8aa0bd);
+  margin: 8px 0;
+  display: flex; gap: 14px; flex-wrap: wrap;
+}
+.hof-ribbon span { white-space: nowrap; }
+.hof-mon-btn {
+  background: transparent; border: 2px solid transparent;
+  padding: 4px; border-radius: 8px; cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s, background 0.1s;
+}
+.hof-mon-btn img {
+  width: 60px; height: 60px; image-rendering: pixelated; display: block;
+}
+.hof-mon-btn:hover {
+  transform: translateY(-3px); border-color: var(--pop, #ffcb05);
+  background: rgba(255,203,5,0.08);
+}
+.hof-mon-btn.shiny img {
+  filter: hue-rotate(45deg) drop-shadow(0 0 5px #ffe14a);
+}
+
+/* HOF detail modal */
+.hof-detail-card { max-width: 640px; max-height: 86vh; overflow-y: auto; }
+.hof-detail-head {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--bg-3, #1d3354);
+}
+.hof-detail-sprite {
+  width: 96px; height: 96px; image-rendering: pixelated;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+.hof-detail-sprite.shiny {
+  filter: hue-rotate(45deg) drop-shadow(0 0 8px #ffe14a);
+}
+.hof-detail-section { margin-top: 14px; }
+.hof-detail-section h3 {
+  margin: 0 0 8px; color: var(--pop, #ffcb05); font-size: 13px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.hof-detail-section h4 {
+  margin: 0 0 6px; color: var(--ink, #e8eef7); font-size: 12px;
+}
+.hof-move {
+  background: var(--bg-3, #1d3354); padding: 8px;
+  border-radius: 6px; margin-bottom: 6px;
+}
+.hof-move-name { font-weight: bold; font-size: 13px; }
+.hof-move-sub { font-size: 11px; color: var(--ink-dim, #8aa0bd); }
+.hof-mon-flags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.hof-mon-flag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  background: var(--pop, #ffcb05); color: #1a1a1a;
+  font-size: 10px; font-weight: bold;
+}
+.hof-mon-flag.shiny-flag { background: linear-gradient(135deg, #ffd54a, #ff9ed8); }
+.hof-badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.hof-badge-chip {
+  background: var(--bg-3, #1d3354); border: 1px solid #3a516e;
+  padding: 3px 8px; border-radius: 12px;
+  font-size: 11px;
+}
+.hof-use-cols {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+@media (max-width: 600px) { .hof-use-cols { grid-template-columns: 1fr; } }
+.hof-use-list {
+  list-style: none; padding: 0; margin: 0;
+  max-height: 280px; overflow-y: auto;
+}
+.hof-use-list li {
+  display: grid; grid-template-columns: 24px 1fr auto;
+  align-items: center; gap: 8px;
+  padding: 4px 6px; margin-bottom: 2px;
+  background: var(--bg-3, #1d3354); border-radius: 4px;
+  font-size: 12px;
+}
+.hof-use-list li img { width: 22px; height: 22px; image-rendering: pixelated; }
+.hof-use-name { font-weight: bold; }
+.hof-use-count {
+  color: var(--pop, #ffcb05); font-weight: bold; font-size: 13px;
+  justify-self: end;
+}
+.hof-use-desc {
+  grid-column: 1 / -1; font-size: 10px; color: var(--ink-dim, #8aa0bd);
+  margin-top: -2px;
+}
