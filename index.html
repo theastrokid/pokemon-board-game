@@ -100,6 +100,11 @@
         <div id="boardWrap" class="board-wrap">
           <svg id="boardSvg" class="board-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
+        <!-- Big in-board dice overlay shown when the active player rolls -->
+        <div id="bigDice" class="big-dice" hidden>
+          <div class="big-dice-face" id="bigDiceFace">?</div>
+          <div class="big-dice-caption" id="bigDiceCaption"></div>
+        </div>
         <div id="mpWaitingBanner" class="mp-waiting" hidden></div>
       </div>
 
@@ -139,6 +144,49 @@
       <span id="partyCount"></span>
     </div>
   </section>
+
+  <!-- =====================  GYM LEADER PREVIEW (click a gym tile) ===================== -->
+  <div id="gymPreviewModal" class="modal" hidden>
+    <div class="modal-card gym-preview-card">
+      <div class="gym-preview-header">
+        <img id="gymPreviewLeaderSprite" class="gym-preview-leader" alt="" />
+        <div>
+          <h2 id="gymPreviewName">Gym Leader</h2>
+          <p class="hint" id="gymPreviewCity"></p>
+        </div>
+      </div>
+      <p class="hint" id="gymPreviewSubtitle">Team in battle order:</p>
+      <div id="gymPreviewTeam" class="gym-preview-team"></div>
+      <div class="gym-preview-meta" id="gymPreviewMeta"></div>
+      <div class="gym-preview-actions">
+        <button id="gymPreviewClose" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  PRE-GYM PARTY REORDER ===================== -->
+  <div id="gymPrepModal" class="modal" hidden>
+    <div class="modal-card gym-prep-card">
+      <div class="gym-prep-header">
+        <img id="gymPrepLeaderSprite" class="gym-prep-leader" alt="" />
+        <div>
+          <h2 id="gymPrepTitle">Prepare for battle</h2>
+          <p class="hint" id="gymPrepSubtitle">Order your team — slots 1-3 fight. Click a Pokemon, then a slot, to move it.</p>
+        </div>
+      </div>
+      <div class="gym-prep-opponent">
+        <span class="hint">Their team:</span>
+        <div id="gymPrepOppTeam" class="gym-prep-opp-team"></div>
+      </div>
+      <div class="gym-prep-party-section">
+        <h3>Your party</h3>
+        <div id="gymPrepPartyGrid" class="gym-prep-party"></div>
+      </div>
+      <div class="gym-prep-actions">
+        <button id="gymPrepFightBtn" class="primary-btn">Fight!</button>
+      </div>
+    </div>
+  </div>
 
   <!-- =====================  ENCOUNTER MODAL  ===================== -->
   <div id="encounterModal" class="modal" hidden>

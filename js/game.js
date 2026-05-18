@@ -24,7 +24,13 @@ GameGame.rollAndMove = function (rolledOverride) {
   const roll = rolledOverride != null ? rolledOverride : GameState.rollDice();
   GameAudio.sfx.dice();
   GameUI.log(`<span class="actor">${player.name}</span> rolled <strong>${roll}</strong>.`);
-  GameGame.movePlayer(player, roll);
+  // Big in-board dice animation. Hold movement until tumble settles so the
+  // roll value is visible before the token starts moving.
+  if (GameUI && GameUI.runBigDice) {
+    GameUI.runBigDice(roll, () => GameGame.movePlayer(player, roll));
+  } else {
+    GameGame.movePlayer(player, roll);
+  }
 };
 
 GameGame.movePlayer = function (player, steps, onArrive) {
@@ -310,12 +316,19 @@ GameGame.startGymBattle = function (tile) {
     return;
   }
   GameUI.log(`<span class="crit">${player.name} challenges Gym Leader ${leader.name}!</span>`, 'crit');
-  GameBattle.start({
+  const fight = () => GameBattle.start({
     kind: 'gym',
     leader,
     onWin: () => GameGame.gymWin(tile, leader),
     onLose: () => GameGame.gymLoss(tile, leader),
   });
+  // Humans get the pre-fight prep modal (see leader's team + reorder party).
+  // CPUs skip it — they already optimize battle slots pre-roll.
+  if (player.isCpu || !GameUI.showGymPrep) {
+    fight();
+  } else {
+    GameUI.showGymPrep(tile, fight);
+  }
 };
 
 GameGame.gymWin = function (tile, leader) {

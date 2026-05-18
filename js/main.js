@@ -331,11 +331,15 @@
 
   // Expose for tile clicks if needed
   window.onTileClick = function (tile) {
-    // Show tile info as a hint (read only)
+    // Gym tile: rich leader preview (sprite + team in battle order + meta)
+    if (tile.type === 'gym' && tile.leader && GameUI.showGymPreview) {
+      GameUI.showGymPreview(tile);
+      return;
+    }
+    // Otherwise just info hint
     const html = `
       <div><strong>Tile ${tile.i}</strong> · ${GameData.getArea(tile.area).name}</div>
       ${tile.speciesId ? `<div>Specific: ${GameData.getPokemon(tile.speciesId).name}</div>` : ''}
-      ${tile.leader ? `<div>Gym Leader: ${GameData.getGymLeader(tile.leader).name}</div>` : ''}
     `;
     GameUI.showTileInfo(tile, html);
   };

@@ -658,6 +658,162 @@ GameUI.showEncounter = function (speciesId, ctx) {
   GameAudio.sfx.encounter();
 };
 
+// ============================== GYM LEADER PREVIEW ==============================
+// Opens a modal showing the gym leader's team in battle order. Read-only —
+// just a scouting tool so players can plan which Pokemon to use.
+GameUI.showGymPreview = function (tile) {
+  const leader = GameData.getGymLeader(tile.leader);
+  if (!leader) return;
+  const modal = document.getElementById('gymPreviewModal');
+  if (!modal) return;
+  const leaderId = leader.name.toLowerCase();
+  document.getElementById('gymPreviewLeaderSprite').src = `sprites/trainers/${leaderId}.png`;
+  document.getElementById('gymPreviewLeaderSprite').onerror = function () { this.style.display = 'none'; };
+  document.getElementById('gymPreviewName').textContent = `${leader.name}'s Gym`;
+  document.getElementById('gymPreviewCity').textContent = leader.city || '';
+  const team = document.getElementById('gymPreviewTeam');
+  team.innerHTML = '';
+  const mul = Number(leader.scaleMultiplier) || 1;
+  leader.team.forEach((spec, i) => {
+    const p = GameData.getPokemon(spec.id);
+    if (!p) return;
+    const lvlBoost = (typeof spec.scale === 'number') ? spec.scale : (1 + (spec.level / 50) * 0.6) * mul;
+    const scaledHp = Math.round(p.hp * lvlBoost);
+    const card = document.createElement('div');
+    card.className = 'gym-preview-mon';
+    card.innerHTML = `
+      <div class="order-badge">${i + 1}</div>
+      <img src="${GameData.spriteFront(spec.id)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(spec.id)}'" alt="${p.name}" />
+      <div class="mn">${p.name}</div>
+      <div class="ml">Lv ${spec.level} · HP ${scaledHp}</div>
+      <div class="mt">${(p.types || []).map(t => GameUI.typePill(t)).join('')}</div>
+    `;
+    team.appendChild(card);
+  });
+  // Meta line: reward + failure penalty
+  const r = leader.reward || {};
+  const rewardLine = r.endsGame
+    ? '<strong>WIN:</strong> Game over · Hall of Fame'
+    : `<strong>WIN:</strong> ${r.items || 0} items + ${r.pokeballs || 0} pokeballs`;
+  const PENALTY_DESC = {
+    back8: 'sent back 8 tiles', back32: 'sent back to tile 32',
+    back56: 'sent back to tile 56', back75: 'sent back to tile 75',
+    templeStart: 'forced back to start of Ancient Temple',
+  };
+  const failLine = leader.failPenalty ? `<strong>LOSE:</strong> ${PENALTY_DESC[leader.failPenalty] || leader.failPenalty} (party fully healed)` : '';
+  document.getElementById('gymPreviewMeta').innerHTML = `${rewardLine}<br />${failLine}`;
+  modal.hidden = false;
+  document.getElementById('gymPreviewClose').onclick = () => { modal.hidden = true; };
+};
+
+// ============================== PRE-GYM PARTY PREP ==============================
+// Shown when the active player lands on a gym. Lets them rearrange their
+// party (top 3 fight) and study the leader's team side-by-side before
+// committing to the battle. Click-to-pick + click-to-place swap UI.
+GameUI.showGymPrep = function (tile, onFight) {
+  const leader = GameData.getGymLeader(tile.leader);
+  const player = GameState.currentPlayer();
+  if (!leader || !player) { if (onFight) onFight(); return; }
+  const modal = document.getElementById('gymPrepModal');
+  if (!modal) { if (onFight) onFight(); return; }
+  const leaderId = leader.name.toLowerCase();
+  document.getElementById('gymPrepLeaderSprite').src = `sprites/trainers/${leaderId}.png`;
+  document.getElementById('gymPrepLeaderSprite').onerror = function () { this.style.display = 'none'; };
+  document.getElementById('gymPrepTitle').textContent = `${player.name} vs Gym Leader ${leader.name}`;
+
+  // Render opponent's team in battle order
+  const oppRow = document.getElementById('gymPrepOppTeam');
+  oppRow.innerHTML = '';
+  leader.team.forEach((spec, i) => {
+    const p = GameData.getPokemon(spec.id);
+    if (!p) return;
+    const mini = document.createElement('div');
+    mini.className = 'opp-mini';
+    mini.innerHTML = `
+      <img src="${GameData.spriteFront(spec.id)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(spec.id)}'" alt="${p.name}" />
+      <strong>${i + 1}. ${p.name}</strong>
+      <span>Lv ${spec.level}</span>
+    `;
+    oppRow.appendChild(mini);
+  });
+
+  let selectedIdx = null;
+  const renderParty = () => {
+    const grid = document.getElementById('gymPrepPartyGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 6; i++) {
+      const mon = player.party[i];
+      const slot = document.createElement('div');
+      const isBattle = i < 3;
+      slot.className = 'gym-prep-slot' + (isBattle ? ' battle-slot' : '') + (mon ? '' : ' empty') + (mon && mon.fainted ? ' fainted' : '') + (i === selectedIdx ? ' selected' : '');
+      slot.dataset.idx = i;
+      if (mon) {
+        slot.innerHTML = `
+          <div class="slot-num">${i + 1}</div>
+          <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" />
+          <div class="gp-name">${mon.isShiny ? '✨ ' : ''}${mon.name}</div>
+          <div class="gp-hp">${mon.hp}/${mon.maxHp}${mon.fainted ? ' · FAINTED' : ''}</div>
+        `;
+      } else {
+        slot.innerHTML = `<div class="slot-num">${i + 1}</div><div style="margin-top:30px;font-size:24px;color:#3a516e;">+</div>`;
+      }
+      slot.onclick = () => {
+        if (!mon && selectedIdx == null) return;
+        if (selectedIdx == null) { selectedIdx = i; renderParty(); return; }
+        if (selectedIdx === i) { selectedIdx = null; renderParty(); return; }
+        // Swap: move party[selectedIdx] into slot i (push others down using
+        // the existing reorder helper).
+        const fromIdx = selectedIdx;
+        selectedIdx = null;
+        if (player.party[fromIdx]) GameUI.reorderPartyByDrop(player, fromIdx, i);
+        renderParty();
+      };
+      grid.appendChild(slot);
+    }
+  };
+  renderParty();
+
+  document.getElementById('gymPrepFightBtn').onclick = () => {
+    modal.hidden = true;
+    if (onFight) onFight();
+  };
+  modal.hidden = false;
+};
+
+// Big in-board dice — shown on the right side of the board pane whenever the
+// active player rolls. Tumbles for ~600ms, lands on the final number with a
+// satisfying bounce, then fades out after a short hold so movement can play.
+GameUI.runBigDice = function (finalRoll, onSettled) {
+  const dice = document.getElementById('bigDice');
+  const face = document.getElementById('bigDiceFace');
+  const caption = document.getElementById('bigDiceCaption');
+  if (!dice || !face) { if (onSettled) onSettled(); return; }
+  dice.hidden = false;
+  dice.className = 'big-dice tumbling';
+  caption.textContent = 'Rolling...';
+  face.textContent = String(GameState.rollD6 ? GameState.rollD6() : (1 + Math.floor(Math.random() * 6)));
+  if (GameUI._bigDiceCycle) clearInterval(GameUI._bigDiceCycle);
+  GameUI._bigDiceCycle = setInterval(() => {
+    face.textContent = String(GameState.rollD6 ? GameState.rollD6() : (1 + Math.floor(Math.random() * 6)));
+  }, 80);
+  const tumbleMs = 700;
+  setTimeout(() => {
+    clearInterval(GameUI._bigDiceCycle);
+    GameUI._bigDiceCycle = null;
+    face.textContent = String(finalRoll);
+    dice.className = 'big-dice settled';
+    const playerName = (GameState.currentPlayer && GameState.currentPlayer())?.name || '';
+    caption.textContent = playerName ? `${playerName} rolled ${finalRoll}` : `Rolled ${finalRoll}`;
+    if (GameAudio && GameAudio.sfx && GameAudio.sfx.item) GameAudio.sfx.item();
+    if (onSettled) onSettled();
+    // Hide after a hold so movement gets the spotlight
+    setTimeout(() => {
+      dice.hidden = true;
+      dice.className = 'big-dice';
+    }, 1400);
+  }, tumbleMs);
+};
+
 // Dice roll animation: rapidly cycles 1-6 then settles on the final number,
 // fires onSettled callback when complete (~1.2s total).
 GameUI.runDiceRollAnimation = function (finalRoll, onSettled, opts) {
