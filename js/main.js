@@ -7,7 +7,7 @@
   GameState.loadHallOfFame();
 
   // Starter Pokemon — fixed roster Damon wants
-  const STARTER_IDS = [25, 1, 4, 7, 39]; // Pikachu, Bulbasaur, Charmander, Squirtle, Jigglypuff
+  const STARTER_IDS = [1, 4, 7, 152, 155, 158, 25]; // Bulbasaur, Charmander, Squirtle, Chikorita, Cyndaquil, Totodile, Pikachu
 
   // Trainer sprites available (filename → display label)
   const TRAINERS = [
