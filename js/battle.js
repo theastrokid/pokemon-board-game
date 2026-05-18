@@ -290,7 +290,8 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
     b.message = x2Atk
       ? `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag} (X-ATK · ${remainingAtk} left).`
       : `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag}.`;
-    if (GameBattle._lastCrit) GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${pMon.name}'s ${move.name} hit for ${dmg}.`, 'crit');
+    GameBattle._shakeSprite('opp');
+    if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${pMon.name}'s ${move.name} hit for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
     if (x2Atk && remainingAtk === 0) {
       GameUI.log(`<strong>${pMon.name}</strong>'s X-Attack buff has expired.`, 'system');
     }
@@ -365,7 +366,8 @@ GameBattle.opponentTurn = function () {
   b.message = struggled
     ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
     : `${oMon.name} used ${move.name}. Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
-  if (GameBattle._lastCrit) GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${oMon.name}'s ${move.name} struck for ${dmg}.`, 'crit');
+  GameBattle._shakeSprite('player');
+  if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${oMon.name}'s ${move.name} struck for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
   if (x2Def && remainingDef === 0) {
     GameUI.log(`<strong>${pMon.name}</strong>'s X-Defense buff has expired.`, 'system');
   }
@@ -395,6 +397,26 @@ GameBattle.opponentTurn = function () {
 // Set by computeDamage so the caller can announce a crit. Reset every call.
 GameBattle._lastCrit = false;
 GameBattle._lastWeatherBoost = false;
+
+// Visual cue helpers — flash the arena on crits, shake the struck sprite.
+GameBattle._flashCrit = function () {
+  const holder = document.getElementById('critFlashHolder');
+  if (!holder) return;
+  const existing = document.getElementById('critFlash');
+  if (existing) existing.remove();
+  const flash = document.createElement('div');
+  flash.id = 'critFlash';
+  holder.appendChild(flash);
+  setTimeout(() => flash.remove(), 500);
+};
+GameBattle._shakeSprite = function (which) {
+  const el = document.getElementById(which === 'opp' ? 'oppSprite' : 'playerSprite');
+  if (!el) return;
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 350);
+};
 GameBattle.CRIT_CHANCE = 1 / 16;
 GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, defenderBuff) {
   GameBattle._lastCrit = false;
@@ -414,11 +436,14 @@ GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, def
   dmg = Math.round(dmg * (0.85 + Math.random() * 0.15));
   if (attackerBuff) dmg = Math.round(dmg * 1.25);
   if (defenderBuff) dmg = Math.round(dmg * 0.75);
-  // Critical hit: 1/16 chance, +50% damage. After variance so the crit feels
-  // distinct from a high-roll.
-  if (Math.random() < GameBattle.CRIT_CHANCE) {
+  // Critical hit: guaranteedCrit flag (from Good Omen tile event) forces one
+  // even if RNG didn't pop. Consumes the flag on use.
+  const attackingPlayer = GameState.currentPlayer && GameState.currentPlayer();
+  const forced = attackingPlayer && attackingPlayer.flags && attackingPlayer.flags.guaranteedCrit;
+  if (forced || Math.random() < GameBattle.CRIT_CHANCE) {
     dmg = Math.round(dmg * 1.5);
     GameBattle._lastCrit = true;
+    if (forced) attackingPlayer.flags.guaranteedCrit = false;
   }
   // Shiny attacker gets a small +10% offensive edge (flavor of the sparkle).
   if (attacker.isShiny) dmg = Math.round(dmg * 1.1);

@@ -511,6 +511,18 @@ GameUI.refreshAll = function () {
   if (window.GameMP && GameMP.enabled) GameMP.broadcastState(true);
 };
 
+// Small ephemeral toast for tile events ("A trainer gives you a Potion!").
+GameUI.showTileEventToast = function (msg) {
+  // Replace any existing toast so back-to-back events don't pile up.
+  const old = document.querySelector('.tile-event-toast');
+  if (old) old.remove();
+  const toast = document.createElement('div');
+  toast.className = 'tile-event-toast';
+  toast.textContent = '🎁 ' + msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2400);
+};
+
 // Show / hide the floating weather banner based on GameState.weather.
 GameUI.renderWeatherBanner = function () {
   const el = document.getElementById('weatherBanner');

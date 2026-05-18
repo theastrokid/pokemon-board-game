@@ -86,6 +86,8 @@ GameGame.handleTileLanding = function (player, onAfter) {
   GameState.busy = false;
   GameState.pendingTileResolution = true;
   GameUI.renderCurrentPlayerCard();
+  // Random tile event (small chance bonus on top of the normal tile effect).
+  GameGame.fireRandomTileEvent(player, tile);
 
   const after = () => {
     GameState.pendingTileResolution = false;
@@ -509,6 +511,44 @@ GameGame.endGame = function () {
     GameState.save();
     location.reload();
   }
+};
+
+// Random tile events: small chance any landing triggers a bonus on top of
+// the tile's normal effect. Keeps even "boring" wild tiles surprising.
+GameGame.TILE_EVENT_CHANCE = 0.12;
+GameGame.TILE_EVENTS = [
+  { id: 'free_potion',     msg: 'A passing trainer hands you a Potion!',                 grant: () => ({ item: 'potion' }) },
+  { id: 'free_berry',      msg: 'You spot a berry tree — Oran Berry collected!',         grant: () => ({ item: 'oran_berry' }) },
+  { id: 'free_candy',      msg: '✨ A Rare Candy was lying on the path!',                grant: () => ({ item: 'rare_candy' }) },
+  { id: 'free_pokeball',   msg: 'A kid drops a Poke Ball — finders keepers!',            grant: () => ({ ball: 'pokeball' }) },
+  { id: 'free_greatball',  msg: 'You find an abandoned Great Ball!',                     grant: () => ({ ball: 'greatball' }) },
+  { id: 'lucky_find',      msg: '💰 Hidden cache: Super Potion + Great Ball!',           grant: () => ({ item: 'super_potion', ball: 'greatball' }) },
+  { id: 'mystery_xattack', msg: 'A scientist hands you X-Attack to test out.',           grant: () => ({ item: 'x2_attack' }) },
+  { id: 'mystery_xdef',    msg: 'A scientist hands you X-Defense to test out.',         grant: () => ({ item: 'x2_defense' }) },
+  { id: 'good_omen',       msg: '🌈 A good omen! Your next move in battle will crit.',   grant: () => ({ flag: 'guaranteedCrit' }) },
+];
+
+GameGame.fireRandomTileEvent = function (player, tile) {
+  // Skip on tile types where the player already has a major event happening
+  // (no double-dipping on gym/fainted/trade screens).
+  if (!tile) return false;
+  if (['gym', 'fainted', 'trade', 'battle', 'start'].includes(tile.type)) return false;
+  if (Math.random() > GameGame.TILE_EVENT_CHANCE) return false;
+  const ev = GameGame.TILE_EVENTS[Math.floor(Math.random() * GameGame.TILE_EVENTS.length)];
+  const g = ev.grant();
+  let bits = [];
+  if (g.item) { GameState.giveItem(player, g.item); bits.push(GameData.getItem(g.item)?.name || g.item); }
+  if (g.ball) { GameState.giveBall(player, g.ball); bits.push(GameData.getPokeball(g.ball)?.name || g.ball); }
+  if (g.flag === 'guaranteedCrit') {
+    player.flags = player.flags || {};
+    player.flags.guaranteedCrit = true;
+    bits.push('Guaranteed crit next move');
+  }
+  GameUI.log(`<span class="crit">🎁 ${player.name}: ${ev.msg}${bits.length ? ` (got: ${bits.join(' + ')})` : ''}</span>`, 'crit');
+  if (window.GameUI && GameUI.showTileEventToast) GameUI.showTileEventToast(ev.msg);
+  if (window.GameAudio && GameAudio.sfx.item) GameAudio.sfx.item();
+  GameUI.refreshAll();
+  return true;
 };
 
 // If a legendary spawn is parked on this tile, return its speciesId and clear

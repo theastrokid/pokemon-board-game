@@ -9,7 +9,11 @@
     { "id": "x2_attack",    "name": "X-Attack",     "type": "battlebuff", "stat": "attack", "amount": 1.25, "weight": 5, "description": "Lead Pokemon in next battle gets +25% Attack for 3 moves. Stackable." },
     { "id": "x2_defense",   "name": "X-Defense",    "type": "battlebuff", "stat": "defense","amount": 0.8,  "weight": 5, "description": "Lead Pokemon in next battle gets +25% Defense for 3 incoming hits. Stackable." },
     { "id": "max_revive",   "name": "Max Revive",   "type": "revive", "amount": 1.0, "weight": 3,  "description": "Revive a fainted Pokemon to full HP." },
-    { "id": "lucky_egg",    "name": "Lucky Egg",    "type": "lucky",  "weight": 3,                 "description": "Double rewards from your next gym battle." }
+    { "id": "lucky_egg",    "name": "Lucky Egg",    "type": "lucky",  "weight": 3,                 "description": "Double rewards from your next gym battle." },
+    { "id": "oran_berry",   "name": "Oran Berry",   "type": "heal",   "amount": 20,  "weight": 9,  "description": "A small healing berry. Restores 20 HP." },
+    { "id": "sitrus_berry", "name": "Sitrus Berry", "type": "heal",   "amount": 50,  "weight": 6,  "description": "A juicy berry that restores 50 HP." },
+    { "id": "lum_berry",    "name": "Lum Berry",    "type": "heal",   "amount": 999, "weight": 2,  "description": "A wondrous berry. Fully restores one Pokemon." },
+    { "id": "ether",        "name": "Ether",        "type": "heal",   "amount": 25,  "weight": 5,  "description": "Restores 25 HP and refreshes a small bit of vigor." }
   ],
   "pokeballs": [
     { "id": "pokeball",   "name": "Poke Ball",   "weight": 60, "tier": 1 },
