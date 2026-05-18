@@ -3068,6 +3068,66 @@
         }
       ]
     },
+    "152": {
+      "name": "Chikorita",
+      "types": [
+        "grass"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
+    "153": {
+      "name": "Bayleef",
+      "types": [
+        "grass"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
+    "154": {
+      "name": "Meganium",
+      "types": [
+        "grass"
+      ],
+      "hp": 80,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
     "155": {
       "name": "Cyndaquil",
       "types": [
@@ -3083,6 +3143,26 @@
         {
           "name": "Ember",
           "power": 35,
+          "type": "fire",
+          "gated": true
+        }
+      ]
+    },
+    "156": {
+      "name": "Quilava",
+      "types": [
+        "fire"
+      ],
+      "hp": 58,
+      "moves": [
+        {
+          "name": "Ember",
+          "power": 25,
+          "type": "fire"
+        },
+        {
+          "name": "Flamethrower",
+          "power": 50,
           "type": "fire",
           "gated": true
         }
@@ -3123,6 +3203,26 @@
         {
           "name": "Water Gun",
           "power": 35,
+          "type": "water",
+          "gated": true
+        }
+      ]
+    },
+    "159": {
+      "name": "Croconaw",
+      "types": [
+        "water"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Surf",
+          "power": 50,
           "type": "water",
           "gated": true
         }
@@ -3230,6 +3330,48 @@
         }
       ]
     },
+    "165": {
+      "name": "Ledyba",
+      "types": [
+        "bug",
+        "flying"
+      ],
+      "hp": 40,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "166": {
+      "name": "Ledian",
+      "types": [
+        "bug",
+        "flying"
+      ],
+      "hp": 55,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
     "167": {
       "name": "Spinarak",
       "types": [
@@ -3293,6 +3435,48 @@
         }
       ]
     },
+    "170": {
+      "name": "Chinchou",
+      "types": [
+        "water",
+        "electric"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Thunderbolt",
+          "power": 50,
+          "type": "electric",
+          "gated": true
+        }
+      ]
+    },
+    "171": {
+      "name": "Lanturn",
+      "types": [
+        "water",
+        "electric"
+      ],
+      "hp": 95,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Thunderbolt",
+          "power": 50,
+          "type": "electric",
+          "gated": true
+        }
+      ]
+    },
     "172": {
       "name": "Pichu",
       "types": [
@@ -3328,6 +3512,27 @@
         {
           "name": "Charm",
           "power": 25,
+          "type": "fairy",
+          "gated": true
+        }
+      ]
+    },
+    "174": {
+      "name": "Igglybuff",
+      "types": [
+        "normal",
+        "fairy"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "power": 50,
           "type": "fairy",
           "gated": true
         }
@@ -3374,6 +3579,48 @@
         }
       ]
     },
+    "177": {
+      "name": "Natu",
+      "types": [
+        "psychic",
+        "flying"
+      ],
+      "hp": 40,
+      "moves": [
+        {
+          "name": "Confusion",
+          "power": 25,
+          "type": "psychic"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "178": {
+      "name": "Xatu",
+      "types": [
+        "psychic",
+        "flying"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Confusion",
+          "power": 25,
+          "type": "psychic"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
     "179": {
       "name": "Mareep",
       "types": [
@@ -3389,6 +3636,26 @@
         {
           "name": "Thunder Wave",
           "power": 35,
+          "type": "electric",
+          "gated": true
+        }
+      ]
+    },
+    "180": {
+      "name": "Flaaffy",
+      "types": [
+        "electric"
+      ],
+      "hp": 70,
+      "moves": [
+        {
+          "name": "Spark",
+          "power": 25,
+          "type": "electric"
+        },
+        {
+          "name": "Thunderbolt",
+          "power": 50,
           "type": "electric",
           "gated": true
         }
@@ -3414,6 +3681,171 @@
         }
       ]
     },
+    "182": {
+      "name": "Bellossom",
+      "types": [
+        "grass"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
+    "183": {
+      "name": "Marill",
+      "types": [
+        "water",
+        "fairy"
+      ],
+      "hp": 70,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "power": 50,
+          "type": "fairy",
+          "gated": true
+        }
+      ]
+    },
+    "184": {
+      "name": "Azumarill",
+      "types": [
+        "water",
+        "fairy"
+      ],
+      "hp": 100,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "power": 50,
+          "type": "fairy",
+          "gated": true
+        }
+      ]
+    },
+    "185": {
+      "name": "Sudowoodo",
+      "types": [
+        "rock"
+      ],
+      "hp": 70,
+      "moves": [
+        {
+          "name": "Rock Throw",
+          "power": 25,
+          "type": "rock"
+        },
+        {
+          "name": "Rock Slide",
+          "power": 50,
+          "type": "rock",
+          "gated": true
+        }
+      ]
+    },
+    "186": {
+      "name": "Politoed",
+      "types": [
+        "water"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Surf",
+          "power": 50,
+          "type": "water",
+          "gated": true
+        }
+      ]
+    },
+    "187": {
+      "name": "Hoppip",
+      "types": [
+        "grass",
+        "flying"
+      ],
+      "hp": 35,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "188": {
+      "name": "Skiploom",
+      "types": [
+        "grass",
+        "flying"
+      ],
+      "hp": 55,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "189": {
+      "name": "Jumpluff",
+      "types": [
+        "grass",
+        "flying"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
     "190": {
       "name": "Aipom",
       "types": [
@@ -3430,6 +3862,109 @@
           "name": "Fury Swipes",
           "power": 40,
           "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "191": {
+      "name": "Sunkern",
+      "types": [
+        "grass"
+      ],
+      "hp": 30,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
+    "192": {
+      "name": "Sunflora",
+      "types": [
+        "grass"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Vine Whip",
+          "power": 25,
+          "type": "grass"
+        },
+        {
+          "name": "Razor Leaf",
+          "power": 45,
+          "type": "grass",
+          "gated": true
+        }
+      ]
+    },
+    "193": {
+      "name": "Yanma",
+      "types": [
+        "bug",
+        "flying"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "194": {
+      "name": "Wooper",
+      "types": [
+        "water",
+        "ground"
+      ],
+      "hp": 55,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "195": {
+      "name": "Quagsire",
+      "types": [
+        "water",
+        "ground"
+      ],
+      "hp": 95,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
           "gated": true
         }
       ]
@@ -3474,6 +4009,27 @@
         }
       ]
     },
+    "198": {
+      "name": "Murkrow",
+      "types": [
+        "dark",
+        "flying"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Bite",
+          "power": 25,
+          "type": "dark"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
     "199": {
       "name": "Slowking",
       "types": [
@@ -3491,6 +4047,251 @@
           "name": "Psychic",
           "power": 60,
           "type": "psychic",
+          "gated": true
+        }
+      ]
+    },
+    "200": {
+      "name": "Misdreavus",
+      "types": [
+        "ghost"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Lick",
+          "power": 20,
+          "type": "ghost"
+        },
+        {
+          "name": "Shadow Ball",
+          "power": 50,
+          "type": "ghost",
+          "gated": true
+        }
+      ]
+    },
+    "201": {
+      "name": "Unown",
+      "types": [
+        "psychic"
+      ],
+      "hp": 48,
+      "moves": [
+        {
+          "name": "Confusion",
+          "power": 25,
+          "type": "psychic"
+        },
+        {
+          "name": "Psychic",
+          "power": 55,
+          "type": "psychic",
+          "gated": true
+        }
+      ]
+    },
+    "202": {
+      "name": "Wobbuffet",
+      "types": [
+        "psychic"
+      ],
+      "hp": 190,
+      "moves": [
+        {
+          "name": "Confusion",
+          "power": 25,
+          "type": "psychic"
+        },
+        {
+          "name": "Psychic",
+          "power": 55,
+          "type": "psychic",
+          "gated": true
+        }
+      ]
+    },
+    "203": {
+      "name": "Girafarig",
+      "types": [
+        "normal",
+        "psychic"
+      ],
+      "hp": 70,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Psychic",
+          "power": 55,
+          "type": "psychic",
+          "gated": true
+        }
+      ]
+    },
+    "204": {
+      "name": "Pineco",
+      "types": [
+        "bug"
+      ],
+      "hp": 50,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Signal Beam",
+          "power": 40,
+          "type": "bug",
+          "gated": true
+        }
+      ]
+    },
+    "205": {
+      "name": "Forretress",
+      "types": [
+        "bug",
+        "steel"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Iron Tail",
+          "power": 50,
+          "type": "steel",
+          "gated": true
+        }
+      ]
+    },
+    "206": {
+      "name": "Dunsparce",
+      "types": [
+        "normal"
+      ],
+      "hp": 100,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "207": {
+      "name": "Gligar",
+      "types": [
+        "ground",
+        "flying"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Mud Slap",
+          "power": 20,
+          "type": "ground"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "208": {
+      "name": "Steelix",
+      "types": [
+        "steel",
+        "ground"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Metal Claw",
+          "power": 25,
+          "type": "steel"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "209": {
+      "name": "Snubbull",
+      "types": [
+        "fairy"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Fairy Wind",
+          "power": 25,
+          "type": "fairy"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "power": 50,
+          "type": "fairy",
+          "gated": true
+        }
+      ]
+    },
+    "210": {
+      "name": "Granbull",
+      "types": [
+        "fairy"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Fairy Wind",
+          "power": 25,
+          "type": "fairy"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "power": 50,
+          "type": "fairy",
+          "gated": true
+        }
+      ]
+    },
+    "211": {
+      "name": "Qwilfish",
+      "types": [
+        "water",
+        "poison"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Sludge Bomb",
+          "power": 45,
+          "type": "poison",
           "gated": true
         }
       ]
@@ -3516,6 +4317,27 @@
         }
       ]
     },
+    "213": {
+      "name": "Shuckle",
+      "types": [
+        "bug",
+        "rock"
+      ],
+      "hp": 20,
+      "moves": [
+        {
+          "name": "Bug Bite",
+          "power": 20,
+          "type": "bug"
+        },
+        {
+          "name": "Rock Slide",
+          "power": 50,
+          "type": "rock",
+          "gated": true
+        }
+      ]
+    },
     "214": {
       "name": "Heracross",
       "types": [
@@ -3537,6 +4359,47 @@
         }
       ]
     },
+    "215": {
+      "name": "Sneasel",
+      "types": [
+        "dark",
+        "ice"
+      ],
+      "hp": 55,
+      "moves": [
+        {
+          "name": "Bite",
+          "power": 25,
+          "type": "dark"
+        },
+        {
+          "name": "Ice Beam",
+          "power": 50,
+          "type": "ice",
+          "gated": true
+        }
+      ]
+    },
+    "216": {
+      "name": "Teddiursa",
+      "types": [
+        "normal"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
     "217": {
       "name": "Ursaring",
       "types": [
@@ -3553,6 +4416,234 @@
           "name": "Slash",
           "power": 55,
           "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "218": {
+      "name": "Slugma",
+      "types": [
+        "fire"
+      ],
+      "hp": 40,
+      "moves": [
+        {
+          "name": "Ember",
+          "power": 25,
+          "type": "fire"
+        },
+        {
+          "name": "Flamethrower",
+          "power": 50,
+          "type": "fire",
+          "gated": true
+        }
+      ]
+    },
+    "219": {
+      "name": "Magcargo",
+      "types": [
+        "fire",
+        "rock"
+      ],
+      "hp": 60,
+      "moves": [
+        {
+          "name": "Ember",
+          "power": 25,
+          "type": "fire"
+        },
+        {
+          "name": "Rock Slide",
+          "power": 50,
+          "type": "rock",
+          "gated": true
+        }
+      ]
+    },
+    "220": {
+      "name": "Swinub",
+      "types": [
+        "ice",
+        "ground"
+      ],
+      "hp": 50,
+      "moves": [
+        {
+          "name": "Powder Snow",
+          "power": 25,
+          "type": "ice"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "221": {
+      "name": "Piloswine",
+      "types": [
+        "ice",
+        "ground"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Powder Snow",
+          "power": 25,
+          "type": "ice"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "222": {
+      "name": "Corsola",
+      "types": [
+        "water",
+        "rock"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Rock Slide",
+          "power": 50,
+          "type": "rock",
+          "gated": true
+        }
+      ]
+    },
+    "223": {
+      "name": "Remoraid",
+      "types": [
+        "water"
+      ],
+      "hp": 35,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Surf",
+          "power": 50,
+          "type": "water",
+          "gated": true
+        }
+      ]
+    },
+    "224": {
+      "name": "Octillery",
+      "types": [
+        "water"
+      ],
+      "hp": 75,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Surf",
+          "power": 50,
+          "type": "water",
+          "gated": true
+        }
+      ]
+    },
+    "225": {
+      "name": "Delibird",
+      "types": [
+        "ice",
+        "flying"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Powder Snow",
+          "power": 25,
+          "type": "ice"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "226": {
+      "name": "Mantine",
+      "types": [
+        "water",
+        "flying"
+      ],
+      "hp": 85,
+      "moves": [
+        {
+          "name": "Water Gun",
+          "power": 25,
+          "type": "water"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "227": {
+      "name": "Skarmory",
+      "types": [
+        "steel",
+        "flying"
+      ],
+      "hp": 65,
+      "moves": [
+        {
+          "name": "Metal Claw",
+          "power": 25,
+          "type": "steel"
+        },
+        {
+          "name": "Aerial Ace",
+          "power": 45,
+          "type": "flying",
+          "gated": true
+        }
+      ]
+    },
+    "228": {
+      "name": "Houndour",
+      "types": [
+        "dark",
+        "fire"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Bite",
+          "power": 25,
+          "type": "dark"
+        },
+        {
+          "name": "Flamethrower",
+          "power": 50,
+          "type": "fire",
           "gated": true
         }
       ]
@@ -3599,6 +4690,66 @@
         }
       ]
     },
+    "231": {
+      "name": "Phanpy",
+      "types": [
+        "ground"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Mud Slap",
+          "power": 20,
+          "type": "ground"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "232": {
+      "name": "Donphan",
+      "types": [
+        "ground"
+      ],
+      "hp": 90,
+      "moves": [
+        {
+          "name": "Mud Slap",
+          "power": 20,
+          "type": "ground"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "233": {
+      "name": "Porygon2",
+      "types": [
+        "normal"
+      ],
+      "hp": 85,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
     "234": {
       "name": "Stantler",
       "types": [
@@ -3614,6 +4765,167 @@
         {
           "name": "Stomp",
           "power": 50,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "235": {
+      "name": "Smeargle",
+      "types": [
+        "normal"
+      ],
+      "hp": 55,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "236": {
+      "name": "Tyrogue",
+      "types": [
+        "fighting"
+      ],
+      "hp": 35,
+      "moves": [
+        {
+          "name": "Karate Chop",
+          "power": 25,
+          "type": "fighting"
+        },
+        {
+          "name": "Cross Chop",
+          "power": 50,
+          "type": "fighting",
+          "gated": true
+        }
+      ]
+    },
+    "237": {
+      "name": "Hitmontop",
+      "types": [
+        "fighting"
+      ],
+      "hp": 50,
+      "moves": [
+        {
+          "name": "Karate Chop",
+          "power": 25,
+          "type": "fighting"
+        },
+        {
+          "name": "Cross Chop",
+          "power": 50,
+          "type": "fighting",
+          "gated": true
+        }
+      ]
+    },
+    "238": {
+      "name": "Smoochum",
+      "types": [
+        "ice",
+        "psychic"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Powder Snow",
+          "power": 25,
+          "type": "ice"
+        },
+        {
+          "name": "Psychic",
+          "power": 55,
+          "type": "psychic",
+          "gated": true
+        }
+      ]
+    },
+    "239": {
+      "name": "Elekid",
+      "types": [
+        "electric"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Spark",
+          "power": 25,
+          "type": "electric"
+        },
+        {
+          "name": "Thunderbolt",
+          "power": 50,
+          "type": "electric",
+          "gated": true
+        }
+      ]
+    },
+    "240": {
+      "name": "Magby",
+      "types": [
+        "fire"
+      ],
+      "hp": 45,
+      "moves": [
+        {
+          "name": "Ember",
+          "power": 25,
+          "type": "fire"
+        },
+        {
+          "name": "Flamethrower",
+          "power": 50,
+          "type": "fire",
+          "gated": true
+        }
+      ]
+    },
+    "241": {
+      "name": "Miltank",
+      "types": [
+        "normal"
+      ],
+      "hp": 95,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
+          "type": "normal",
+          "gated": true
+        }
+      ]
+    },
+    "242": {
+      "name": "Blissey",
+      "types": [
+        "normal"
+      ],
+      "hp": 255,
+      "moves": [
+        {
+          "name": "Tackle",
+          "power": 20,
+          "type": "normal"
+        },
+        {
+          "name": "Body Slam",
+          "power": 45,
           "type": "normal",
           "gated": true
         }
@@ -3675,6 +4987,48 @@
           "name": "Hydro Pump",
           "power": 80,
           "type": "water",
+          "gated": true
+        }
+      ]
+    },
+    "246": {
+      "name": "Larvitar",
+      "types": [
+        "rock",
+        "ground"
+      ],
+      "hp": 50,
+      "moves": [
+        {
+          "name": "Rock Throw",
+          "power": 25,
+          "type": "rock"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
+          "gated": true
+        }
+      ]
+    },
+    "247": {
+      "name": "Pupitar",
+      "types": [
+        "rock",
+        "ground"
+      ],
+      "hp": 70,
+      "moves": [
+        {
+          "name": "Rock Throw",
+          "power": 25,
+          "type": "rock"
+        },
+        {
+          "name": "Earthquake",
+          "power": 55,
+          "type": "ground",
           "gated": true
         }
       ]
