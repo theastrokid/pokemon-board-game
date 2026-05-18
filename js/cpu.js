@@ -173,12 +173,13 @@ GameCpu._doRevive = function (player) {
 };
 
 // === Heal ===
-// Heal when a mon is below 50% HP. Use the smallest healer that does the job
-// so we preserve the big ones (Hyper Potion) for gym fights.
+// Heal when a mon is below HEAL_THRESHOLD. Use the smallest healer that
+// does the job so we preserve the big ones (Hyper Potion) for gym fights.
+GameCpu.HEAL_THRESHOLD = 0.5;
 GameCpu._findHealTarget = function (player) {
   if (!GameCpu._findHealItemId(player)) return null;
   return player.party
-    .filter(m => !m.fainted && m.hp / m.maxHp < 0.5)
+    .filter(m => !m.fainted && m.hp / m.maxHp < GameCpu.HEAL_THRESHOLD)
     .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0] || null;
 };
 
@@ -400,6 +401,8 @@ GameCpu._handleEncounter = function () {
 };
 
 // ============== BATTLE ==============
+GameCpu.IN_BATTLE_HEAL_THRESHOLD = 0.25;
+GameCpu.SWITCH_LOW_HP_THRESHOLD = 0.20;
 GameCpu._handleBattle = function () {
   const b = GameBattle.active;
   if (!b || b.opponentPending) return;
@@ -407,10 +410,10 @@ GameCpu._handleBattle = function () {
   if (!pMon || pMon.fainted) return;
   const oMon = b.oppTeam[b.oppActive];
 
-  // Switch out if (a) HP <= 20% AND there's a healthier benchmate that can
-  // actually attack, OR (b) the current mon does ≤0.5x to opp AND a benchmate
-  // does ≥2x. Either way we burn a turn but the swap pays for itself within
-  // 1-2 moves against a stat-scaled gym leader.
+  // Switch out if (a) HP <= SWITCH_LOW_HP_THRESHOLD AND there's a healthier
+  // benchmate that can actually attack, OR (b) the current mon does ≤0.5x to
+  // opp AND a benchmate does ≥2x. Either way we burn a turn but the swap
+  // pays for itself within 1-2 moves against a stat-scaled gym leader.
   const switchPick = GameCpu._pickSwitchTarget(b, pMon, oMon);
   if (switchPick != null) {
     GameBattle.switchTo(switchPick);
@@ -418,7 +421,7 @@ GameCpu._handleBattle = function () {
   }
 
   // Healing fallback for when no switch helps.
-  if (pMon.hp / pMon.maxHp <= 0.25) {
+  if (pMon.hp / pMon.maxHp <= GameCpu.IN_BATTLE_HEAL_THRESHOLD) {
     if (GameCpu._tryUseHealInBattle()) return;
   }
 
@@ -461,7 +464,7 @@ GameCpu._pickSwitchTarget = function (b, pMon, oMon) {
   const bestMoveScore = (mon) => mon.moves.reduce((mx, mv) => Math.max(mx, GameCpu._moveScore(mv, mon, oMon)), 0);
   const incomingHpFrac = (mon) => mon.hp / Math.max(1, mon.maxHp);
   const currentScore = bestMoveScore(pMon);
-  const currentLow = pMon.hp / pMon.maxHp <= 0.20;
+  const currentLow = pMon.hp / pMon.maxHp <= GameCpu.SWITCH_LOW_HP_THRESHOLD;
   // Score each candidate by best-move-vs-opp × hp%. Adds a small bonus for
   // 2x effectiveness so a hard-counter wins out over a slightly bigger hitter.
   const ranked = candidates

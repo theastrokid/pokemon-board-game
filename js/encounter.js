@@ -3,6 +3,10 @@
 // =============================================================
 window.GameEncounter = {};
 
+// Legendary catch rates override the area-based table: only the lowest rolls
+// hit, even Ultra Balls don't guarantee. Master Ball still auto-captures.
+GameEncounter.LEGENDARY_CATCH_RATES = { pokeball: 1, greatball: 2, ultraball: 3, masterball: 6 };
+
 GameEncounter.start = function (speciesId, areaId, opts) {
   opts = opts || {};
   const ctx = {
@@ -10,8 +14,9 @@ GameEncounter.start = function (speciesId, areaId, opts) {
     title: opts.title,
     onCaught: opts.onCaught,
     onMissed: opts.onMissed,
+    isLegendary: !!opts.isLegendary,
     attemptsUsed: 0,
-    maxAttempts: 3,
+    maxAttempts: opts.isLegendary ? 4 : 3, // one extra throw on legendary
   };
   GameUI.showEncounter(speciesId, ctx);
 };
@@ -23,7 +28,9 @@ GameEncounter.resolveCatch = function (speciesId, ballId, roll, ctx) {
   ctx.resolved = true;
   const player = GameState.currentPlayer();
   const area = GameData.getArea(ctx.area);
-  const threshold = area.catchRates[ballId];
+  // Legendaries ignore area catch rates — much harder to land.
+  const rateTable = ctx.isLegendary ? GameEncounter.LEGENDARY_CATCH_RATES : area.catchRates;
+  const threshold = rateTable[ballId];
   const ball = GameData.getPokeball(ballId);
   const poke = GameData.getPokemon(speciesId);
   if (ballId !== 'masterball') ctx.attemptsUsed = (ctx.attemptsUsed || 0) + 1;
@@ -47,7 +54,22 @@ GameEncounter.resolveCatch = function (speciesId, ballId, roll, ctx) {
     }
 
     if (player.party.length < 6) {
-      GameState.addPokemonToParty(player, speciesId);
+      const newMon = GameState.addPokemonToParty(player, speciesId);
+      // Catch-streak reward
+      const streakBonus = GameState.bumpCatchStreak(player);
+      if (streakBonus && streakBonus.bonus) {
+        GameUI.log(`<span class="crit">🔥 Catch streak ×${player.catchStreak}! Bonus <strong>${streakBonus.bonus.name}</strong> awarded.</span>`, 'crit');
+      }
+      // Shiny: legendary already shiny-feel, regular wilds roll for it.
+      if (newMon && (ctx.isLegendary || Math.random() < (1/64))) {
+        newMon.isShiny = true;
+        newMon.maxHp = Math.round(newMon.maxHp * 1.2);
+        newMon.hp = newMon.maxHp;
+        if (!ctx.isLegendary) {
+          GameUI.log(`<span class="crit">✨ It's a SHINY ${poke.name}! +20% HP, +10% attack.</span>`, 'crit');
+          if (GameAudio.sfx.fanfare) GameAudio.sfx.fanfare();
+        }
+      }
       setTimeout(() => {
         GameUI.hideEncounter();
         GameUI.refreshAll();
@@ -77,6 +99,11 @@ GameEncounter.resolveCatch = function (speciesId, ballId, roll, ctx) {
     resultEl.className = 'encounter-result missed';
     resultEl.textContent = `Missed! Rolled ${roll}, needed 1-${threshold}. The ${ball.name} was consumed.`;
     GameUI.log(`<span class="actor">${player.name}</span> threw a ${ball.name} at <strong>${poke.name}</strong> but missed (rolled ${roll}/1-${threshold}).`, 'lose');
+    // Catch-streak breaks on any miss (even within the same encounter).
+    if (player.catchStreak) {
+      GameUI.log(`<span class="lose">Catch streak broken at ×${player.catchStreak}.</span>`, 'lose');
+      GameState.resetCatchStreak(player);
+    }
     GameUI.renderInventory();
 
     // Allow another throw if (a) they still have balls AND (b) under 3 attempts

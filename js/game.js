@@ -101,29 +101,43 @@ GameGame.handleTileLanding = function (player, onAfter) {
         GameGame.afterTileResolved();
         return;
       }
+      // Did a legendary spawn float over this tile? Override the encounter
+      // pool with the legendary species and clear the spawn so other players
+      // can't double-dip.
+      const legendaryOverride = GameGame._consumeLegendaryOverrideIfHere(player.tile);
+      const speciesId = legendaryOverride || GameData.pickEncounterSpeciesId(tile.area);
       // No balls at all → show out-of-pokeballs popup and skip the encounter
       const totalBalls = Object.values(player.balls).reduce((s, n) => s + n, 0);
       if (totalBalls === 0) {
-        const speciesId = GameData.pickEncounterSpeciesId(tile.area);
         GameUI.log(`<span class="actor">${player.name}</span> sees a wild <strong>${GameData.getPokemon(speciesId).name}</strong> but has no Pokeballs.`, 'lose');
         GameUI.showOutOfBallsPopup(GameData.getPokemon(speciesId).name, () => GameGame.afterTileResolved());
         return;
       }
-      const speciesId = GameData.pickEncounterSpeciesId(tile.area);
-      GameUI.log(`Wild <strong>${GameData.getPokemon(speciesId).name}</strong> appears in ${area.name}.`);
-      GameEncounter.start(speciesId, tile.area);
+      if (legendaryOverride) {
+        GameUI.log(`<span class="crit">⚡ A wild <strong>${GameData.getPokemon(speciesId).name}</strong> challenges ${player.name}!</span>`, 'crit');
+        GameEncounter.start(speciesId, tile.area, { isLegendary: true });
+      } else {
+        GameUI.log(`Wild <strong>${GameData.getPokemon(speciesId).name}</strong> appears in ${area.name}.`);
+        GameEncounter.start(speciesId, tile.area);
+      }
       break;
     }
     case 'specific': {
-      const speciesId = tile.speciesId;
+      const legendaryOverride = GameGame._consumeLegendaryOverrideIfHere(player.tile);
+      const speciesId = legendaryOverride || tile.speciesId;
       const totalBalls = Object.values(player.balls).reduce((s, n) => s + n, 0);
       if (totalBalls === 0) {
         GameUI.log(`<span class="actor">${player.name}</span> sees a wild <strong>${GameData.getPokemon(speciesId).name}</strong> but has no Pokeballs.`, 'lose');
         GameUI.showOutOfBallsPopup(GameData.getPokemon(speciesId).name, () => GameGame.afterTileResolved());
         return;
       }
-      GameUI.log(`Wild <strong>${GameData.getPokemon(speciesId).name}</strong> appears (specific tile).`);
-      GameEncounter.start(speciesId, tile.area);
+      if (legendaryOverride) {
+        GameUI.log(`<span class="crit">⚡ A wild <strong>${GameData.getPokemon(speciesId).name}</strong> challenges ${player.name}!</span>`, 'crit');
+        GameEncounter.start(speciesId, tile.area, { isLegendary: true });
+      } else {
+        GameUI.log(`Wild <strong>${GameData.getPokemon(speciesId).name}</strong> appears (specific tile).`);
+        GameEncounter.start(speciesId, tile.area);
+      }
       break;
     }
     case 'item': {
@@ -271,8 +285,15 @@ GameGame.endTurn = function () {
     GameGame.endGame();
     return;
   }
+  // Per-turn world events: legendary spawns, weather shifts. Run after
+  // advanceTurn so the new turnCount drives the timing math.
+  GameState.expireLegendaryIfStale();
+  GameState.maybeSpawnLegendary();
+  GameState.maybeChangeWeather();
   GameUI.refreshAll();
   GameBoard.renderTokens();
+  if (window.GameBoard && GameBoard.renderLegendaryOverlay) GameBoard.renderLegendaryOverlay();
+  if (window.GameUI && GameUI.renderWeatherBanner) GameUI.renderWeatherBanner();
   const np = GameState.currentPlayer();
   GameAudio.playArea(GameData.getTile(np.tile).area);
   GameUI.log(`<span class="actor">${np.name}</span>'s turn.`);
@@ -488,4 +509,15 @@ GameGame.endGame = function () {
     GameState.save();
     location.reload();
   }
+};
+
+// If a legendary spawn is parked on this tile, return its speciesId and clear
+// the spawn (one-shot — first player to land claims it).
+GameGame._consumeLegendaryOverrideIfHere = function (tileIdx) {
+  const spawn = GameState.legendarySpawn;
+  if (!spawn || spawn.tileIdx !== tileIdx) return null;
+  const speciesId = spawn.speciesId;
+  GameState.legendarySpawn = null;
+  if (window.GameBoard && GameBoard.renderLegendaryOverlay) GameBoard.renderLegendaryOverlay();
+  return speciesId;
 };

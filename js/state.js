@@ -17,6 +17,11 @@ window.GameState = {
   // Spam guard: true while a multi-step action (dice roll + movement, end-turn
   // animation, etc.) is mid-flight. Buttons should early-exit if set.
   busy: false,
+  // Time-limited legendary spawn: floats over a random pokemon tile, despawns
+  // after 2 turns if no one lands on it. { tileIdx, speciesId, expiresAtTurn }
+  legendarySpawn: null,
+  // Current weather: { type, expiresAtTurn }. Modifies move power per type.
+  weather: null,
 };
 
 const PLAYER_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#06b6d4'];
@@ -31,6 +36,100 @@ GameState.reset = function () {
   GameState.lastPokecentreForPlayer = {};
   GameState.candiedInstancesThisTurn = {};
   GameState.busy = false;
+  GameState.legendarySpawn = null;
+  GameState.weather = null;
+};
+
+// Catch-streak helper — used by encounter.js. Bumps the streak on success,
+// resets on miss, gifts a bonus item every 5 in a row.
+GameState.bumpCatchStreak = function (player) {
+  player.catchStreak = (player.catchStreak || 0) + 1;
+  player.bestCatchStreak = Math.max(player.bestCatchStreak || 0, player.catchStreak);
+  if (player.catchStreak > 0 && player.catchStreak % 5 === 0) {
+    // Reward escalates: every 5 catches gives a bonus item.
+    const it = GameData.pickItemCard();
+    GameState.giveItem(player, it.id);
+    return { bonus: it };
+  }
+  return null;
+};
+GameState.resetCatchStreak = function (player) {
+  if (!player) return;
+  player.catchStreak = 0;
+};
+
+// ============== LEGENDARY SPAWNS ==============
+// Pool of legendary Pokemon IDs that can spawn on wild tiles. All present
+// in pokemon.json — verified.
+GameState.LEGENDARY_POOL = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250];
+GameState.LEGENDARY_SPAWN_CHANCE = 0.18;   // per-turn roll when no spawn active
+GameState.LEGENDARY_LIFETIME_TURNS = 2;    // despawn this many turns after spawn
+
+GameState.maybeSpawnLegendary = function () {
+  if (GameState.legendarySpawn) return; // one active at a time
+  if (Math.random() > GameState.LEGENDARY_SPAWN_CHANCE) return;
+  // Find all pokemon/specific tiles the spawn can attach to.
+  const wildTiles = (GameData.board && GameData.board.tiles || [])
+    .filter(t => t.type === 'pokemon' || t.type === 'specific');
+  if (wildTiles.length === 0) return;
+  const tile = wildTiles[Math.floor(Math.random() * wildTiles.length)];
+  const speciesId = GameState.LEGENDARY_POOL[Math.floor(Math.random() * GameState.LEGENDARY_POOL.length)];
+  GameState.legendarySpawn = {
+    tileIdx: tile.i,
+    speciesId,
+    spawnedAtTurn: GameState.turnCount,
+    expiresAtTurn: GameState.turnCount + GameState.LEGENDARY_LIFETIME_TURNS,
+  };
+  const poke = GameData.getPokemon(speciesId);
+  if (window.GameUI && GameUI.log) {
+    GameUI.log(`<span class="crit">⚡ A wild <strong>${poke.name}</strong> has appeared on tile ${tile.displayLabel || tile.i}! It will flee in ${GameState.LEGENDARY_LIFETIME_TURNS} turn${GameState.LEGENDARY_LIFETIME_TURNS === 1 ? '' : 's'}.</span>`, 'crit');
+  }
+  if (window.GameAudio && GameAudio.sfx && GameAudio.sfx.fanfare) GameAudio.sfx.fanfare();
+};
+
+GameState.expireLegendaryIfStale = function () {
+  if (!GameState.legendarySpawn) return;
+  if (GameState.turnCount > GameState.legendarySpawn.expiresAtTurn) {
+    const poke = GameData.getPokemon(GameState.legendarySpawn.speciesId);
+    if (window.GameUI && GameUI.log) {
+      GameUI.log(`<span class="lose">${poke.name} has fled.</span>`, 'lose');
+    }
+    GameState.legendarySpawn = null;
+  }
+};
+
+// ============== WEATHER ==============
+// Each turn there's a small chance the weather changes. Types modify type-
+// matching damage by +25%.
+GameState.WEATHER_CHANGE_CHANCE = 0.22;
+GameState.WEATHER_DURATION_TURNS = 3;
+GameState.WEATHER_TYPES = [
+  { id: 'rain',      label: '🌧️  Rain',      boostType: 'water',    msg: 'It started to rain. Water moves stronger.' },
+  { id: 'sun',       label: '☀️  Harsh Sun',  boostType: 'fire',     msg: 'The sunlight turned harsh. Fire moves stronger.' },
+  { id: 'sandstorm', label: '🌪️  Sandstorm', boostType: 'rock',     msg: 'A sandstorm kicked up. Rock moves stronger.' },
+  { id: 'fog',       label: '🌫️  Fog',       boostType: 'ghost',    msg: 'A thick fog rolled in. Ghost moves stronger.' },
+];
+
+GameState.maybeChangeWeather = function () {
+  // Don't change while existing weather is still active
+  if (GameState.weather && GameState.turnCount <= GameState.weather.expiresAtTurn) return;
+  if (Math.random() > GameState.WEATHER_CHANGE_CHANCE) {
+    // Clear stale weather quietly
+    if (GameState.weather && GameState.turnCount > GameState.weather.expiresAtTurn) {
+      GameState.weather = null;
+    }
+    return;
+  }
+  const w = GameState.WEATHER_TYPES[Math.floor(Math.random() * GameState.WEATHER_TYPES.length)];
+  GameState.weather = {
+    type: w.id,
+    label: w.label,
+    boostType: w.boostType,
+    expiresAtTurn: GameState.turnCount + GameState.WEATHER_DURATION_TURNS,
+  };
+  if (window.GameUI && GameUI.log) {
+    GameUI.log(`<span class="crit">${w.label} — ${w.msg}</span>`, 'crit');
+  }
 };
 
 GameState.makePlayer = function (idx, name, starterSpeciesId) {

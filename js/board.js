@@ -333,10 +333,17 @@ GameBoard.render = function () {
     svg.appendChild(g);
   });
 
+  // Legendary spawn overlay layer (sits between tiles and tokens so the
+  // player token can move over it without z-fighting).
+  const legendaryLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  legendaryLayer.setAttribute('id', 'legendaryLayer');
+  svg.appendChild(legendaryLayer);
+
   // Tokens layer (added on top, updated separately)
   const tokenLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   tokenLayer.setAttribute('id', 'tokenLayer');
   svg.appendChild(tokenLayer);
+  GameBoard.renderLegendaryOverlay();
 
   // Calibrate mode SVG-wide listeners
   if (GameBoard.calibrateMode) {
@@ -616,6 +623,60 @@ GameBoard._drawLine = function (a, b) {
   l.setAttribute('y2', b.y);
   l.setAttribute('class', 'board-path');
   GameBoard.svg.appendChild(l);
+};
+
+// Render (or clear) the legendary spawn overlay — a glowing sprite floating
+// above the affected tile with a pulse animation. Called from endTurn after
+// spawn checks AND when a legendary is consumed.
+GameBoard.renderLegendaryOverlay = function () {
+  const layer = document.getElementById('legendaryLayer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  const spawn = GameState.legendarySpawn;
+  if (!spawn) return;
+  const pos = GameBoard.tilePositions[spawn.tileIdx];
+  if (!pos) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  const group = document.createElementNS(ns, 'g');
+  group.setAttribute('class', 'legendary-overlay');
+  group.setAttribute('transform', `translate(${pos.x}, ${pos.y - 40})`);
+  // Pulsing aura
+  const aura = document.createElementNS(ns, 'circle');
+  aura.setAttribute('r', '36');
+  aura.setAttribute('fill', 'url(#legendaryAura)');
+  aura.setAttribute('class', 'legendary-aura');
+  group.appendChild(aura);
+  // Sprite
+  const img = document.createElementNS(ns, 'image');
+  img.setAttribute('href', GameData.spriteFront(spawn.speciesId));
+  img.setAttribute('x', '-30'); img.setAttribute('y', '-30');
+  img.setAttribute('width', '60'); img.setAttribute('height', '60');
+  img.setAttribute('class', 'legendary-sprite');
+  img.setAttribute('style', 'image-rendering:pixelated;');
+  group.appendChild(img);
+  // Badge
+  const badge = document.createElementNS(ns, 'text');
+  badge.setAttribute('x', '0'); badge.setAttribute('y', '34');
+  badge.setAttribute('text-anchor', 'middle');
+  badge.setAttribute('class', 'legendary-badge');
+  badge.setAttribute('fill', '#ffd54a');
+  badge.setAttribute('style', 'font-size:11px;font-weight:bold;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.9));');
+  const turnsLeft = Math.max(0, spawn.expiresAtTurn - GameState.turnCount + 1);
+  badge.textContent = `★ LEGENDARY · ${turnsLeft}T`;
+  group.appendChild(badge);
+  // Ensure aura gradient defs exist
+  let defs = layer.ownerSVGElement.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS(ns, 'defs');
+    layer.ownerSVGElement.insertBefore(defs, layer.ownerSVGElement.firstChild);
+  }
+  if (!defs.querySelector('#legendaryAura')) {
+    const grad = document.createElementNS(ns, 'radialGradient');
+    grad.setAttribute('id', 'legendaryAura');
+    grad.innerHTML = '<stop offset="0%" stop-color="#ffd54a" stop-opacity="0.85"/><stop offset="60%" stop-color="#ff9d00" stop-opacity="0.4"/><stop offset="100%" stop-color="#ff9d00" stop-opacity="0"/>';
+    defs.appendChild(grad);
+  }
+  layer.appendChild(group);
 };
 
 GameBoard.renderTokens = function (opts) {

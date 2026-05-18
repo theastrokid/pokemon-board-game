@@ -401,7 +401,7 @@ GameUI.renderPlayerPanel = function () {
       <div class="tp-header">
         ${sprite}
         <div class="tp-headinfo">
-          <div class="tp-name" style="color:${p.color}">${p.name}${p.isCpu ? ' <span class="tp-cpu-tag">🤖 CPU</span>' : ''}${owned && window.GameMP && GameMP.enabled ? ' <span class="tp-me-tag">YOU</span>' : ''}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}</div>
+          <div class="tp-name" style="color:${p.color}">${p.name}${p.isCpu ? ' <span class="tp-cpu-tag">🤖 CPU</span>' : ''}${owned && window.GameMP && GameMP.enabled ? ' <span class="tp-me-tag">YOU</span>' : ''}${isActive ? ' <span class="tp-active-tag">YOUR TURN</span>' : ''}${(p.catchStreak || 0) > 1 ? ` <span class="tp-streak">🔥 ×${p.catchStreak}</span>` : ''}</div>
           <div class="tp-pos">${area ? area.name : '?'} · Tile ${tileLabel}${p.completed ? ' · 🏆' : ''}</div>
         </div>
         <div class="tp-counts">
@@ -422,13 +422,13 @@ GameUI.renderPlayerPanel = function () {
         const hpPct = Math.max(0, Math.round((mon.hp / mon.maxHp) * 100));
         const hpClass = hpPct > 50 ? '' : hpPct > 20 ? 'mid' : 'low';
         const card = document.createElement('div');
-        card.className = 'tp-mon' + (mon.fainted ? ' fainted' : '') + (i < 3 ? ' battle-slot' : '');
+        card.className = 'tp-mon' + (mon.fainted ? ' fainted' : '') + (i < 3 ? ' battle-slot' : '') + (mon.isShiny ? ' shiny' : '');
         card.draggable = owned;
         card.dataset.partyIdx = i;
         card.innerHTML = `
           ${i < 3 ? `<div class="tp-mon-slot">${i + 1}</div>` : ''}
           <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" draggable="false" />
-          <div class="tp-mon-name">${mon.name}</div>
+          <div class="tp-mon-name">${mon.isShiny ? '✨ ' : ''}${mon.name}</div>
           <div class="tp-mon-hp"><div class="tp-mon-hp-fill ${hpClass}" style="width:${hpPct}%"></div></div>
           ${owned ? '<button class="tp-mon-x" title="Release">✕</button>' : ''}
         `;
@@ -501,12 +501,31 @@ GameUI.renderPlayerPanel = function () {
 GameUI.refreshAll = function () {
   GameUI.renderPlayerPanel();
   GameBoard.renderTokens();
+  if (window.GameBoard && GameBoard.renderLegendaryOverlay) GameBoard.renderLegendaryOverlay();
+  GameUI.renderWeatherBanner();
   GameUI._refreshTapHint();
   // Push state to peers in multiplayer mode. Guarded against re-entry when
   // we're applying a remote update (so we don't echo it back). fromMutation=true
   // so the receiver knows to defend our own slot from races with stale peer
   // broadcasts in flight.
   if (window.GameMP && GameMP.enabled) GameMP.broadcastState(true);
+};
+
+// Show / hide the floating weather banner based on GameState.weather.
+GameUI.renderWeatherBanner = function () {
+  const el = document.getElementById('weatherBanner');
+  if (!el) return;
+  const w = GameState.weather;
+  if (!w) { el.hidden = true; el.className = ''; return; }
+  el.hidden = false;
+  el.className = w.type || '';
+  const lbl = document.getElementById('weatherLabel');
+  const turns = document.getElementById('weatherTurns');
+  if (lbl) lbl.textContent = w.label || w.type;
+  if (turns) {
+    const left = Math.max(0, (w.expiresAtTurn || 0) - GameState.turnCount + 1);
+    turns.textContent = `· ${left} turn${left === 1 ? '' : 's'} left`;
+  }
 };
 
 // ============================== ENCOUNTER ==============================
@@ -615,6 +634,11 @@ GameUI.showEncounter = function (speciesId, ctx) {
   GameUI.el('encounterFleeBtn').onclick = () => {
     if (ctx.inFlight) return;
     GameUI.log(`<span class="actor">${player.name}</span> ran from the wild <strong>${p.name}</strong>.`);
+    // Fleeing breaks the catch streak — same as missing on purpose.
+    if (player.catchStreak) {
+      GameUI.log(`<span class="lose">Catch streak broken at ×${player.catchStreak} (fled).</span>`, 'lose');
+      GameState.resetCatchStreak(player);
+    }
     GameUI.hideEncounter();
     GameGame.afterTileResolved();
   };

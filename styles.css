@@ -2366,3 +2366,80 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #3a516e; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #4a6285; }
+
+/* =================== LEGENDARY OVERLAY =================== */
+.legendary-overlay { pointer-events: none; }
+.legendary-aura {
+  animation: legendary-pulse 1.6s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.legendary-sprite {
+  animation: legendary-float 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px #ffd54a);
+}
+@keyframes legendary-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.18); opacity: 1; }
+}
+@keyframes legendary-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* =================== WEATHER BANNER =================== */
+#weatherBanner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: linear-gradient(135deg, #1e3a5f, #0f1f33);
+  border: 1px solid var(--pop);
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: none;
+}
+#weatherBanner.rain    { background: linear-gradient(135deg, #1e4a8a, #0a2540); }
+#weatherBanner.sun     { background: linear-gradient(135deg, #d97706, #7c2d12); }
+#weatherBanner.sandstorm { background: linear-gradient(135deg, #92400e, #451a03); }
+#weatherBanner.fog     { background: linear-gradient(135deg, #6b7280, #374151); }
+#weatherBanner .wx-turns { font-weight: normal; opacity: 0.8; font-size: 11px; }
+
+/* =================== SHINY POKEMON =================== */
+.tp-mon.shiny img, .party-card.shiny img {
+  filter: hue-rotate(45deg) drop-shadow(0 0 6px #ffe14a);
+  animation: shiny-sparkle 2s ease-in-out infinite;
+}
+.tp-mon.shiny::after, .party-card.shiny::after {
+  content: '✨';
+  position: absolute;
+  top: 2px; right: 2px;
+  font-size: 14px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+  pointer-events: none;
+  z-index: 2;
+}
+.tp-mon.shiny, .party-card.shiny { position: relative; }
+@keyframes shiny-sparkle {
+  0%, 100% { filter: hue-rotate(45deg) drop-shadow(0 0 6px #ffe14a); }
+  50%      { filter: hue-rotate(225deg) drop-shadow(0 0 12px #4af0ff); }
+}
+
+/* =================== CATCH STREAK CHIP =================== */
+.tp-streak {
+  display: inline-block;
+  background: linear-gradient(135deg, #f59e0b, #dc2626);
+  color: #fff;
+  font-weight: bold;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  margin-left: 4px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+}

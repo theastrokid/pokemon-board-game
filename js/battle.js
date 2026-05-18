@@ -285,9 +285,12 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
     }
     oMon.hp = Math.max(0, oMon.hp - dmg);
     const remainingAtk = (b.buffs && b.buffs.x2AttackOnInstance === pMon.instanceId) ? (b.buffs.x2AttackTurns || 0) : 0;
+    const critTag = GameBattle._lastCrit ? ' ⚡CRIT!' : '';
+    const wxTag = GameBattle._lastWeatherBoost ? ' 🌤️ weather' : '';
     b.message = x2Atk
-      ? `${pMon.name} used ${move.name}. Hit for ${dmg} (X-ATK · ${remainingAtk} left).`
-      : `${pMon.name} used ${move.name}. Hit for ${dmg}.`;
+      ? `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag} (X-ATK · ${remainingAtk} left).`
+      : `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag}.`;
+    if (GameBattle._lastCrit) GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${pMon.name}'s ${move.name} hit for ${dmg}.`, 'crit');
     if (x2Atk && remainingAtk === 0) {
       GameUI.log(`<strong>${pMon.name}</strong>'s X-Attack buff has expired.`, 'system');
     }
@@ -357,9 +360,12 @@ GameBattle.opponentTurn = function () {
   }
   pMon.hp = Math.max(0, pMon.hp - dmg);
   const remainingDef = (b.buffs && b.buffs.x2DefenseOnInstance === pMon.instanceId) ? (b.buffs.x2DefenseTurns || 0) : 0;
+  const oppCritTag = GameBattle._lastCrit ? ' ⚡CRIT!' : '';
+  const oppWxTag = GameBattle._lastWeatherBoost ? ' 🌤️' : '';
   b.message = struggled
-    ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
-    : `${oMon.name} used ${move.name}. Hit for ${dmg}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
+    ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
+    : `${oMon.name} used ${move.name}. Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
+  if (GameBattle._lastCrit) GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${oMon.name}'s ${move.name} struck for ${dmg}.`, 'crit');
   if (x2Def && remainingDef === 0) {
     GameUI.log(`<strong>${pMon.name}</strong>'s X-Defense buff has expired.`, 'system');
   }
@@ -386,17 +392,36 @@ GameBattle.opponentTurn = function () {
   GameBattle.renderBattle(b);
 };
 
+// Set by computeDamage so the caller can announce a crit. Reset every call.
+GameBattle._lastCrit = false;
+GameBattle._lastWeatherBoost = false;
+GameBattle.CRIT_CHANCE = 1 / 16;
 GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, defenderBuff) {
+  GameBattle._lastCrit = false;
+  GameBattle._lastWeatherBoost = false;
   let dmg = move.power;
   // Simple STAB bonus
   if (attacker.types && attacker.types.includes(move.type)) dmg = Math.round(dmg * 1.2);
   // Type effectiveness (mini chart)
   const eff = GameBattle.typeEffect(move.type, defender.types);
   dmg = Math.round(dmg * eff);
+  // Weather boost — current weather's boost type matches the move's type
+  if (GameState.weather && GameState.weather.boostType === move.type) {
+    dmg = Math.round(dmg * 1.25);
+    GameBattle._lastWeatherBoost = true;
+  }
   // Random variance 85-100%
   dmg = Math.round(dmg * (0.85 + Math.random() * 0.15));
   if (attackerBuff) dmg = Math.round(dmg * 1.25);
   if (defenderBuff) dmg = Math.round(dmg * 0.75);
+  // Critical hit: 1/16 chance, +50% damage. After variance so the crit feels
+  // distinct from a high-roll.
+  if (Math.random() < GameBattle.CRIT_CHANCE) {
+    dmg = Math.round(dmg * 1.5);
+    GameBattle._lastCrit = true;
+  }
+  // Shiny attacker gets a small +10% offensive edge (flavor of the sparkle).
+  if (attacker.isShiny) dmg = Math.round(dmg * 1.1);
   if (dmg < 1) dmg = 1;
   return dmg;
 };
