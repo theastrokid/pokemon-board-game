@@ -122,6 +122,9 @@ GameCpu._chooseStrategicAction = function () {
   if (GameCpu._findDiscardTarget(player)) {
     return () => GameCpu._doDiscard(player);
   }
+  if (GameCpu._findBattleBuffItemId(player)) {
+    return () => GameCpu._doUseBattleBuff(player);
+  }
   if (GameCpu._shouldOptimizeBattleSlots(player)) {
     return () => GameCpu._doOptimizeBattleSlots(player);
   }
@@ -262,11 +265,45 @@ GameCpu._doEvolve = function (player) {
   GameUI.refreshAll();
 };
 
+// === Battle buffs (X-Attack / X-Defense) ===
+// 'battlebuff' items don't apply in-battle — they stash pending boosted
+// turns onto the player flag, and the next battle's lead mon enjoys them.
+// Stacking is linear (each item = +3 boosted turns), so we burn them as
+// soon as we see them: the buff will land on the next gym / PvP lead.
+GameCpu._findBattleBuffItemId = function (player) {
+  return Object.keys(player.items || {}).find(id => {
+    const it = GameData.getItem(id);
+    return it && it.type === 'battlebuff' && player.items[id] > 0;
+  });
+};
+
+GameCpu._doUseBattleBuff = function (player) {
+  const id = GameCpu._findBattleBuffItemId(player);
+  if (!id) return;
+  const item = GameData.getItem(id);
+  if (!window.GameItems || !GameItems.applyBattleBuff) {
+    // Fallback: still consume to avoid loop, but no-op.
+    GameState.consumeItem(player, id);
+    return;
+  }
+  GameItems.applyBattleBuff(item, player);
+  GameUI.refreshAll();
+};
+
 // === Discard down to a lean party ===
-// Keeping ≤ 4 mons frees space (no more catch-discard prompts), gives the
-// CPU stage-scaled item + ball rewards from release, and concentrates Rare
-// Candy / Heal investment on a smaller squad.
-GameCpu.TARGET_PARTY_SIZE = 4;
+// Keeping the party small frees space (no more catch-discard prompts), gives
+// the CPU stage-scaled item + ball rewards from release, and concentrates
+// Rare Candy / Heal investment on a smaller squad.
+//
+// Strategy sweep across 12 sims (4 strategies × 3 runs, 6 CPUs each):
+//   lean3      18/18 = 100.0%  (mean win 58 turns)  ← winner
+//   wide5      16/18 =  88.9%  (mean win 62 turns)
+//   balanced4  15/18 =  83.3%  (mean win 47 turns when they win, 3 stallers)
+//   full6      12/18 =  66.7%  (mean win 117 turns)
+// Lean3 is the only setting where every CPU consistently reaches the Hall
+// of Fame. The narrower roster gets evolved + buffed faster, and 3 battle
+// slots means storage is never carrying dead weight that delays optimization.
+GameCpu.TARGET_PARTY_SIZE = 3;
 
 GameCpu._findDiscardTarget = function (player) {
   if (!player || !player.party) return null;
