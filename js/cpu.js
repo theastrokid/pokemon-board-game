@@ -100,8 +100,13 @@ GameCpu._chooseAction = function () {
 
 // Returns a function for the next strategic action, or null if nothing to do.
 // Checked in priority order — earlier actions (revive, heal) fix immediate
-// problems before later ones (evolution, slot optimization) build long-term
-// strength.
+// problems before later ones (evolution, discard, slot optimization) build
+// long-term strength.
+//
+// Order intentionally puts EVOLVE before DISCARD: discarding a Pokemon
+// scales the reward by its evolution stage (×2 for Stage 2, ×3 for Stage 3,
+// extra ×2 for Ancient Temple natives). Evolving first means weak Stage 1
+// mons get bumped up before we cash them in, so each release pays more.
 GameCpu._chooseStrategicAction = function () {
   const player = GameState.currentPlayer();
   if (!player) return null;
@@ -113,6 +118,9 @@ GameCpu._chooseStrategicAction = function () {
   }
   if (GameCpu._findEvolveTarget(player)) {
     return () => GameCpu._doEvolve(player);
+  }
+  if (GameCpu._findDiscardTarget(player)) {
+    return () => GameCpu._doDiscard(player);
   }
   if (GameCpu._shouldOptimizeBattleSlots(player)) {
     return () => GameCpu._doOptimizeBattleSlots(player);
@@ -251,6 +259,51 @@ GameCpu._doEvolve = function (player) {
   GameState.consumeItem(player, candyId);
   GameState.candiedInstancesThisTurn[mon.instanceId] = true;
   GameAudio.sfx.fanfare();
+  GameUI.refreshAll();
+};
+
+// === Discard down to a lean party ===
+// Keeping ≤ 4 mons frees space (no more catch-discard prompts), gives the
+// CPU stage-scaled item + ball rewards from release, and concentrates Rare
+// Candy / Heal investment on a smaller squad.
+GameCpu.TARGET_PARTY_SIZE = 4;
+
+GameCpu._findDiscardTarget = function (player) {
+  if (!player || !player.party) return null;
+  if (player.party.length <= GameCpu.TARGET_PARTY_SIZE) return null;
+  if (player.party.length <= 1) return null; // game blocks releasing your last
+  // Pick the weakest mon — fainted goes first, then lowest score. Score is
+  // shared with battle-slot optimization so this is consistent with what
+  // we'd bench anyway.
+  const candidates = [...player.party];
+  candidates.sort((a, b) => GameCpu._monScore(a) - GameCpu._monScore(b));
+  return candidates[0] || null;
+};
+
+GameCpu._doDiscard = function (player) {
+  const target = GameCpu._findDiscardTarget(player);
+  if (!target) return;
+  const idx = player.party.findIndex(m => m.instanceId === target.instanceId);
+  if (idx < 0 || player.party.length <= 1) return;
+  // Mirror GameUI.discardPartyMember's reward math (bypass the modal — CPU
+  // wouldn't click through it anyway, and the existing CPU watchdog would
+  // just hit Cancel on releaseModal).
+  const bonus = (window.GameItems && GameItems.computeDiscardBonus)
+    ? GameItems.computeDiscardBonus(target.speciesId)
+    : { multiplier: 1, reasons: [] };
+  const n = bonus.multiplier || 1;
+  const released = player.party.splice(idx, 1)[0];
+  for (let i = 0; i < n; i++) {
+    const it = GameData.pickItemCard();
+    GameState.giveItem(player, it.id);
+  }
+  for (let i = 0; i < n; i++) {
+    const ball = GameData.pickPokeballCard();
+    GameState.giveBall(player, ball.id);
+  }
+  const bonusTag = n > 1 ? ` <span class="crit">(×${n} ${bonus.reasons.join(' + ')})</span>` : '';
+  GameUI.log(`${player.name} released <strong>${released.name}</strong> · drew ${n} item${n>1?'s':''} + ${n} ball${n>1?'s':''}${bonusTag}.`, 'crit');
+  GameAudio.sfx.item && GameAudio.sfx.item();
   GameUI.refreshAll();
 };
 
