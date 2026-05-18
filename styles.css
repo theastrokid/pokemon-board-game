@@ -2499,3 +2499,14 @@ body {
   85%  { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
 }
+
+/* =================== SNORLAX TILE SPRITE =================== */
+.snorlax-tile-sprite {
+  animation: snorlax-sleep 3.4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes snorlax-sleep {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-2px) scale(1.04); }
+}

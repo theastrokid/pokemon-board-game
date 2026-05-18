@@ -320,6 +320,22 @@ GameBoard.render = function () {
       g.appendChild(circle);
     }
 
+    // Snorlax-specific tiles: draw the Snorlax sprite directly on the square
+    // so players can SEE the sleeping blocker (matches the iconic "Snorlax
+    // blocks the route" moment in the original games).
+    if (tile.type === 'specific' && tile.speciesId === 143) {
+      const sprite = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      sprite.setAttribute('href', GameData.spriteStatic(143));
+      sprite.setAttribute('x', -22);
+      sprite.setAttribute('y', -22);
+      sprite.setAttribute('width', 44);
+      sprite.setAttribute('height', 44);
+      sprite.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      sprite.setAttribute('class', 'snorlax-tile-sprite');
+      sprite.setAttribute('style', 'image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));pointer-events:none;');
+      g.appendChild(sprite);
+    }
+
     g.addEventListener('click', (e) => {
       e.stopPropagation();
       if (GameBoard.calibrateMode) return; // drag handled separately
