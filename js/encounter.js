@@ -60,13 +60,16 @@ GameEncounter.resolveCatch = function (speciesId, ballId, roll, ctx) {
       if (streakBonus && streakBonus.bonus) {
         GameUI.log(`<span class="crit">🔥 Catch streak ×${player.catchStreak}! Bonus <strong>${streakBonus.bonus.name}</strong> awarded.</span>`, 'crit');
       }
-      // Shiny: legendary already shiny-feel, regular wilds roll for it.
-      if (newMon && (ctx.isLegendary || Math.random() < (1/64))) {
+      // Shiny: legendary always shiny-feel, regular wilds roll 1/32. Shinies
+      // get +25% maxHP and their moves all gain +25% power (applied here so
+      // the boost survives every code path that reads mon.moves later).
+      if (newMon && (ctx.isLegendary || Math.random() < (1/32))) {
         newMon.isShiny = true;
-        newMon.maxHp = Math.round(newMon.maxHp * 1.2);
+        newMon.maxHp = Math.round(newMon.maxHp * 1.25);
         newMon.hp = newMon.maxHp;
+        newMon.moves.forEach(mv => { mv.power = Math.round((mv.power || 0) * 1.25); });
         if (!ctx.isLegendary) {
-          GameUI.log(`<span class="crit">✨ It's a SHINY ${poke.name}! +20% HP, +10% attack.</span>`, 'crit');
+          GameUI.log(`<span class="crit">✨ It's a SHINY ${poke.name}! +25% HP and +25% move power.</span>`, 'crit');
           if (GameAudio.sfx.fanfare) GameAudio.sfx.fanfare();
         }
       }

@@ -594,7 +594,7 @@
         "items": 3,
         "pokeballs": 3
       },
-      "failPenalty": "back8"
+      "failPenalty": "back32"
     },
     "blaine": {
       "name": "Blaine",

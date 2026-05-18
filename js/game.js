@@ -367,6 +367,9 @@ GameGame.gymLoss = function (tile, leader) {
   if (penalty === 'back8') {
     player.tile = Math.max(0, player.tile - 8);
     GameUI.log(`${player.name} fell back 8 tiles after losing.`, 'lose');
+  } else if (penalty === 'back32') {
+    player.tile = 32;
+    GameUI.log(`${player.name} was defeated by Misty and sent back to tile 32.`, 'lose');
   } else if (penalty === 'back56') {
     player.tile = 56;
     GameUI.log(`${player.name} was defeated by Blaine and sent back to tile 56.`, 'lose');

@@ -445,8 +445,9 @@ GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, def
     GameBattle._lastCrit = true;
     if (forced) attackingPlayer.flags.guaranteedCrit = false;
   }
-  // Shiny attacker gets a small +10% offensive edge (flavor of the sparkle).
-  if (attacker.isShiny) dmg = Math.round(dmg * 1.1);
+  // Shiny attacker note: the +25% move power is baked into mon.moves at catch
+  // time (see encounter.js), so no extra multiplier needed here. Keeping the
+  // branch as a hook in case we want to layer a defensive bonus later.
   if (dmg < 1) dmg = 1;
   return dmg;
 };
