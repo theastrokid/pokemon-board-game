@@ -418,39 +418,27 @@ GameItems.getEvolutionOptions = function (speciesId) {
   return single ? [single] : [];
 };
 
-// ============== SINGLE-STAGE POOL (Egg hatch source) ==============
-// A "single-stage" Pokemon does NOT evolve into anything AND nothing evolves
-// into it — judged against the same evolution maps that drive Rare Candy, so
-// the rule stays consistent with the rest of the game. Pinsir, Tauros,
-// Kangaskhan, Lapras, Ditto, Aerodactyl, Snorlax etc. qualify; Bulbasaur,
-// Pikachu (evolves to/from), Eevee do not.
-GameItems.isSingleStage = function (speciesId) {
-  const id = Number(speciesId);
-  if (GameItems.evolutions[id] != null) return false;       // evolves INTO something
-  if (GameItems.multiEvolutions[id] != null) return false;  // branching evolution
-  for (const to of Object.values(GameItems.evolutions)) {
-    if (Number(to) === id) return false;                    // something evolves into it
-  }
-  for (const opts of Object.values(GameItems.multiEvolutions)) {
-    if (opts.map(Number).includes(id)) return false;        // a branch target
-  }
-  return true;
-};
-
-// All single-stage species present in the dex, legendaries excluded so a
-// hatched shiny can't trivialise progression. Cached after first build.
-GameItems.getSingleStagePool = function () {
-  if (GameItems._singleStagePool) return GameItems._singleStagePool;
-  const legendary = new Set([...((window.GameState && GameState.LEGENDARY_POOL) || []), 251]);
-  GameItems._singleStagePool = Object.keys(GameData.pokemon || {})
-    .map(Number)
-    .filter(id => GameItems.isSingleStage(id) && !legendary.has(id));
-  return GameItems._singleStagePool;
-};
+// ============== EGG HATCH POOL ==============
+// Eggs hatch into a SHINY version of exactly these Pokemon — an explicit,
+// curated list (baby Pokemon, fossils, and special first-stage mons).
+GameItems.EGG_HATCH_POOL = [
+  138, // Omanyte
+  140, // Kabuto
+  137, // Porygon
+  175, // Togepi
+  251, // Celebi
+  239, // Elekid
+  240, // Magby
+  246, // Larvitar
+  147, // Dratini
+  237, // Hitmontop
+  236, // Tyrogue
+  238, // Smoochum
+];
 
 GameItems.randomSingleStageSpeciesId = function () {
-  const pool = GameItems.getSingleStagePool();
-  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : 128; // Tauros fallback
+  const pool = (GameItems.EGG_HATCH_POOL || []).filter(id => GameData.pokemon[String(id)]);
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : 138; // Omanyte fallback
 };
 
 // ============== PROMPT PICKERS ==============
