@@ -24,7 +24,8 @@ except Exception:
 
 API = "https://api.pokemontcg.io/v2/cards"
 SET_ID = "sv3pt5"
-OUT_PATH = Path(r"C:\Users\thesc\pokemon-board-game\data\pokemon-151-moves.json")
+# Resolve relative to this script (scripts/ -> ../data) so it works on any machine.
+OUT_PATH = Path(__file__).resolve().parent.parent / "data" / "pokemon-151-moves.json"
 
 # Game-balanced bands.
 HP_MIN, HP_MAX = 40, 150

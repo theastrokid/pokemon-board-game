@@ -691,11 +691,24 @@ GameGame._teamRocketBattle = function (player, onDone) {
     leader: rocketLeader,
     opponentLabel: '🚀 Team Rocket',
     onWin: () => {
-      const it = GameData.pickItemCard();
-      GameState.giveItem(player, it.id);
-      GameUI.log(`<span class="win">${player.name} sent Team Rocket blasting off! They dropped a ${it.name}.</span>`, 'win');
+      // Beating Team Rocket nets their stash: 3 items + 3 pokeballs, revealed
+      // in the standard reward modal (Lucky Egg does NOT apply — it's gym-only).
+      const draws = [];
+      for (let i = 0; i < 3; i++) {
+        const it = GameData.pickItemCard();
+        GameState.giveItem(player, it.id);
+        draws.push({ kind: 'item', itemId: it.id, name: it.name, description: it.description });
+      }
+      for (let i = 0; i < 3; i++) {
+        const ball = GameData.pickPokeballCard();
+        GameState.giveBall(player, ball.id);
+        draws.push({ kind: 'pokeball', ballId: ball.id, name: ball.name });
+      }
+      GameUI.log(`<span class="win">${player.name} sent Team Rocket blasting off and grabbed their stash — 3 items + 3 pokeballs!</span>`, 'win');
       GameUI.refreshAll();
-      if (onDone) onDone();
+      const finish = () => { if (onDone) onDone(); };
+      if (GameUI.showDraws) GameUI.showDraws('🚀 Team Rocket blasted off! You grabbed their stash:', draws, finish);
+      else finish();
     },
     onLose: () => {
       GameUI.log(`<span class="lose">Team Rocket overpowered ${player.name} and fled.</span>`, 'lose');

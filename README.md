@@ -5,7 +5,7 @@ Local digital companion to the physical card-based Pokemon board game.
 ## Run
 
 ```
-cd C:\Users\thesc\pokemon-board-game
+cd pokemon-board-game
 node server.js
 ```
 
