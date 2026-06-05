@@ -206,6 +206,27 @@ GameBattle.renderBattle = function (b) {
   GameUI.el('oppHpFill').className = 'hp-fill ' + oCls;
   GameUI.el('oppHpText').textContent = `${Math.max(0, oMon.hp)} / ${oMon.maxHp}`;
 
+  // Opponent team progress (gym / trainer / Team Rocket): which numbered
+  // Pokemon they're on, with a clear flag when it's their LAST one.
+  const statusEl = GameUI.el('oppTeamStatus');
+  if (statusEl) {
+    if ((b.kind === 'gym' || b.kind === 'pvp') && b.oppTeam && b.oppTeam.length > 1) {
+      const total = b.oppTeam.length;
+      const defeated = b.oppTeam.filter(m => m.fainted).length;
+      const current = Math.min(defeated + 1, total);
+      const isLast = (total - defeated) === 1;
+      const pips = b.oppTeam.map((m, i) => {
+        const cls = m.fainted ? 'fainted' : (i === b.oppActive ? 'active' : 'alive');
+        return `<span class="opp-pip ${cls}"></span>`;
+      }).join('');
+      statusEl.innerHTML = `<span class="opp-pips">${pips}</span><span class="opp-count${isLast ? ' last' : ''}">${isLast ? '⚠️ LAST POKÉMON!' : `Pokémon ${current} of ${total}`}</span>`;
+      statusEl.hidden = false;
+    } else {
+      statusEl.hidden = true;
+      statusEl.innerHTML = '';
+    }
+  }
+
   GameUI.el('battleMessage').textContent = b.message;
 
   // Move buttons
@@ -294,10 +315,9 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
     oMon.hp = Math.max(0, oMon.hp - dmg);
     const remainingAtk = (b.buffs && b.buffs.x2AttackOnInstance === pMon.instanceId) ? (b.buffs.x2AttackTurns || 0) : 0;
     const critTag = GameBattle._lastCrit ? ' ⚡CRIT!' : '';
-    const wxTag = GameBattle._lastWeatherBoost ? ' 🌤️ weather' : '';
     b.message = x2Atk
-      ? `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag} (X-ATK · ${remainingAtk} left).`
-      : `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}${wxTag}.`;
+      ? `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag} (X-ATK · ${remainingAtk} left).`
+      : `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}.`;
     GameBattle._shakeSprite('opp');
     if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${pMon.name}'s ${move.name} hit for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
     if (x2Atk && remainingAtk === 0) {
@@ -389,10 +409,9 @@ GameBattle.opponentTurn = function () {
   pMon.hp = Math.max(0, pMon.hp - dmg);
   const remainingDef = (b.buffs && b.buffs.x2DefenseOnInstance === pMon.instanceId) ? (b.buffs.x2DefenseTurns || 0) : 0;
   const oppCritTag = GameBattle._lastCrit ? ' ⚡CRIT!' : '';
-  const oppWxTag = GameBattle._lastWeatherBoost ? ' 🌤️' : '';
   b.message = struggled
-    ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
-    : `${oMon.name} used ${move.name}. Hit for ${dmg}${oppCritTag}${oppWxTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
+    ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${oppCritTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
+    : `${oMon.name} used ${move.name}. Hit for ${dmg}${oppCritTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
   GameBattle._shakeSprite('player');
   if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${oMon.name}'s ${move.name} struck for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
   if (x2Def && remainingDef === 0) {
@@ -423,7 +442,6 @@ GameBattle.opponentTurn = function () {
 
 // Set by computeDamage so the caller can announce a crit. Reset every call.
 GameBattle._lastCrit = false;
-GameBattle._lastWeatherBoost = false;
 
 // Visual cue helpers — flash the arena on crits, shake the struck sprite.
 GameBattle._flashCrit = function () {
@@ -447,18 +465,12 @@ GameBattle._shakeSprite = function (which) {
 GameBattle.CRIT_CHANCE = 1 / 16;
 GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, defenderBuff) {
   GameBattle._lastCrit = false;
-  GameBattle._lastWeatherBoost = false;
   let dmg = move.power;
   // Simple STAB bonus
   if (attacker.types && attacker.types.includes(move.type)) dmg = Math.round(dmg * 1.2);
   // Type effectiveness (mini chart)
   const eff = GameBattle.typeEffect(move.type, defender.types);
   dmg = Math.round(dmg * eff);
-  // Weather boost — current weather's boost type matches the move's type
-  if (GameState.weather && GameState.weather.boostType === move.type) {
-    dmg = Math.round(dmg * 1.25);
-    GameBattle._lastWeatherBoost = true;
-  }
   // Random variance 85-100%
   dmg = Math.round(dmg * (0.85 + Math.random() * 0.15));
   if (attackerBuff) dmg = Math.round(dmg * 1.25);

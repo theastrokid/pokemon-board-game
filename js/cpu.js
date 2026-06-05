@@ -71,6 +71,14 @@ GameCpu._chooseAction = function () {
       case 'victoryModal':     return () => GameCpu._click('victoryContinueBtn');
       case 'hofModal':         return () => GameCpu._click('hofCloseBtn');
       case 'itemPickerModal':  return () => GameCpu._click('itemPickerCancel');
+      case 'shopModal':        return () => GameCpu._click('shopCloseBtn');
+      // Team Rocket: during the theft RESULT (Continue button shown) the CPU
+      // clicks through; during the intro / battle phases it waits (the intro
+      // auto-advances and the battle is handled by the battle branch above).
+      case 'teamRocketModal':  return () => {
+        const actions = document.getElementById('teamRocketActions');
+        if (actions && !actions.hidden) GameCpu._click('teamRocketContinueBtn');
+      };
       // The two-step trade confirm targets CPU recipients only — trade.js
       // already auto-accepts after a delay, so don't fire a cancel here.
       case 'tradeConfirmModal':return null;
@@ -125,10 +133,27 @@ GameCpu._chooseStrategicAction = function () {
   if (GameCpu._findBattleBuffItemId(player)) {
     return () => GameCpu._doUseBattleBuff(player);
   }
+  if (GameCpu._hasLuckyEgg(player)) {
+    return () => GameCpu._doUseLuckyEgg(player);
+  }
   if (GameCpu._shouldOptimizeBattleSlots(player)) {
     return () => GameCpu._doOptimizeBattleSlots(player);
   }
   return null;
+};
+
+// Lucky Egg: arm the 2× next-gym-reward multiplier as soon as we have one (it
+// persists until the next gym, so there's no reason to hold it).
+GameCpu._hasLuckyEgg = function (player) {
+  return !!(player.items && player.items.lucky_egg > 0) && !(player.flags && player.flags.luckyEgg);
+};
+GameCpu._doUseLuckyEgg = function (player) {
+  if (!player.items || !player.items.lucky_egg) return;
+  player.flags = player.flags || {};
+  player.flags.luckyEgg = true;
+  GameState.consumeItem(player, 'lucky_egg');
+  GameUI.log(`${player.name} clutches a Lucky Egg for the next gym battle.`, 'system');
+  GameUI.refreshAll();
 };
 
 GameCpu._findHealItemId = function (player) {
@@ -220,10 +245,14 @@ GameCpu._findEvolveTarget = function (player) {
     return GameItems.getEvolutionOptions(m.speciesId).length > 0;
   });
   if (eligibleForEvo) return { mon: eligibleForEvo, mode: 'evolve' };
+  // Stat boosts for maxed mons — tier 1 (+25%, 1 candy) then tier 2 (+50%, 3).
+  const candies = (player.items && player.items.rare_candy) || 0;
   const eligibleForBoost = player.party.find(m => {
     if (GameState.candiedInstancesThisTurn[m.instanceId]) return false;
-    if ((m.boostCount || 0) >= 1) return false;
-    return GameItems.getEvolutionOptions(m.speciesId).length === 0;
+    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return false; // can still evolve
+    const bc = m.boostCount || 0;
+    if (bc >= 2) return false;
+    return candies >= (bc === 0 ? 1 : 3);
   });
   if (eligibleForBoost) return { mon: eligibleForBoost, mode: 'boost' };
   return null;
@@ -235,9 +264,17 @@ GameCpu._doEvolve = function (player) {
   if (!candyId || !target) return;
   const mon = target.mon;
   if (target.mode === 'boost') {
+    const cost = (mon.boostCount || 0) === 0 ? 1 : 3; // tier 2 (+50%) costs 3 candies
     GameItems.applyStatBoost(player, mon);
-    GameUI.log(`<span class="crit">${player.name}'s ${mon.name} grew stronger! +25% HP, +25% move power.</span>`, 'crit');
-  } else {
+    for (let i = 0; i < cost; i++) GameState.consumeItem(player, candyId);
+    GameState.candiedInstancesThisTurn[mon.instanceId] = true;
+    const tierMsg = (mon.boostCount || 0) >= 2 ? '+50% total' : '+25%';
+    GameUI.log(`<span class="crit">${player.name}'s ${mon.name} grew stronger! ${tierMsg} (used ${cost} Rare Cand${cost > 1 ? 'ies' : 'y'}).</span>`, 'crit');
+    GameAudio.sfx.fanfare();
+    GameUI.refreshAll();
+    return;
+  }
+  {
     const options = GameItems.getEvolutionOptions(mon.speciesId);
     // For multi-evolution (Eevee/Slowpoke) just take the first option — keeps
     // CPU behavior deterministic enough to simulate.
@@ -301,21 +338,34 @@ GameCpu._doUseBattleBuff = function (player) {
 //   wide5      16/18 =  88.9%  (mean win 62 turns)
 //   balanced4  15/18 =  83.3%  (mean win 47 turns when they win, 3 stallers)
 //   full6      12/18 =  66.7%  (mean win 117 turns)
-// Lean3 is the only setting where every CPU consistently reaches the Hall
-// of Fame. The narrower roster gets evolved + buffed faster, and 3 battle
-// slots means storage is never carrying dead weight that delays optimization.
-GameCpu.TARGET_PARTY_SIZE = 3;
+// Updated strategy: keep a SQUAD of 4 with deliberate type variance, not a
+// lean 3. Four slots let the CPU answer more gym-leader matchups while the
+// discard logic below protects unique types so the bench stays diverse.
+GameCpu.TARGET_PARTY_SIZE = 4;
+
+// A "keep" score: raw strength plus a big bonus when the mon is the ONLY
+// holder of its primary type in the party (so we don't discard our last Fire
+// mon just because it's a point weaker). The discard target is the mon with
+// the lowest keep score.
+GameCpu._keepScore = function (mon, party) {
+  if (!mon) return -Infinity;
+  const prim = (mon.types && mon.types[0]) || 'normal';
+  const sameType = party.filter(m => m !== mon && m.types && m.types[0] === prim).length;
+  const uniqueBonus = sameType === 0 ? 400 : 0; // protect one-of-a-kind types
+  return GameCpu._monScore(mon) + uniqueBonus;
+};
 
 GameCpu._findDiscardTarget = function (player) {
   if (!player || !player.party) return null;
   if (player.party.length <= GameCpu.TARGET_PARTY_SIZE) return null;
   if (player.party.length <= 1) return null; // game blocks releasing your last
-  // Pick the weakest mon — fainted goes first, then lowest score. Score is
-  // shared with battle-slot optimization so this is consistent with what
-  // we'd bench anyway.
-  const candidates = [...player.party];
-  candidates.sort((a, b) => GameCpu._monScore(a) - GameCpu._monScore(b));
-  return candidates[0] || null;
+  // Discard the lowest keep-score mon — fainted + redundant-type weaklings go
+  // first; unique types are protected. Never release a shiny (they're prized
+  // and now worth double on release if the player ever wants to).
+  const candidates = player.party.filter(m => !m.isShiny);
+  const pool = candidates.length ? candidates : [...player.party];
+  pool.sort((a, b) => GameCpu._keepScore(a, player.party) - GameCpu._keepScore(b, player.party));
+  return pool[0] || null;
 };
 
 GameCpu._doDiscard = function (player) {
@@ -327,7 +377,7 @@ GameCpu._doDiscard = function (player) {
   // wouldn't click through it anyway, and the existing CPU watchdog would
   // just hit Cancel on releaseModal).
   const bonus = (window.GameItems && GameItems.computeDiscardBonus)
-    ? GameItems.computeDiscardBonus(target.speciesId)
+    ? GameItems.computeDiscardBonus(target.speciesId, target.isShiny)
     : { multiplier: 1, reasons: [] };
   const n = bonus.multiplier || 1;
   const released = player.party.splice(idx, 1)[0];
@@ -383,10 +433,26 @@ GameCpu._handleEncounter = function () {
     GameCpu._click('encounterFleeBtn');
     return;
   }
-  // If a regular ball is auto-selected (pendingEncounterBall), use the roll
-  // button. Otherwise — the player only has Master Balls, which the auto-roll
-  // flow refuses ("Pick a ball first") — click the Master Ball directly so it
-  // resolves via the dedicated guaranteed-catch path.
+  const ctx = window.GameEncounter && GameEncounter._activeCtx;
+  const attemptsUsed = ctx ? (ctx.attemptsUsed || 0) : 0;
+
+  // After 2 failed throws, stop wasting cheap balls — escalate to the BEST ball
+  // available (usually a Master Ball = guaranteed catch).
+  if (attemptsUsed >= 2) {
+    const order = ['masterball', 'ultraball', 'greatball', 'pokeball'];
+    const best = order.find(b => (player.balls[b] || 0) > 0);
+    const bestBtn = best && document.querySelector(`#ballRow .ball-btn[data-ball="${best}"]`);
+    if (bestBtn && !bestBtn.disabled) {
+      bestBtn.click(); // Master Ball auto-catches; others just select
+      if (best !== 'masterball') {
+        const rb = GameUI.el('encounterAutoRollBtn');
+        if (rb && !rb.disabled) rb.click();
+      }
+      return;
+    }
+  }
+
+  // Default (first throws): use the auto-selected (most-populous) ball.
   const rollBtn = GameUI.el('encounterAutoRollBtn');
   if (GameState.pendingEncounterBall && rollBtn && !rollBtn.disabled) {
     rollBtn.click();
@@ -398,6 +464,44 @@ GameCpu._handleEncounter = function () {
   }
   // Nothing playable — flee so we don't infinite-loop on "Pick a ball first".
   GameCpu._click('encounterFleeBtn');
+};
+
+// Reorder a CPU's party right before a gym fight so the three best matchups vs
+// THIS leader's team fill the battle slots, led by the best answer to the
+// leader's first Pokemon. Uses type effectiveness + raw stats.
+GameCpu.orderPartyForGym = function (player, leaderTeam) {
+  if (!player || !player.party || player.party.length <= 1) return;
+  if (!leaderTeam || !leaderTeam.length || !window.GameBattle || !GameBattle.typeEffect) return;
+  const leaderDatas = leaderTeam.map(s => GameData.getPokemon(s.id)).filter(Boolean);
+  if (!leaderDatas.length) return;
+  const offenseVs = (mon, ld) => (mon.moves || []).reduce((mx, mv) =>
+    Math.max(mx, GameBattle.typeEffect(mv.type, ld.types) * ((mon.types || []).includes(mv.type) ? 1.2 : 1)), 0);
+  const matchupScore = (mon) => {
+    if (mon.fainted) return -1e6 + GameCpu._monScore(mon);
+    let off = 0, def = 0;
+    leaderDatas.forEach(ld => {
+      off += offenseVs(mon, ld);
+      def += (ld.types || []).reduce((mx, t) => Math.max(mx, GameBattle.typeEffect(t, mon.types || [])), 1);
+    });
+    return GameCpu._monScore(mon) + off * 30 - def * 10;
+  };
+  player.party.sort((a, b) => matchupScore(b) - matchupScore(a));
+  // Lead with the best counter to the leader's first Pokemon (battle slots only).
+  const lead0 = leaderDatas[0];
+  if (lead0) {
+    let bestIdx = -1, bestVal = -Infinity;
+    player.party.forEach((m, i) => {
+      if (i > 2 || m.fainted) return;
+      const v = offenseVs(m, lead0);
+      if (v > bestVal) { bestVal = v; bestIdx = i; }
+    });
+    if (bestIdx > 0) {
+      const [lead] = player.party.splice(bestIdx, 1);
+      player.party.unshift(lead);
+    }
+  }
+  GameUI.log(`${player.name} sized up the gym and reordered for the matchup.`, 'system');
+  GameUI.refreshAll();
 };
 
 // ============== BATTLE ==============

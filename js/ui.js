@@ -286,7 +286,7 @@ GameUI.discardPartyMember = function (player, idx) {
     alert('You cannot release your last Pokemon.');
     return;
   }
-  const bonus = GameItems.computeDiscardBonus(mon.speciesId);
+  const bonus = GameItems.computeDiscardBonus(mon.speciesId, mon.isShiny);
   const n = bonus.multiplier;
   GameUI._openReleaseModal(mon, n, bonus, () => {
     // Confirmed — perform the release
@@ -515,13 +515,14 @@ GameUI.renderPlayerPanel = function () {
     GameUI.el('areaPill').style.background = `linear-gradient(90deg, ${area.color}, ${area.color}aa)`;
   }
   GameUI.el('turnPill').textContent = `Turn ${GameState.turnCount}`;
+  const moneyEl = GameUI.el('moneyAmount');
+  if (moneyEl) moneyEl.textContent = (active && active.money != null) ? active.money : 0;
 };
 
 GameUI.refreshAll = function () {
   GameUI.renderPlayerPanel();
   GameBoard.renderTokens();
   if (window.GameBoard && GameBoard.renderLegendaryOverlay) GameBoard.renderLegendaryOverlay();
-  GameUI.renderWeatherBanner();
   GameUI._refreshTapHint();
   // Push state to peers in multiplayer mode. Guarded against re-entry when
   // we're applying a remote update (so we don't echo it back). fromMutation=true
@@ -540,23 +541,6 @@ GameUI.showTileEventToast = function (msg) {
   toast.textContent = '🎁 ' + msg;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2400);
-};
-
-// Show / hide the floating weather banner based on GameState.weather.
-GameUI.renderWeatherBanner = function () {
-  const el = document.getElementById('weatherBanner');
-  if (!el) return;
-  const w = GameState.weather;
-  if (!w) { el.hidden = true; el.className = ''; return; }
-  el.hidden = false;
-  el.className = w.type || '';
-  const lbl = document.getElementById('weatherLabel');
-  const turns = document.getElementById('weatherTurns');
-  if (lbl) lbl.textContent = w.label || w.type;
-  if (turns) {
-    const left = Math.max(0, (w.expiresAtTurn || 0) - GameState.turnCount + 1);
-    turns.textContent = `· ${left} turn${left === 1 ? '' : 's'} left`;
-  }
 };
 
 // ============================== ENCOUNTER ==============================
@@ -1299,6 +1283,94 @@ GameUI.showItemPicker = function (filterFn, title, hint, onPick) {
   GameUI.el('itemPickerCancel').onclick = () => { modal.hidden = true; };
 };
 
+// ============================== SHOP (POKÉ MART) ==============================
+// Buy / sell items + balls with the active player's money. Selling pays half
+// the buy price. Only the active, locally-owned (non-CPU) player may shop.
+GameUI.showShop = function () {
+  const player = GameState.currentPlayer();
+  if (!player || player.isCpu) return;
+  const slotIdx = GameState.players.indexOf(player);
+  if (!GameUI.isLocallyOwned(player, slotIdx)) return;
+  if (GameBattle.active) return;
+  // Only at a safe point — the start of your turn, before rolling — so closing
+  // the shop never strands the auto-advance mid-turn-resolution.
+  const rollBtn = document.getElementById('rollMoveBtn');
+  if (GameState.busy || GameState.pendingTileResolution || (rollBtn && rollBtn.disabled)) {
+    GameUI.log('Visit the Poké Mart at the start of your turn, before you roll.', 'system');
+    return;
+  }
+  const modal = GameUI.el('shopModal');
+  GameUI._unspectate('shopModal');
+  modal.hidden = false;
+  let tab = 'buy';
+  const render = () => {
+    GameUI.el('shopMoney').textContent = player.money || 0;
+    GameUI.el('shopHint').textContent = tab === 'buy'
+      ? 'Buy items & balls. (Sell tab pays about half the buy price.)'
+      : 'Sell surplus items & balls for cash. Eggs can\'t be sold.';
+    document.querySelectorAll('#shopModal .shop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    const grid = GameUI.el('shopGrid');
+    grid.innerHTML = '';
+    if (tab === 'buy') {
+      const entries = [
+        ...GameData.items.map(it => ({ kind: 'item', id: it.id, name: it.name, desc: it.description, price: it.price || 0, sprite: GameData.spriteItem(it.id) })),
+        ...GameData.pokeballs.map(b => ({ kind: 'ball', id: b.id, name: b.name, desc: 'Poke Ball', price: b.price || 0, sprite: GameData.spriteBall(b.id) })),
+      ].filter(e => e.price > 0).sort((a, b) => a.price - b.price);
+      entries.forEach(e => {
+        const afford = (player.money || 0) >= e.price;
+        const card = document.createElement('div');
+        card.className = 'shop-item' + (afford ? '' : ' unaffordable');
+        card.innerHTML = `
+          <img class="shop-item-sprite" src="${e.sprite}" onerror="this.style.display='none'" alt="" />
+          <div class="shop-item-info"><div class="shop-item-name">${e.name}</div><div class="hint">${e.desc}</div></div>
+          <button class="shop-buy-btn" ${afford ? '' : 'disabled'}>₽${e.price}</button>
+        `;
+        const btn = card.querySelector('.shop-buy-btn');
+        btn.onclick = () => {
+          if (GameState.buy(player, e.kind, e.id)) {
+            GameUI.log(`${player.name} bought <strong>${e.name}</strong> for ₽${e.price}.`, 'system');
+            if (GameAudio.sfx && GameAudio.sfx.item) GameAudio.sfx.item();
+            GameUI.refreshAll();
+            render();
+          }
+        };
+        grid.appendChild(card);
+      });
+    } else {
+      const owned = [
+        ...Object.entries(player.items || {}).filter(([, n]) => n > 0).map(([id, n]) => ({ kind: 'item', id, n, def: GameData.getItem(id), sprite: GameData.spriteItem(id) })),
+        ...Object.entries(player.balls || {}).filter(([, n]) => n > 0).map(([id, n]) => ({ kind: 'ball', id, n, def: GameData.getPokeball(id), sprite: GameData.spriteBall(id) })),
+      ].filter(e => e.def);
+      if (owned.length === 0) { grid.innerHTML = '<div class="hint">Nothing to sell.</div>'; return; }
+      owned.forEach(e => {
+        const price = GameState.sellPrice(e.kind, e.id);
+        const card = document.createElement('div');
+        card.className = 'shop-item';
+        card.innerHTML = `
+          <img class="shop-item-sprite" src="${e.sprite}" onerror="this.style.display='none'" alt="" />
+          <div class="shop-item-info"><div class="shop-item-name">${e.def.name} <span class="hint">×${e.n}</span></div><div class="hint">Sell for ₽${price} each</div></div>
+          <button class="shop-sell-btn">Sell ₽${price}</button>
+        `;
+        card.querySelector('.shop-sell-btn').onclick = () => {
+          const got = GameState.sell(player, e.kind, e.id);
+          if (got) {
+            GameUI.log(`${player.name} sold a <strong>${e.def.name}</strong> for ₽${got}.`, 'system');
+            if (GameAudio.sfx && GameAudio.sfx.item) GameAudio.sfx.item();
+            GameUI.refreshAll();
+            render();
+          }
+        };
+        grid.appendChild(card);
+      });
+    }
+  };
+  document.querySelectorAll('#shopModal .shop-tab').forEach(t => {
+    t.onclick = () => { tab = t.dataset.tab; render(); };
+  });
+  GameUI.el('shopCloseBtn').onclick = () => { modal.hidden = true; };
+  render();
+};
+
 // ============================== OUT OF BALLS POPUP ==============================
 GameUI.showOutOfBallsPopup = function (pokemonName, onClose) {
   const modal = GameUI.el('noBallsModal');
@@ -1393,9 +1465,10 @@ GameUI.showVictory = function (player, defeatedLeader) {
 };
 
 // ============================== EVOLUTION PICKER ==============================
-GameUI.showEvolutionPicker = function (eligible, onPick) {
+GameUI.showEvolutionPicker = function (eligible, onPick, player) {
   const modal = GameUI.el('evolvePickerModal');
   modal.hidden = false;
+  const candies = (player && player.items && player.items.rare_candy) || 0;
   const grid = GameUI.el('evolvePickerGrid');
   grid.innerHTML = '';
   eligible.forEach(mon => {
@@ -1420,11 +1493,16 @@ GameUI.showEvolutionPicker = function (eligible, onPick) {
       return;
     }
     if (options.length === 0) {
-      // Fully evolved — show stat-boost option (one per Pokemon).
-      const alreadyBoosted = (mon.boostCount || 0) >= 1;
+      // Fully evolved — stat-boost option. Tier 1 = +25% (1 candy); tier 2 =
+      // +50% total (3 candies). Capped at two boosts.
+      const bc = mon.boostCount || 0;
+      const maxed = bc >= 2;
+      const tier2 = bc === 1;                 // next boost is the +50% upgrade
+      const cost = bc === 0 ? 1 : 3;
+      const canAfford = candies >= cost;
       const row = document.createElement('div');
-      row.className = 'evolve-row' + (alreadyBoosted ? ' disabled' : '');
-      if (alreadyBoosted) {
+      row.className = 'evolve-row' + (maxed || !canAfford ? ' disabled' : '');
+      if (maxed) {
         row.innerHTML = `
           <div class="evolve-from">
             <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" />
@@ -1433,30 +1511,35 @@ GameUI.showEvolutionPicker = function (eligible, onPick) {
           </div>
           <div class="evolve-arrow" style="color:#555;">✗</div>
           <div class="evolve-to">
-            <div class="evolve-name" style="color:#888;">Already boosted</div>
-            <div class="hint">Each Pokemon can only take 1 Rare Candy boost</div>
+            <div class="evolve-name" style="color:#888;">Fully boosted (+50%)</div>
+            <div class="hint">Each Pokemon can take at most two boosts</div>
           </div>
         `;
-        // Not clickable
       } else {
-        const newMaxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * 1.25));
+        const mul = tier2 ? 1.2 : 1.25;
+        const newMaxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * mul));
+        const pct = tier2 ? '+50%' : '+25%';
+        const boostLabel = tier2 ? '+50% UPGRADE' : 'STAT BOOST';
+        const costLabel = `${cost} Rare Cand${cost > 1 ? 'ies' : 'y'}`;
         row.innerHTML = `
           <div class="evolve-from">
             <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" />
-            <div class="evolve-name">${mon.name}</div>
+            <div class="evolve-name">${mon.name}${tier2 ? ' <span class="hint">(+25%)</span>' : ''}</div>
             <div class="hint">HP ${mon.hp}/${mon.maxHp}</div>
           </div>
-          <div class="evolve-arrow" style="color:var(--pop);font-weight:bold;">+25%</div>
+          <div class="evolve-arrow" style="color:var(--pop);font-weight:bold;">${pct}</div>
           <div class="evolve-to">
             <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" style="filter:drop-shadow(0 0 8px var(--pop));" />
-            <div class="evolve-name">STAT BOOST</div>
-            <div class="hint">HP → ${newMaxHp} · moves +25% power · PP 40/5</div>
+            <div class="evolve-name">${boostLabel}</div>
+            <div class="hint">HP → ${newMaxHp} · moves ${pct} · costs ${costLabel}${canAfford ? '' : ` — need ${cost}`}</div>
           </div>
         `;
-        row.addEventListener('click', () => {
-          modal.hidden = true;
-          onPick(mon, null);
-        });
+        if (canAfford) {
+          row.addEventListener('click', () => {
+            modal.hidden = true;
+            onPick(mon, null);
+          });
+        }
       }
       grid.appendChild(row);
     } else if (options.length === 1) {

@@ -173,22 +173,29 @@ GameGame._resolveTile = function (player, tile, area, onAfter) {
       break;
     }
     case 'pokeball': {
+      // Special branch tiles (safari, after gym 2 / before gym 3) pay double.
+      const n = tile.doubleReward ? 6 : 3;
       const draws = [];
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < n; i++) {
         const ball = GameData.pickPokeballCard();
         GameState.giveBall(player, ball.id);
         draws.push({ kind: 'pokeball', ballId: ball.id, name: ball.name });
       }
-      GameUI.log(`${player.name} drew 3 pokeballs.`);
+      GameUI.log(`${player.name} drew ${n} pokeballs${tile.doubleReward ? ' (double!)' : ''}.`);
       GameUI.refreshAll();
-      GameUI.showDraws('You drew 3 pokeballs', draws, () => GameGame.afterTileResolved());
+      GameUI.showDraws(tile.doubleReward ? `Jackpot tile! You drew ${n} pokeballs` : `You drew ${n} pokeballs`, draws, () => GameGame.afterTileResolved());
       break;
     }
     case 'masterball': {
-      GameState.giveBall(player, 'masterball');
-      GameUI.log(`${player.name} received a <strong>Master Ball</strong>!`, 'crit');
+      const n = tile.doubleReward ? 2 : 1;
+      const draws = [];
+      for (let i = 0; i < n; i++) {
+        GameState.giveBall(player, 'masterball');
+        draws.push({ kind: 'pokeball', ballId: 'masterball', name: 'Master Ball' });
+      }
+      GameUI.log(`${player.name} received <strong>${n} Master Ball${n > 1 ? 's' : ''}</strong>!`, 'crit');
       GameUI.refreshAll();
-      GameUI.showDraws('You found a Master Ball!', [{ kind: 'pokeball', ballId: 'masterball', name: 'Master Ball' }], () => GameGame.afterTileResolved());
+      GameUI.showDraws(n > 1 ? `Jackpot tile! You found ${n} Master Balls!` : 'You found a Master Ball!', draws, () => GameGame.afterTileResolved());
       break;
     }
     case 'trade': {
@@ -313,15 +320,13 @@ GameGame.endTurn = function () {
     GameGame.endGame();
     return;
   }
-  // Per-turn world events: legendary spawns, weather shifts. Run after
-  // advanceTurn so the new turnCount drives the timing math.
+  // Per-turn world events: legendary spawns. Run after advanceTurn so the new
+  // turnCount drives the timing math.
   GameState.expireLegendaryIfStale();
   GameState.maybeSpawnLegendary();
-  GameState.maybeChangeWeather();
   GameUI.refreshAll();
   GameBoard.renderTokens();
   if (window.GameBoard && GameBoard.renderLegendaryOverlay) GameBoard.renderLegendaryOverlay();
-  if (window.GameUI && GameUI.renderWeatherBanner) GameUI.renderWeatherBanner();
   const np = GameState.currentPlayer();
   GameAudio.playArea(GameData.getTile(np.tile).area);
   GameUI.log(`<span class="actor">${np.name}</span>'s turn.`);
@@ -356,26 +361,64 @@ GameGame._runHatches = function (player, eggs) {
 // and a `teamSize` (3, or 6 for Giovanni). We draw `teamSize` at random from
 // the pool. Called exactly once per battle (in startGymBattle) so the team is
 // stable across the intro animation, the prep modal, and the fight itself.
+GameGame.ALL_TYPES = ['normal', 'fire', 'water', 'grass', 'electric', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+
+// Score a candidate gym team for type variety. Higher is better. Strongly
+// rewards teams where NO single attacking type is 2× super-effective against
+// every member (so one strong-type Pokemon can't sweep the whole gym), and
+// rewards having ≥2 distinct primary types (never "all the same type").
+GameGame._teamVarietyScore = function (team) {
+  if (!team || !team.length) return 0;
+  const datas = team.map(m => GameData.getPokemon(m.id)).filter(Boolean);
+  if (!datas.length) return 0;
+  const primaries = new Set(datas.map(d => d.types[0]));
+  let universalWeakness = false;
+  if (window.GameBattle && GameBattle.typeEffect) {
+    universalWeakness = GameGame.ALL_TYPES.some(t =>
+      datas.every(d => GameBattle.typeEffect(t, d.types) >= 2));
+  }
+  let score = primaries.size * 10;
+  if (!universalWeakness) score += 1000;   // no single type sweeps the team
+  if (primaries.size >= 2) score += 100;    // not mono-type
+  return score;
+};
+
 GameGame._selectGymTeam = function (leader) {
   // Backward-compat: a leader defined with a fixed `team` and no `pool`.
   if (!leader.pool || !leader.pool.length) return (leader.team || []).slice();
   const size = Math.min(leader.teamSize || leader.pool.length, leader.pool.length);
-  const arr = leader.pool.map(m => Object.assign({}, m));
-  // Fisher-Yates shuffle, then take the first `size`.
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  const drawOnce = () => {
+    const arr = leader.pool.map(m => Object.assign({}, m));
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    let picked = arr.slice(0, size);
+    if (leader.bossEscalating) {
+      // Final boss: order the drawn mons by level and lay an escalating power
+      // curve over them, so the LAST mon sent out is always the strongest no
+      // matter which were drawn. Preserves the boss-fight feel.
+      picked.sort((a, b) => (a.level || 0) - (b.level || 0));
+      const curve = [1, 1.1, 1.2, 1.3, 1.4, 1.5];
+      picked = picked.map((m, idx) => Object.assign({}, m, { scale: curve[Math.min(idx, curve.length - 1)] }));
+    }
+    return picked;
+  };
+  // Draw several times and keep the most type-varied team, so a gym leader
+  // never fields an all-one-type squad a single counter can sweep. Best-effort:
+  // for an inherently mono-weak theme (e.g. Fire vs Water) it still guarantees
+  // mixed types even if that one canonical weakness remains.
+  // Target = no universal weakness (1000) AND >=2 distinct primary types (100).
+  // Blaine's mono-Fire-leaning pool can't clear that (Water always sweeps), so
+  // it just keeps the most varied draw — which is still never all-one-type.
+  let best = drawOnce();
+  let bestScore = GameGame._teamVarietyScore(best);
+  for (let attempt = 0; attempt < 30 && bestScore < 1100; attempt++) {
+    const team = drawOnce();
+    const score = GameGame._teamVarietyScore(team);
+    if (score > bestScore) { best = team; bestScore = score; }
   }
-  let picked = arr.slice(0, size);
-  if (leader.bossEscalating) {
-    // Final boss: order the drawn six by level and lay an escalating power
-    // curve over them, so the LAST mon sent out is always the strongest no
-    // matter which six were drawn. Preserves the boss-fight feel.
-    picked.sort((a, b) => (a.level || 0) - (b.level || 0));
-    const curve = [1, 1.1, 1.2, 1.3, 1.4, 1.5];
-    picked = picked.map((m, idx) => Object.assign({}, m, { scale: curve[Math.min(idx, curve.length - 1)] }));
-  }
-  return picked;
+  return best;
 };
 
 GameGame.startGymBattle = function (tile) {
@@ -400,8 +443,15 @@ GameGame.startGymBattle = function (tile) {
   // Humans get the pre-fight prep modal (see leader's team + reorder party).
   // CPUs skip it — they already optimize battle slots pre-roll.
   const toPrep = () => {
-    if (player.isCpu || !GameUI.showGymPrep) fight();
-    else GameUI.showGymPrep(battleLeader, fight);
+    if (player.isCpu || !GameUI.showGymPrep) {
+      // CPUs reorder their squad for the matchup right before fighting.
+      if (player.isCpu && window.GameCpu && GameCpu.orderPartyForGym) {
+        GameCpu.orderPartyForGym(player, battleLeader.team);
+      }
+      fight();
+    } else {
+      GameUI.showGymPrep(battleLeader, fight);
+    }
   };
   // Brief cinematic intro: who they're facing + the exact team coming up.
   // Humans only — CPUs go straight to the fight to keep play snappy.
@@ -436,6 +486,9 @@ GameGame.gymWin = function (tile, leader) {
   const draws = [];
   const luckyMul = player.flags.luckyEgg ? 2 : 1;
   player.flags.luckyEgg = false;
+  // Prize money (doubled by an active Lucky Egg, same as the item rewards).
+  const moneyReward = (reward.money || 0) * luckyMul;
+  if (moneyReward > 0) player.money = (player.money || 0) + moneyReward;
   for (let i = 0; i < reward.items * luckyMul; i++) {
     const it = GameData.pickItemCard();
     GameState.giveItem(player, it.id);
@@ -448,9 +501,10 @@ GameGame.gymWin = function (tile, leader) {
   }
   const leaderId = leader.name.toLowerCase();
   const leaderImg = `<img src="sprites/trainers/${leaderId}.png" class="victory-leader-sprite" onerror="this.style.display='none'" alt="${leader.name}" />`;
-  GameUI.log(`<span class="win">${player.name} defeated ${leader.name}!</span> Rewards drawn.`, 'win');
+  const moneyTag = moneyReward > 0 ? ` Earned <strong>₽${moneyReward}</strong>${luckyMul > 1 ? ' (Lucky Egg ×2!)' : ''}.` : '';
+  GameUI.log(`<span class="win">${player.name} defeated ${leader.name}!</span> Rewards drawn.${moneyTag}`, 'win');
   GameUI.refreshAll();
-  GameUI.showDraws(`${leaderImg} Victory over ${leader.name}!`, draws, () => {
+  GameUI.showDraws(`${leaderImg} Victory over ${leader.name}!${moneyReward > 0 ? ` <span class="crit">+₽${moneyReward}</span>` : ''}`, draws, () => {
     GameGame.afterTileResolved();
   });
 };
@@ -649,7 +703,7 @@ GameGame.fireRandomTileEvent = function (player, tile) {
 };
 
 // ============================== TEAM ROCKET ==============================
-GameGame.TEAM_ROCKET_CHANCE = 1 / 20;
+GameGame.TEAM_ROCKET_CHANCE = 1 / 10;
 // Thematic Team Rocket Pokemon, all present in the dex: Meowth, Koffing,
 // Weezing, Gastly, Haunter, Ekans, Arbok, Zubat, Golbat, Raticate, Houndour,
 // Murkrow, Wobbuffet, Sneasel.
@@ -657,9 +711,11 @@ GameGame.TEAM_ROCKET_POOL = [52, 109, 110, 92, 93, 23, 24, 41, 42, 20, 228, 198,
 
 // Roll for a Team Rocket ambush on landing. Returns true if one triggered — the
 // caller then STOPS and lets the TR flow call onDone to continue the tile.
-// Human players only; never stacked on a gym / fainted / battle / start tile.
+// Applies to humans AND CPUs (CPU encounters auto-resolve via the watchdog) so
+// the ambushes are actually seen. Never stacked on a gym / fainted / battle /
+// start tile.
 GameGame._maybeTeamRocket = function (player, tile, onDone) {
-  if (!player || player.isCpu) return false;
+  if (!player) return false;
   if (!tile || ['gym', 'fainted', 'battle', 'start'].includes(tile.type)) return false;
   if (Math.random() >= GameGame.TEAM_ROCKET_CHANCE) return false;
   // Decide the outcome up front: 50% battle, 50% theft. If a battle is chosen

@@ -8,12 +8,6 @@
 </head>
 <body>
 
-<!-- Floating weather banner — toggled by GameUI.renderWeatherBanner() -->
-<div id="weatherBanner" hidden>
-  <span id="weatherLabel"></span>
-  <span class="wx-turns" id="weatherTurns"></span>
-</div>
-
 <div id="app" class="screen-setup">
 
   <!-- =====================  SETUP SCREEN  ===================== -->
@@ -84,10 +78,12 @@
       <div class="topbar-left">
         <span class="area-pill" id="areaPill">Pallet Town</span>
         <span class="turn-pill" id="turnPill">Turn 1</span>
+        <span class="money-pill" id="moneyPill" title="Your money">💰 <strong id="moneyAmount">0</strong></span>
         <span id="mpRoomPill" class="mp-room-pill" hidden>🌐 <strong id="mpRoomCode"></strong></span>
       </div>
       <div class="topbar-center"></div>
       <div class="topbar-right">
+        <button id="shopBtn" class="icon-btn" title="Poké Mart (buy / sell)">🛒</button>
         <button id="fullscreenBtn" class="icon-btn" title="Toggle fullscreen">⛶</button>
         <button id="audioToggle" class="icon-btn" title="Toggle music">♪</button>
         <button id="saveBtn" class="icon-btn" title="Save game">💾</button>
@@ -242,6 +238,7 @@
         <div class="combatant opponent">
           <div class="hp-bar">
             <div class="hp-name" id="oppName"></div>
+            <div class="opp-team-status" id="oppTeamStatus" hidden></div>
             <div class="hp-track"><div class="hp-fill" id="oppHpFill"></div></div>
             <div class="hp-text" id="oppHpText"></div>
           </div>
@@ -409,6 +406,25 @@
       <p class="egg-hatch-message" id="eggHatchMessage"></p>
       <div class="egg-hatch-actions" id="eggHatchActions" hidden>
         <button id="eggHatchContinueBtn" class="primary-btn">Nice!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  POKÉ MART (SHOP)  ===================== -->
+  <div id="shopModal" class="modal" hidden>
+    <div class="modal-card shop-card">
+      <div class="shop-header">
+        <h2>🛒 Poké Mart</h2>
+        <span class="shop-money">💰 <strong id="shopMoney">0</strong></span>
+      </div>
+      <div class="shop-tabs">
+        <button type="button" class="shop-tab active" data-tab="buy">Buy</button>
+        <button type="button" class="shop-tab" data-tab="sell">Sell</button>
+      </div>
+      <p class="hint" id="shopHint"></p>
+      <div id="shopGrid" class="shop-grid"></div>
+      <div class="modal-actions">
+        <button id="shopCloseBtn" class="primary-btn">Done</button>
       </div>
     </div>
   </div>

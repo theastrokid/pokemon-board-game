@@ -313,6 +313,8 @@
       GameState.giveItem(p, 'revive');
       GameState.giveItem(p, 'rare_candy');
       for (let j = 0; j < 5; j++) GameState.giveBall(p, 'pokeball');
+      // Everyone begins with an Egg that hatches into a shiny after 5 of their turns.
+      GameState.giveEgg(p);
       GameState.players.push(p);
     });
     // Host an online room if requested
@@ -366,6 +368,8 @@
       GameState.save();
       GameUI.log('Game saved.', 'system');
     });
+    const shopBtn = document.getElementById('shopBtn');
+    if (shopBtn) shopBtn.addEventListener('click', () => { if (GameUI.showShop) GameUI.showShop(); });
     document.getElementById('audioToggle').addEventListener('click', () => {
       GameState.options.music = !GameState.options.music;
       if (!GameState.options.music) GameAudio.stop();

@@ -18,6 +18,8 @@ GameEncounter.start = function (speciesId, areaId, opts) {
     attemptsUsed: 0,
     maxAttempts: opts.isLegendary ? 4 : 3, // one extra throw on legendary
   };
+  // Exposed so the CPU brain can read attemptsUsed and escalate to its best ball.
+  GameEncounter._activeCtx = ctx;
   GameUI.showEncounter(speciesId, ctx);
 };
 

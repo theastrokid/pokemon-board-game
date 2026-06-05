@@ -20,8 +20,6 @@ window.GameState = {
   // Time-limited legendary spawn: floats over a random pokemon tile, despawns
   // after 2 turns if no one lands on it. { tileIdx, speciesId, expiresAtTurn }
   legendarySpawn: null,
-  // Current weather: { type, expiresAtTurn }. Modifies move power per type.
-  weather: null,
 };
 
 const PLAYER_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#06b6d4'];
@@ -37,7 +35,6 @@ GameState.reset = function () {
   GameState.candiedInstancesThisTurn = {};
   GameState.busy = false;
   GameState.legendarySpawn = null;
-  GameState.weather = null;
 };
 
 // Catch-streak helper — used by encounter.js. Bumps the streak on success,
@@ -98,40 +95,6 @@ GameState.expireLegendaryIfStale = function () {
   }
 };
 
-// ============== WEATHER ==============
-// Each turn there's a small chance the weather changes. Types modify type-
-// matching damage by +25%.
-GameState.WEATHER_CHANGE_CHANCE = 0.22;
-GameState.WEATHER_DURATION_TURNS = 3;
-GameState.WEATHER_TYPES = [
-  { id: 'rain',      label: '🌧️  Rain',      boostType: 'water',    msg: 'It started to rain. Water moves stronger.' },
-  { id: 'sun',       label: '☀️  Harsh Sun',  boostType: 'fire',     msg: 'The sunlight turned harsh. Fire moves stronger.' },
-  { id: 'sandstorm', label: '🌪️  Sandstorm', boostType: 'rock',     msg: 'A sandstorm kicked up. Rock moves stronger.' },
-  { id: 'fog',       label: '🌫️  Fog',       boostType: 'ghost',    msg: 'A thick fog rolled in. Ghost moves stronger.' },
-];
-
-GameState.maybeChangeWeather = function () {
-  // Don't change while existing weather is still active
-  if (GameState.weather && GameState.turnCount <= GameState.weather.expiresAtTurn) return;
-  if (Math.random() > GameState.WEATHER_CHANGE_CHANCE) {
-    // Clear stale weather quietly
-    if (GameState.weather && GameState.turnCount > GameState.weather.expiresAtTurn) {
-      GameState.weather = null;
-    }
-    return;
-  }
-  const w = GameState.WEATHER_TYPES[Math.floor(Math.random() * GameState.WEATHER_TYPES.length)];
-  GameState.weather = {
-    type: w.id,
-    label: w.label,
-    boostType: w.boostType,
-    expiresAtTurn: GameState.turnCount + GameState.WEATHER_DURATION_TURNS,
-  };
-  if (window.GameUI && GameUI.log) {
-    GameUI.log(`<span class="crit">${w.label} — ${w.msg}</span>`, 'crit');
-  }
-};
-
 GameState.makePlayer = function (idx, name, starterSpeciesId) {
   const p = GameData.getPokemon(starterSpeciesId);
   const starter = {
@@ -158,12 +121,43 @@ GameState.makePlayer = function (idx, name, starterSpeciesId) {
     // Active Egg items, each { instanceId, speciesId, turnsLeft }. Hatch into a
     // shiny single-stage Pokemon after EGG_HATCH_TURNS of this player's turns.
     eggs: [],
+    // Pocket money for the Poké Mart (buy / sell).
+    money: GameState.STARTING_MONEY,
     completed: false,
   };
 };
 
 // Number of the OWNER's turns before an Egg item hatches.
 GameState.EGG_HATCH_TURNS = 5;
+// Cash every trainer starts with (small — top up by selling + gym wins).
+GameState.STARTING_MONEY = 800;
+
+// ============== SHOP / MONEY ==============
+GameState.buyPrice = function (kind, id) {
+  const def = kind === 'ball' ? GameData.getPokeball(id) : GameData.getItem(id);
+  return (def && def.price) || 0;
+};
+// Selling pays about half the buy price (floored, min 1).
+GameState.sellPrice = function (kind, id) {
+  return Math.max(1, Math.floor(GameState.buyPrice(kind, id) / 2));
+};
+GameState.buy = function (player, kind, id) {
+  const price = GameState.buyPrice(kind, id);
+  if (!price || (player.money || 0) < price) return false;
+  player.money = (player.money || 0) - price;
+  if (kind === 'ball') GameState.giveBall(player, id);
+  else GameState.giveItem(player, id); // routes 'egg' to the egg tracker
+  return price;
+};
+GameState.sell = function (player, kind, id) {
+  const bag = kind === 'ball' ? player.balls : player.items;
+  if (!bag || (bag[id] || 0) <= 0) return 0;
+  const price = GameState.sellPrice(kind, id);
+  bag[id]--;
+  if (bag[id] <= 0) delete bag[id];
+  player.money = (player.money || 0) + price;
+  return price;
+};
 
 GameState.currentPlayer = function () {
   return GameState.players[GameState.activePlayerIdx];
@@ -342,6 +336,7 @@ GameState.load = function () {
     GameState.players.forEach(p => {
       if (!Array.isArray(p.eggs)) p.eggs = [];
       if (!p.flags) p.flags = {};
+      if (typeof p.money !== 'number') p.money = GameState.STARTING_MONEY;
     });
     return true;
   } catch (e) { return false; }

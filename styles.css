@@ -2912,3 +2912,60 @@ body {
 .tr-title { font-family: var(--font-display); font-size: 18px; color: #ff5fa2 !important; letter-spacing: 1px; }
 .tr-subtitle { font-size: 13px; color: var(--ink); margin: 6px 0 12px; min-height: 1.3em; }
 .tr-actions { display: flex; justify-content: center; }
+
+/* =========================================================
+   BATCH 2 (2026): money pill, shop, opponent team pips
+========================================================= */
+
+/* ---------- Money pill (topbar) ---------- */
+.money-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(245,196,81,0.15); border: 1px solid #f5c451; color: #ffe39a;
+  font-size: 12px; font-weight: bold; padding: 3px 10px; border-radius: 999px;
+}
+.money-pill strong { color: #fff; }
+
+/* ---------- Opponent team progress (gym / rocket battles) ---------- */
+.opp-team-status { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; }
+.opp-pips { display: inline-flex; gap: 4px; }
+.opp-pip { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid #fff; background: #2a3e5e; }
+.opp-pip.alive { background: #e25555; }
+.opp-pip.active { background: #ffcb05; border-color: #ffcb05; box-shadow: 0 0 6px rgba(255,203,5,0.8); }
+.opp-pip.fainted { background: transparent; border-color: #5a6b80; opacity: 0.5; }
+.opp-count { font-size: 11px; font-weight: bold; color: var(--ink-dim); }
+.opp-count.last { color: #ff6b6b; animation: lastMonPulse 0.9s ease-in-out infinite; }
+@keyframes lastMonPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* ---------- Shop (Poké Mart) ---------- */
+.shop-card { max-width: 520px; }
+.shop-header { display: flex; align-items: center; justify-content: space-between; }
+.shop-header h2 { margin: 0; }
+.shop-money {
+  font-size: 14px; font-weight: bold; color: #ffe39a;
+  background: rgba(245,196,81,0.15); border: 1px solid #f5c451; border-radius: 999px; padding: 4px 12px;
+}
+.shop-money strong { color: #fff; }
+.shop-tabs { display: flex; gap: 8px; margin: 14px 0 6px; }
+.shop-tab {
+  flex: 1; background: var(--bg); border: 2px solid #314863; color: var(--ink-dim);
+  border-radius: var(--radius-sm); padding: 8px; font-weight: bold; cursor: pointer; font-size: 13px;
+}
+.shop-tab.active { border-color: var(--pop); color: var(--pop); background: #1c2f4a; }
+.shop-grid { display: flex; flex-direction: column; gap: 6px; max-height: 48vh; overflow-y: auto; margin-top: 6px; }
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-3); border: 1px solid #34506e; border-radius: var(--radius-sm); padding: 8px 10px;
+}
+.shop-item.unaffordable { opacity: 0.55; }
+.shop-item-sprite { width: 36px; height: 36px; image-rendering: pixelated; object-fit: contain; }
+.shop-item-info { flex: 1; min-width: 0; }
+.shop-item-name { font-weight: bold; font-size: 13px; }
+.shop-item-info .hint { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shop-buy-btn, .shop-sell-btn {
+  border: none; border-radius: var(--radius-sm); padding: 8px 12px; font-weight: bold; cursor: pointer;
+  font-size: 12px; white-space: nowrap;
+}
+.shop-buy-btn { background: var(--pop); color: var(--bg); }
+.shop-buy-btn:disabled { background: #39424e; color: #6b7785; cursor: not-allowed; }
+.shop-sell-btn { background: var(--grass); color: #08350f; }
+.shop-buy-btn:hover:not(:disabled), .shop-sell-btn:hover { filter: brightness(1.1); }

@@ -151,15 +151,23 @@ GameItems.applyEvolve = function (item, player) {
       return;
     }
     if (chosenEvolutionId == null) {
-      // Stat boost path (fully-evolved Pokemon). Lifetime cap: 1 per mon ever.
-      if ((liveMon.boostCount || 0) >= 1) {
-        GameUI.log(`${liveMon.name} has already received its Rare Candy boost.`, 'system');
+      // Stat boost path (fully-evolved Pokemon). Tier 1 = +25% (1 candy);
+      // tier 2 = up to +50% total (3 candies). Cap at 2 boosts.
+      const curBoost = liveMon.boostCount || 0;
+      if (curBoost >= 2) {
+        GameUI.log(`${liveMon.name} is already fully boosted (+50%).`, 'system');
+        return;
+      }
+      const candyCost = curBoost === 0 ? 1 : 3;
+      if ((livePlayer.items[item.id] || 0) < candyCost) {
+        GameUI.log(`${liveMon.name}'s +50% upgrade needs ${candyCost} Rare Candies.`, 'system');
         return;
       }
       GameItems.applyStatBoost(livePlayer, liveMon);
-      GameState.consumeItem(livePlayer, item.id);
+      for (let i = 0; i < candyCost; i++) GameState.consumeItem(livePlayer, item.id);
       GameState.candiedInstancesThisTurn[liveMon.instanceId] = true;
-      GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! +25% HP, +25% move power, PP raised to 40/5.</span>`, 'crit');
+      const tierMsg = liveMon.boostCount >= 2 ? '+50% total stats' : '+25% HP & move power';
+      GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! ${tierMsg} (used ${candyCost} Rare Cand${candyCost > 1 ? 'ies' : 'y'}).</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
       GameItems._maybeReopenEvolve(item, livePlayer); // keep candying like Potions
@@ -206,32 +214,39 @@ GameItems.applyEvolve = function (item, player) {
       GameUI.refreshAll();
       GameItems._maybeReopenEvolve(item, finalPlayer); // keep candying like Potions
     });
-  });
+  }, player);
 };
 
-// One-shot +25% stat boost for a fully-evolved Pokemon. Limit: 1 per mon.
-// Effects: +25% maxHp, +25% move power, max PP bumped to 40 (weak) / 5 (strong),
-// full heal, fainted cleared. Caller must check (mon.boostCount || 0) < 1.
+// Stat boost for a fully-evolved Pokemon. Two tiers:
+//   tier 1 (boostCount 0 -> 1): +25%, costs 1 Rare Candy.
+//   tier 2 (boostCount 1 -> 2): a further ×1.2 (≈ +50% over base), costs 3.
+// Each tier also full-heals, clears fainted, and bumps max PP to 40/5. The
+// caller enforces the candy cost + the boostCount<2 cap.
 GameItems.applyStatBoost = function (player, mon) {
-  mon.maxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * 1.25));
+  const nextTier = (mon.boostCount || 0) + 1;
+  const mul = nextTier >= 2 ? 1.2 : 1.25; // 1.25 then ×1.2 ≈ 1.5× base total
+  mon.maxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * mul));
   mon.hp = mon.maxHp;
   mon.fainted = false;
   mon.moves.forEach(mv => {
-    mv.power = Math.max(mv.power + 1, Math.round(mv.power * 1.25));
+    mv.power = Math.max(mv.power + 1, Math.round(mv.power * mul));
     mv.maxPp = mv.gated ? 5 : 40;
     mv.pp = mv.maxPp;
   });
-  mon.boostCount = (mon.boostCount || 0) + 1;
+  mon.boostCount = nextTier;
 };
 
 // Is there any party member that can still take a Rare Candy this turn? Used
 // to decide whether to re-open the picker for back-to-back use (like Potions).
 GameItems._hasEvolveEligible = function (player) {
   if (!player || !player.party) return false;
+  const candies = (player.items && player.items.rare_candy) || 0;
   return player.party.some(m => {
     if (GameState.candiedInstancesThisTurn[m.instanceId]) return false; // 1/mon/turn
-    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return true; // can evolve
-    return (m.boostCount || 0) < 1; // fully evolved but boost still available
+    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return true; // can evolve (1 candy)
+    const bc = m.boostCount || 0;
+    if (bc >= 2) return false;             // already fully boosted
+    return candies >= (bc === 0 ? 1 : 3);  // tier 1 needs 1 candy, tier 2 needs 3
   });
 };
 
@@ -264,17 +279,19 @@ GameItems.evolutions = {
   // Gen 1 (1-151)
   1: 2, 2: 3, 4: 5, 5: 6, 7: 8, 8: 9, 10: 11, 11: 12, 13: 14, 14: 15,
   16: 17, 17: 18, 19: 20, 21: 22, 23: 24, 25: 26, 27: 28, 29: 30, 30: 31,
-  32: 33, 33: 34, 35: 36, 37: 38, 39: 40, 41: 42, 43: 44, 44: 45,
+  32: 33, 33: 34, 35: 36, 37: 38, 39: 40, 41: 42, 43: 44,
   46: 47, 48: 49, 50: 51, 52: 53, 54: 55, 56: 57, 58: 59,
-  60: 61, 61: 62, 63: 64, 64: 65, 66: 67, 67: 68, 69: 70, 70: 71,
+  60: 61, 63: 64, 64: 65, 66: 67, 67: 68, 69: 70, 70: 71,
   72: 73, 74: 75, 75: 76, 77: 78, 81: 82, 84: 85, 86: 87, 88: 89,
   90: 91, 92: 93, 93: 94, 96: 97, 98: 99, 100: 101, 102: 103, 104: 105,
   109: 110, 111: 112, 116: 117, 118: 119, 120: 121,
   123: 212, 129: 130, 137: 233, // Porygon → Porygon2
   138: 139, 140: 141, 147: 148, 148: 149,
-  // Gen 2 cross-evolutions FROM Gen 1
+  // Gen 2 cross-evolutions FROM Gen 1 (single-path)
   42: 169,  // Golbat → Crobat
   113: 242, // Chansey → Blissey
+  95: 208,  // Onix → Steelix (makes Steelix a Stage-2 evolution)
+  117: 230, // Seadra → Kingdra
 
   // Gen 2 starter chains — now that the middle stages exist in the dex
   152: 153, 153: 154, // Chikorita → Bayleef → Meganium
@@ -316,6 +333,8 @@ GameItems.multiEvolutions = {
   79:  [80, 199],                  // Slowpoke → Slowbro or Slowking
   133: [134, 135, 136, 196, 197],  // Eevee → Vaporeon/Jolteon/Flareon/Espeon/Umbreon
   236: [106, 107, 237],            // Tyrogue → Hitmonlee/Hitmonchan/Hitmontop
+  44:  [45, 182],                  // Gloom → Vileplume or Bellossom
+  61:  [62, 186],                  // Poliwhirl → Poliwrath or Politoed
 };
 
 // 42 (Golbat) appears in `evolutions` but Crobat is the only target — kept simple.
@@ -358,7 +377,7 @@ GameItems.getEvolutionStage = function (speciesId) {
 //   Native to Ancient Temple area: extra ×2 (multiplicative)
 // Returns { multiplier, reasons } where reasons is an array of short labels
 // for the UI.
-GameItems.computeDiscardBonus = function (speciesId) {
+GameItems.computeDiscardBonus = function (speciesId, isShiny) {
   const stage = GameItems.getEvolutionStage(speciesId);
   const reasons = [];
   let multiplier = 1;
@@ -368,7 +387,8 @@ GameItems.computeDiscardBonus = function (speciesId) {
   const templePool = (templeArea && templeArea.encounters) || [];
   const inTemple = templePool.some(e => (typeof e === 'number' ? e : e.id) === speciesId);
   if (inTemple) { multiplier *= 2; reasons.push('Ancient Temple native (×2)'); }
-  return { multiplier, reasons, stage, inTemple };
+  if (isShiny) { multiplier *= 2; reasons.push('Shiny (×2)'); }
+  return { multiplier, reasons, stage, inTemple, isShiny: !!isShiny };
 };
 
 GameItems.getEvolutionOptions = function (speciesId) {
@@ -451,7 +471,7 @@ GameItems.promptDiscardForRoom = function (incomingSpeciesId, onKeep, onSkip) {
   const grid = GameUI.el('itemPickerGrid');
   grid.innerHTML = '';
   player.party.forEach(mon => {
-    const bonus = GameItems.computeDiscardBonus(mon.speciesId);
+    const bonus = GameItems.computeDiscardBonus(mon.speciesId, mon.isShiny);
     const n = bonus.multiplier;
     const bonusBadge = n > 1
       ? `<div class="discard-bonus">×${n} reward · ${bonus.reasons.join(' + ')}</div>`
