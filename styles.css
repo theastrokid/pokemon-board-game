@@ -3074,3 +3074,73 @@ body {
 .effect-flash.resisted { background: radial-gradient(circle at 50% 45%, rgba(147,197,253,0.32), transparent 72%); }
 .effect-flash.no-effect { background: radial-gradient(circle at 50% 45%, rgba(156,163,175,0.3), transparent 72%); }
 @keyframes effFlash { from { opacity: 0.95; } to { opacity: 0; } }
+
+/* =========================================================
+   POST-GAME MINI-GAMES
+========================================================= */
+/* ---- Hub ---- */
+.minigames-card { max-width: 540px; }
+.minigames-grid { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.mg-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-3); border: 1.5px solid #34506e; border-radius: var(--radius-sm); padding: 12px;
+}
+.mg-card.locked { opacity: 0.55; }
+.mg-icon { font-size: 34px; flex-shrink: 0; }
+.mg-info { flex: 1; min-width: 0; }
+.mg-name { font-weight: bold; font-size: 15px; }
+.mg-best { font-size: 11px; color: var(--pop); margin-top: 4px; }
+.mg-play {
+  background: var(--pop); color: var(--bg); border: none; border-radius: var(--radius-sm);
+  padding: 10px 18px; font-weight: bold; cursor: pointer; font-size: 14px; flex-shrink: 0;
+}
+.mg-play:disabled { background: #39424e; color: #6b7785; cursor: not-allowed; }
+.mg-play:hover:not(:disabled) { filter: brightness(1.1); }
+.mg-replay { width: 100%; text-align: center; margin-top: 8px; }
+
+/* ---- Who's That Pokémon? ---- */
+.wt-card, .tm-card { max-width: 440px; text-align: center; }
+.wt-streak, .tm-streak { font-size: 13px; color: var(--ink-dim); margin-bottom: 8px; }
+.wt-streak strong, .tm-streak strong { color: var(--pop); }
+.wt-stage { height: 180px; display: flex; align-items: center; justify-content: center; }
+.wt-sprite { width: 150px; height: 150px; image-rendering: pixelated; object-fit: contain; transition: filter 0.2s; }
+.wt-sprite.silhouette { filter: brightness(0); }
+.wt-sprite.revealed { filter: none; animation: wtPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes wtPop { from { transform: scale(0.8); } to { transform: scale(1); } }
+.wt-options, .tm-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.wt-option, .tm-option {
+  background: var(--bg-3); border: 1.5px solid #34506e; color: var(--ink);
+  border-radius: var(--radius-sm); padding: 12px 8px; font-weight: bold; cursor: pointer; font-size: 13px;
+  transition: transform 0.08s, background 0.1s;
+}
+.wt-option:hover, .tm-option:hover { background: #34506e; transform: translateY(-1px); }
+.wt-option.right, .tm-option.right { background: #16a34a; border-color: #22c55e; color: #fff; }
+.wt-option.wrong, .tm-option.wrong { background: #b91c1c; border-color: #ef4444; color: #fff; }
+.wt-result, .tm-result { min-height: 1.3em; font-size: 13px; margin: 6px 0; }
+.wt-result.good, .tm-result.good { color: #34d399; font-weight: bold; }
+.wt-result.bad, .tm-result.bad { color: #fca5a5; }
+
+/* ---- Type Master ---- */
+.tm-stage { display: flex; align-items: center; justify-content: center; gap: 14px; height: 120px; }
+.tm-sprite { width: 100px; height: 100px; image-rendering: pixelated; object-fit: contain; }
+.tm-type-pill { font-size: 12px; }
+.tm-attack-label { display: block; font-size: 10px; color: var(--ink-dim); margin-bottom: 4px; }
+.tm-question { font-size: 13px; margin: 8px 0; }
+.tm-options { grid-template-columns: 1fr 1fr; }
+
+/* ---- Battle Gauntlet ---- */
+.gauntlet-card { max-width: 520px; }
+.gauntlet-body { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; margin-top: 8px; }
+.gauntlet-team { background: var(--bg-3); border: 1.5px solid #34506e; border-radius: var(--radius-sm); padding: 8px 10px; }
+.gauntlet-team-head { display: flex; align-items: center; justify-content: space-between; }
+.gauntlet-team-name { font-weight: bold; font-size: 14px; }
+.gauntlet-start-btn {
+  background: #7c3aed; color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 8px 16px; font-weight: bold; cursor: pointer; font-size: 13px;
+}
+.gauntlet-start-btn:hover { filter: brightness(1.15); }
+.gauntlet-team-sprites { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 6px; }
+.gauntlet-team-sprites img { width: 36px; height: 36px; image-rendering: pixelated; object-fit: contain; }
+.gauntlet-result { text-align: center; padding: 14px; }
+.gr-wave { font-size: 20px; margin-bottom: 6px; }
+.gr-wave strong { color: var(--pop); }

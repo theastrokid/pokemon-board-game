@@ -68,6 +68,7 @@
       <button id="loadSaveBtn" class="ghost-btn">Resume last game</button>
       <button id="hallOfFameBtn" class="ghost-btn">Hall of Fame</button>
       <button id="arenaBtn" class="ghost-btn">⚔️ Champion Arena</button>
+      <button id="minigamesBtn" class="ghost-btn">🎮 Mini-Games</button>
       <button id="setupFullscreenBtn" class="ghost-btn">⛶ Fullscreen</button>
       <button id="startGameBtn" class="primary-btn">Start adventure</button>
     </div>
@@ -533,6 +534,51 @@
     </div>
   </div>
 
+  <!-- =====================  MINI-GAMES HUB  ===================== -->
+  <div id="minigamesModal" class="modal" hidden>
+    <div class="modal-card minigames-card">
+      <h2>🎮 Post-Game Mini-Games</h2>
+      <p class="hint">Champion already? Keep the fun going.</p>
+      <div id="minigamesGrid" class="minigames-grid"></div>
+      <div class="modal-actions"><button id="minigamesCloseBtn" class="primary-btn">Close</button></div>
+    </div>
+  </div>
+
+  <!-- =====================  WHO'S THAT POKÉMON?  ===================== -->
+  <div id="whosThatModal" class="modal" hidden>
+    <div class="modal-card wt-card">
+      <h2>Who's That Pokémon?</h2>
+      <div class="wt-streak">Streak: <strong id="wtStreak">0</strong> · Best: <strong id="wtBest">0</strong></div>
+      <div class="wt-stage"><img id="wtSprite" class="wt-sprite silhouette" alt="" /></div>
+      <div id="wtOptions" class="wt-options"></div>
+      <p id="wtResult" class="wt-result"></p>
+      <div class="modal-actions"><button id="wtQuitBtn" class="ghost-btn">Quit</button></div>
+    </div>
+  </div>
+
+  <!-- =====================  TYPE MASTER  ===================== -->
+  <div id="typeMasterModal" class="modal" hidden>
+    <div class="modal-card tm-card">
+      <h2>🧠 Type Master</h2>
+      <div class="tm-streak">Streak: <strong id="tmStreak">0</strong> · Best: <strong id="tmBest">0</strong></div>
+      <div class="tm-stage"><img id="tmSprite" class="tm-sprite" alt="" /><div id="tmTypePill" class="tm-type-pill"></div></div>
+      <p id="tmQuestion" class="tm-question"></p>
+      <div id="tmOptions" class="tm-options"></div>
+      <p id="tmResult" class="tm-result"></p>
+      <div class="modal-actions"><button id="tmQuitBtn" class="ghost-btn">Quit</button></div>
+    </div>
+  </div>
+
+  <!-- =====================  BATTLE GAUNTLET  ===================== -->
+  <div id="gauntletModal" class="modal" hidden>
+    <div class="modal-card gauntlet-card">
+      <h2 id="gauntletTitle">⚔️ Battle Gauntlet</h2>
+      <p id="gauntletSub" class="hint"></p>
+      <div id="gauntletBody" class="gauntlet-body"></div>
+      <div class="modal-actions"><button id="gauntletCloseBtn" class="ghost-btn">Back</button></div>
+    </div>
+  </div>
+
   <!-- =====================  CHAMPION ARENA  ===================== -->
   <div id="arenaModal" class="modal" hidden>
     <div class="modal-card arena-card">
@@ -641,6 +687,7 @@
 <script src="js/game.js"></script>
 <script src="js/cpu.js"></script>
 <script src="js/mp.js"></script>
+<script src="js/minigames.js"></script>
 <script src="js/main.js"></script>
 
 </body>

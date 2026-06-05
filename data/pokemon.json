@@ -630,7 +630,7 @@
     "30": {
       "name": "Nidorina",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -651,7 +651,8 @@
     "31": {
       "name": "Nidoqueen",
       "types": [
-        "dark"
+        "poison",
+        "ground"
       ],
       "hp": 125,
       "moves": [
@@ -693,7 +694,7 @@
     "33": {
       "name": "Nidorino",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -757,7 +758,7 @@
     "36": {
       "name": "Clefable",
       "types": [
-        "psychic"
+        "fairy"
       ],
       "hp": 90,
       "moves": [
@@ -842,7 +843,8 @@
     "40": {
       "name": "Wigglytuff",
       "types": [
-        "normal"
+        "normal",
+        "fairy"
       ],
       "hp": 135,
       "moves": [
@@ -907,7 +909,8 @@
     "43": {
       "name": "Oddish",
       "types": [
-        "grass"
+        "grass",
+        "poison"
       ],
       "hp": 60,
       "moves": [
@@ -928,7 +931,8 @@
     "44": {
       "name": "Gloom",
       "types": [
-        "grass"
+        "grass",
+        "poison"
       ],
       "hp": 60,
       "moves": [
@@ -949,7 +953,8 @@
     "45": {
       "name": "Vileplume",
       "types": [
-        "grass"
+        "grass",
+        "poison"
       ],
       "hp": 110,
       "moves": [
@@ -970,6 +975,7 @@
     "46": {
       "name": "Paras",
       "types": [
+        "bug",
         "grass"
       ],
       "hp": 60,
@@ -991,6 +997,7 @@
     "47": {
       "name": "Parasect",
       "types": [
+        "bug",
         "grass"
       ],
       "hp": 100,
@@ -1012,7 +1019,8 @@
     "48": {
       "name": "Venonat",
       "types": [
-        "grass"
+        "bug",
+        "poison"
       ],
       "hp": 60,
       "moves": [
@@ -1033,7 +1041,8 @@
     "49": {
       "name": "Venomoth",
       "types": [
-        "grass"
+        "bug",
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -1075,7 +1084,7 @@
     "51": {
       "name": "Dugtrio",
       "types": [
-        "fighting"
+        "ground"
       ],
       "hp": 75,
       "moves": [
@@ -1476,7 +1485,8 @@
     "70": {
       "name": "Weepinbell",
       "types": [
-        "grass"
+        "grass",
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -1585,7 +1595,8 @@
     "75": {
       "name": "Graveler",
       "types": [
-        "fighting"
+        "rock",
+        "ground"
       ],
       "hp": 90,
       "moves": [
@@ -1692,6 +1703,7 @@
     "80": {
       "name": "Slowbro",
       "types": [
+        "water",
         "psychic"
       ],
       "hp": 100,
@@ -1735,7 +1747,8 @@
     "82": {
       "name": "Magneton",
       "types": [
-        "electric"
+        "electric",
+        "steel"
       ],
       "hp": 75,
       "moves": [
@@ -1756,7 +1769,8 @@
     "83": {
       "name": "Farfetch'd",
       "types": [
-        "normal"
+        "normal",
+        "flying"
       ],
       "hp": 75,
       "moves": [
@@ -1799,7 +1813,8 @@
     "85": {
       "name": "Dodrio",
       "types": [
-        "normal"
+        "normal",
+        "flying"
       ],
       "hp": 90,
       "moves": [
@@ -1863,7 +1878,7 @@
     "88": {
       "name": "Grimer",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -1884,7 +1899,7 @@
     "89": {
       "name": "Muk",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 110,
       "moves": [
@@ -1970,7 +1985,8 @@
     "93": {
       "name": "Haunter",
       "types": [
-        "psychic"
+        "ghost",
+        "poison"
       ],
       "hp": 75,
       "moves": [
@@ -2161,7 +2177,8 @@
     "102": {
       "name": "Exeggcute",
       "types": [
-        "grass"
+        "grass",
+        "psychic"
       ],
       "hp": 60,
       "moves": [
@@ -2182,7 +2199,8 @@
     "103": {
       "name": "Exeggutor",
       "types": [
-        "grass"
+        "grass",
+        "psychic"
       ],
       "hp": 110,
       "moves": [
@@ -2224,7 +2242,7 @@
     "105": {
       "name": "Marowak",
       "types": [
-        "fighting"
+        "ground"
       ],
       "hp": 100,
       "moves": [
@@ -2308,7 +2326,7 @@
     "109": {
       "name": "Koffing",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 60,
       "moves": [
@@ -2329,7 +2347,7 @@
     "110": {
       "name": "Weezing",
       "types": [
-        "dark"
+        "poison"
       ],
       "hp": 90,
       "moves": [
@@ -2584,7 +2602,8 @@
     "122": {
       "name": "Mr. Mime",
       "types": [
-        "psychic"
+        "psychic",
+        "fairy"
       ],
       "hp": 75,
       "moves": [
@@ -2924,6 +2943,7 @@
     "138": {
       "name": "Omanyte",
       "types": [
+        "rock",
         "water"
       ],
       "hp": 90,
@@ -2945,6 +2965,7 @@
     "139": {
       "name": "Omastar",
       "types": [
+        "rock",
         "water"
       ],
       "hp": 110,
@@ -2966,7 +2987,8 @@
     "140": {
       "name": "Kabuto",
       "types": [
-        "fighting"
+        "rock",
+        "water"
       ],
       "hp": 75,
       "moves": [
@@ -2987,7 +3009,8 @@
     "141": {
       "name": "Kabutops",
       "types": [
-        "fighting"
+        "rock",
+        "water"
       ],
       "hp": 110,
       "moves": [
@@ -3008,7 +3031,8 @@
     "142": {
       "name": "Aerodactyl",
       "types": [
-        "normal"
+        "rock",
+        "flying"
       ],
       "hp": 100,
       "moves": [
