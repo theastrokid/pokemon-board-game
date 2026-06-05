@@ -205,12 +205,15 @@ GameGame._resolveTile = function (player, tile, area, onAfter) {
       break;
     }
     case 'trade': {
+      const after = () => GameGame.afterTileResolved();
+      // Solo play: no other trainers on the board — a wandering NPC proposes a
+      // respectable swap (a Pokemon or items of similar value, with a little
+      // variance) that the player can accept or decline.
       if (GameState.players.length < 2) {
-        GameUI.log('No one to trade with.', 'system');
-        GameGame.afterTileResolved();
+        if (GameTrade.startNpcOffer) GameTrade.startNpcOffer(after);
+        else { GameUI.log('No one to trade with.', 'system'); GameGame.afterTileResolved(); }
         return;
       }
-      const after = () => GameGame.afterTileResolved();
       // CPUs auto-generate a trade offer to another player; the offer is then
       // routed through the normal accept/decline flow (a human target must
       // explicitly accept). Humans open the trade builder as before.

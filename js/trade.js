@@ -828,3 +828,242 @@ GameTrade.confirm = function () {
   if (!s || !s.fromMon || !s.target) return;
   GameTrade._proposeTradeToTarget();
 };
+
+// ===================== SOLO NPC TRADE OFFERS =====================
+// In solo play there's no other trainer to trade with, so landing on a trade
+// tile summons a wandering NPC who proposes a respectable swap — a Pokemon or
+// item bundle of SIMILAR value to what they ask for, with a little variance.
+// Reuses the shared tradeConfirmModal for the Accept / Decline prompt.
+
+GameTrade.NPC_NAMES = ['A Hiker', 'A Bug Catcher', 'A Picnicker', 'A wandering Ace Trainer',
+  'A Youngster', 'A Gentleman', 'A Veteran', 'A Fisher', 'A Lass', 'A Black Belt'];
+
+// Legendaries are reserved for Giovanni — an NPC never hands one out.
+GameTrade.NPC_EXCLUDE_IDS = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251];
+
+// Worth of a freshly-built instance of a species (mirrors _monValue's basis).
+GameTrade._npcSpeciesValue = function (id) {
+  const base = GameData.getPokemon(id);
+  if (!base) return 0;
+  const maxMove = (base.moves || []).reduce((mx, mv) => Math.max(mx, mv.power || 0), 0);
+  let v = (base.hp || 0) + 2 * maxMove;
+  if (window.GameItems && GameItems.getEvolutionStage) {
+    const stage = GameItems.getEvolutionStage(id);
+    v = Math.round(v * (1 + 0.12 * (stage - 1)));
+  }
+  return v;
+};
+
+// Build a battle-ready NPC Pokemon whose worth lands near targetValue (±variance),
+// excluding legendaries and (optionally) the species the player is giving up.
+GameTrade._buildNpcMon = function (targetValue, excludeSpeciesId) {
+  const tv = Math.max(30, Number(targetValue) || 0);
+  const all = Object.keys(GameData.pokemon).map(Number)
+    .filter(id => GameTrade.NPC_EXCLUDE_IDS.indexOf(id) < 0 && id !== Number(excludeSpeciesId))
+    .map(id => ({ id, v: GameTrade._npcSpeciesValue(id) }))
+    .filter(x => x.v > 0);
+  if (!all.length) return null;
+  let cands = all.filter(x => x.v >= tv * 0.85 && x.v <= tv * 1.35);
+  if (!cands.length) {
+    all.sort((a, b) => Math.abs(a.v - tv) - Math.abs(b.v - tv));
+    cands = all.slice(0, 10);
+  }
+  const pick = cands[Math.floor(Math.random() * cands.length)];
+  const base = GameData.getPokemon(pick.id);
+  return {
+    speciesId: pick.id,
+    name: base.name,
+    types: base.types.slice(),
+    hp: base.hp,
+    maxHp: base.hp,
+    moves: GameState.cloneMoves(base.moves),
+    fainted: false,
+    isShiny: false,
+    instanceId: 'npc-' + Math.random().toString(36).slice(2, 8),
+  };
+};
+
+// Item/ball catalog the NPC can offer (everything except the special Egg).
+GameTrade._npcGiveableCatalog = function () {
+  const cat = [];
+  Object.keys(GameData.items || {}).forEach(id => {
+    if (id === 'egg') return;
+    const it = GameData.items[id];
+    if (it) cat.push({ id, kind: 'item', value: it.value || 5 });
+  });
+  Object.keys(GameData.pokeballs || {}).forEach(id => {
+    const b = GameData.pokeballs[id];
+    if (b) cat.push({ id, kind: 'ball', value: b.value || 8 });
+  });
+  return cat;
+};
+
+// Assemble an NPC item/ball bundle totalling ~targetValue from the catalog.
+// Only ever picks items that keep the running total under the ceiling (tv×1.4),
+// so a single pricey item (e.g. a Master Ball) can't blow a small budget and
+// make the trade lopsided. Falls back to the cheapest item if nothing fits.
+GameTrade._buildNpcBundle = function (targetValue) {
+  const cat = GameTrade._npcGiveableCatalog();
+  if (!cat.length) return null;
+  const tv = Math.max(8, Number(targetValue) || 0);
+  const ceiling = tv * 1.4;
+  const cheapest = cat.reduce((a, b) => (a.value <= b.value ? a : b));
+  const bundle = { items: {}, balls: {} };
+  let total = 0, guard = 0;
+  while (total < tv * 0.9 && guard++ < 20) {
+    let pickable = cat.filter(c => total + c.value <= ceiling);
+    if (!pickable.length) break;
+    const c = pickable[Math.floor(Math.random() * pickable.length)];
+    const bucket = c.kind === 'ball' ? bundle.balls : bundle.items;
+    bucket[c.id] = (bucket[c.id] || 0) + 1;
+    total += c.value;
+  }
+  if (total === 0) {
+    (cheapest.kind === 'ball' ? bundle.balls : bundle.items)[cheapest.id] = 1;
+    total = cheapest.value;
+  }
+  return { bundle, value: total };
+};
+
+// A spare mon to give up — never the single strongest while the party has depth.
+GameTrade._pickSpareMonForNpc = function (player) {
+  const party = (player.party || []).slice();
+  if (party.length <= 1) return party[0] || null;
+  const sorted = party.sort((a, b) => GameTrade._monValue(a) - GameTrade._monValue(b));
+  const pickable = sorted.slice(0, sorted.length - 1);
+  return pickable[Math.floor(Math.random() * pickable.length)];
+};
+
+GameTrade._npcPending = null;
+
+// Entry point: game.js calls this when a SOLO player lands on a trade tile.
+GameTrade.startNpcOffer = function (onDone) {
+  const player = GameState.currentPlayer();
+  const npcName = GameTrade.NPC_NAMES[Math.floor(Math.random() * GameTrade.NPC_NAMES.length)];
+
+  const canGiveMon = (player.party || []).length >= 2;   // must keep at least 1
+  const canGiveItems = GameTrade._inventoryUnits(player).length >= 1;
+
+  // Shapes the player can fulfil. Mon-for-mon is the headline trade.
+  const shapes = [];
+  if (canGiveMon) shapes.push('mon_mon', 'mon_mon', 'mon_items');
+  if (canGiveItems) shapes.push('items_items');
+  if (!shapes.length) {
+    GameUI.log(`${npcName} wanted to trade, but ${player.name} had nothing to spare.`, 'system');
+    if (onDone) onDone(false);
+    return;
+  }
+  const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+  let give = null, get = null;
+  if (shape === 'mon_mon' || shape === 'mon_items') {
+    const giveMon = GameTrade._pickSpareMonForNpc(player);
+    if (!giveMon) { if (onDone) onDone(false); return; }
+    const v = GameTrade._monValue(giveMon);
+    give = { kind: 'mon', mon: giveMon };
+    if (shape === 'mon_mon') {
+      const npcMon = GameTrade._buildNpcMon(v, giveMon.speciesId);
+      if (!npcMon) { if (onDone) onDone(false); return; }
+      get = { kind: 'mon', mon: npcMon };
+    } else {
+      const built = GameTrade._buildNpcBundle(v) || { bundle: { items: {}, balls: {} }, value: 0 };
+      get = { kind: 'bundle', bundle: built.bundle, value: built.value };
+    }
+  } else { // items_items — swap a small bundle of the player's items for different ones
+    const built = GameTrade._buildBundleNear(player, 0, 1 + Math.floor(Math.random() * 2));
+    if (!built) { if (onDone) onDone(false); return; }
+    give = { kind: 'bundle', bundle: built.bundle, value: built.value };
+    const npcBuilt = GameTrade._buildNpcBundle(built.value) || { bundle: { items: {}, balls: {} }, value: 0 };
+    get = { kind: 'bundle', bundle: npcBuilt.bundle, value: npcBuilt.value };
+  }
+
+  GameTrade._npcPending = { player, npcName, shape, give, get, onDone, done: false };
+  GameTrade._showNpcPrompt(GameTrade._npcPending);
+};
+
+GameTrade._npcSideHtml = function (label, side) {
+  if (side.kind === 'mon') {
+    const mon = side.mon;
+    return `
+      <div class="hint">${label}</div>
+      <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
+      <div class="trade-confirm-name">${mon.name}${mon.isShiny ? ' ✨' : ''}</div>
+    `;
+  }
+  return `
+    <div class="hint">${label}</div>
+    <div class="trade-bundle-grid">${GameTrade._bundleTilesHtml(side.bundle)}</div>
+    <div class="trade-confirm-name">${GameTrade._bundleSummary(side.bundle).join(' · ') || '—'}</div>
+  `;
+};
+
+GameTrade._npcSummary = function (np) {
+  const giveTxt = np.give.kind === 'mon' ? np.give.mon.name : GameTrade._bundleSummary(np.give.bundle).join(' + ');
+  const getTxt = np.get.kind === 'mon' ? np.get.mon.name : GameTrade._bundleSummary(np.get.bundle).join(' + ');
+  return `Give ${giveTxt} → receive ${getTxt}.`;
+};
+
+GameTrade._showNpcPrompt = function (np) {
+  const modal = GameUI.el('tradeConfirmModal');
+  if (!modal) { GameTrade._resolveNpc(false); return; }
+  GameUI.el('tradeConfirmFromSide').innerHTML = GameTrade._npcSideHtml('You give', np.give);
+  GameUI.el('tradeConfirmTargetSide').innerHTML = GameTrade._npcSideHtml(`${np.npcName} gives`, np.get);
+  GameUI.el('tradeConfirmTitle').textContent = `${np.npcName} offers a trade!`;
+  GameUI.el('tradeConfirmSummary').textContent = GameTrade._npcSummary(np);
+  GameUI.el('tradeConfirmNote').textContent = 'Accept to swap, or Decline to keep what you have.';
+  const goBtn = GameUI.el('tradeConfirmGoBtn');
+  goBtn.hidden = false; goBtn.disabled = false; goBtn.textContent = 'Accept trade';
+  goBtn.onclick = () => GameTrade._resolveNpc(true);
+  const cancelBtn = GameUI.el('tradeConfirmCancelBtn');
+  cancelBtn.hidden = false; cancelBtn.disabled = false; cancelBtn.textContent = 'Decline';
+  cancelBtn.onclick = () => GameTrade._resolveNpc(false);
+  modal.hidden = false;
+};
+
+GameTrade._resolveNpc = function (accept) {
+  const np = GameTrade._npcPending;
+  if (!np || np.done) return;
+  np.done = true;
+  GameTrade._npcPending = null;
+  const modal = GameUI.el('tradeConfirmModal');
+  if (modal) modal.hidden = true;
+  if (accept) GameTrade._executeNpc(np);
+  else GameUI.log(`${np.player.name} declined ${np.npcName}'s trade offer.`, 'system');
+  if (np.onDone) np.onDone(accept);
+};
+
+GameTrade._giveBundleToPlayer = function (player, bundle) {
+  Object.entries((bundle && bundle.items) || {}).forEach(([id, qty]) => { for (let i = 0; i < qty; i++) GameState.giveItem(player, id); });
+  Object.entries((bundle && bundle.balls) || {}).forEach(([id, qty]) => { for (let i = 0; i < qty; i++) GameState.giveBall(player, id); });
+};
+GameTrade._takeBundleFromPlayer = function (player, bundle) {
+  Object.entries((bundle && bundle.items) || {}).forEach(([id, qty]) => { for (let i = 0; i < qty; i++) GameState.consumeItem(player, id); });
+  Object.entries((bundle && bundle.balls) || {}).forEach(([id, qty]) => { for (let i = 0; i < qty; i++) GameState.consumeBall(player, id); });
+};
+
+GameTrade._executeNpc = function (np) {
+  const player = np.player;
+  if (np.give.kind === 'mon') {
+    const idx = player.party.findIndex(m => m.instanceId === np.give.mon.instanceId);
+    if (idx < 0) { GameUI.log('Trade fell through — that Pokemon was no longer available.', 'system'); return; }
+    if (np.get.kind === 'mon') {
+      player.party[idx] = np.get.mon;          // swap in place
+    } else {
+      player.party.splice(idx, 1);             // mon → items
+      GameTrade._giveBundleToPlayer(player, np.get.bundle);
+    }
+  } else {
+    GameTrade._takeBundleFromPlayer(player, np.give.bundle);
+    if (np.get.kind === 'mon') {
+      if (player.party.length < 6) player.party.push(np.get.mon);
+      else GameUI.log(`${player.name}'s party was full — released ${np.get.mon.name}.`, 'system');
+    } else {
+      GameTrade._giveBundleToPlayer(player, np.get.bundle);
+    }
+  }
+  const giveLabel = np.give.kind === 'mon' ? `<strong>${np.give.mon.name}</strong>` : GameTrade._bundleSummary(np.give.bundle).join(' + ');
+  const getLabel = np.get.kind === 'mon' ? `<strong>${np.get.mon.name}</strong>` : GameTrade._bundleSummary(np.get.bundle).join(' + ');
+  GameUI.log(`<span class="actor">${player.name}</span> traded ${giveLabel} to ${np.npcName} for ${getLabel}.`, 'crit');
+  if (window.GameAudio && GameAudio.sfx && GameAudio.sfx.item) GameAudio.sfx.item();
+  if (GameUI.refreshAll) GameUI.refreshAll();
+};

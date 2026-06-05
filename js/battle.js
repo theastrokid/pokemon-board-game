@@ -29,6 +29,18 @@ GameBattle.ensureHP = function (mon) {
   mon.hp = Math.max(0, Math.min(mon.hp, mon.maxHp));
 };
 
+// All gym leaders hit 25% harder (HP + move power). Team Rocket reuses this
+// battle engine but isn't a gym leader, so it's excluded from the bump.
+GameBattle.GYM_STRENGTH_MULT = 1.25;
+GameBattle.gymBoost = function (leader, spec) {
+  const mul = Number(leader && leader.scaleMultiplier) || 1;
+  let boost = (typeof spec.scale === 'number')
+    ? spec.scale
+    : (1 + (spec.level / 50) * 0.6) * mul;
+  if (!leader || leader.name !== 'Team Rocket') boost *= GameBattle.GYM_STRENGTH_MULT;
+  return boost;
+};
+
 GameBattle.start = function (opts) {
   // opts: { kind: 'gym'|'pvp', leader, opponentPlayer, prizePokemon, onWin, onLose }
   const player = GameState.currentPlayer();
@@ -43,14 +55,12 @@ GameBattle.start = function (opts) {
 
   if (opts.kind === 'gym') {
     const leader = opts.leader;
-    const leaderMul = Number(leader.scaleMultiplier) || 1;
     oppTeam = leader.team.map(spec => {
       const base = GameData.getPokemon(spec.id);
-      // Per-mon `scale` (if set) overrides the level-based curve. Otherwise
-      // use the level formula × the leader's gym-wide multiplier.
-      const lvlBoost = (typeof spec.scale === 'number')
-        ? spec.scale
-        : (1 + (spec.level / 50) * 0.6) * leaderMul;
+      // HP + move power scaled by the gym boost: per-mon scale (or the
+      // level curve × the gym's own multiplier) × the global +25% gym
+      // difficulty bump. See GameBattle.gymBoost.
+      const lvlBoost = GameBattle.gymBoost(leader, spec);
       return {
         speciesId: spec.id,
         name: base.name,

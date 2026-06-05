@@ -740,7 +740,9 @@ GameUI.showGymPreview = function (tile) {
   roster.forEach((spec, i) => {
     const p = GameData.getPokemon(spec.id);
     if (!p) return;
-    const lvlBoost = (typeof spec.scale === 'number') ? spec.scale : (1 + (spec.level / 50) * 0.6) * mul;
+    const lvlBoost = (window.GameBattle && GameBattle.gymBoost)
+      ? GameBattle.gymBoost(leader, spec)
+      : ((typeof spec.scale === 'number') ? spec.scale : (1 + (spec.level / 50) * 0.6) * mul);
     const scaledHp = Math.round(p.hp * lvlBoost);
     const card = document.createElement('div');
     card.className = 'gym-preview-mon';
