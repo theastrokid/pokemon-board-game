@@ -703,7 +703,9 @@ GameGame.fireRandomTileEvent = function (player, tile) {
 };
 
 // ============================== TEAM ROCKET ==============================
-GameGame.TEAM_ROCKET_CHANCE = 1 / 10;
+// 1 roll per landing (= 1 per turn), so 1/20 averages one ambush every ~20
+// turns across all players. Applies to humans AND CPUs so it's actually seen.
+GameGame.TEAM_ROCKET_CHANCE = 1 / 20;
 // Thematic Team Rocket Pokemon, all present in the dex: Meowth, Koffing,
 // Weezing, Gastly, Haunter, Ekans, Arbok, Zubat, Golbat, Raticate, Houndour,
 // Murkrow, Wobbuffet, Sneasel.
