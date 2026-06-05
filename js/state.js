@@ -155,16 +155,79 @@ GameState.makePlayer = function (idx, name, starterSpeciesId) {
     tile: 0,
     badges: [],
     flags: { luckyEgg: false, escapeRope: false, maxRepel: false, xAttack: false, xDefend: false },
+    // Active Egg items, each { instanceId, speciesId, turnsLeft }. Hatch into a
+    // shiny single-stage Pokemon after EGG_HATCH_TURNS of this player's turns.
+    eggs: [],
     completed: false,
   };
 };
+
+// Number of the OWNER's turns before an Egg item hatches.
+GameState.EGG_HATCH_TURNS = 5;
 
 GameState.currentPlayer = function () {
   return GameState.players[GameState.activePlayerIdx];
 };
 
 GameState.giveItem = function (player, itemId) {
+  // Eggs are stateful (countdown + pre-rolled species) so they live in
+  // player.eggs, NOT the flat items bag. Routing here means every draw site
+  // (item tiles, gym rewards, releases, tile events, catch streaks) handles
+  // Eggs automatically — and they can never be traded as plain items.
+  if (itemId === 'egg') { GameState.giveEgg(player); return; }
   player.items[itemId] = (player.items[itemId] || 0) + 1;
+};
+
+// Create a new Egg for the player. The hatch species (a shiny single-stage
+// Pokemon) is rolled NOW and stored, so save/load and the eventual reveal are
+// deterministic.
+GameState.giveEgg = function (player) {
+  if (!Array.isArray(player.eggs)) player.eggs = [];
+  const speciesId = (window.GameItems && GameItems.randomSingleStageSpeciesId)
+    ? GameItems.randomSingleStageSpeciesId() : 128; // Tauros fallback
+  player.eggs.push({
+    instanceId: 'egg-' + Math.random().toString(36).slice(2, 8),
+    speciesId,
+    turnsLeft: GameState.EGG_HATCH_TURNS,
+  });
+  player.eggsReceived = (player.eggsReceived || 0) + 1;
+};
+
+// Build a hatched Pokemon: always shiny, with the same +25% HP / +25% move
+// power bonus shiny wild catches get (see encounter.js), so it survives every
+// code path that later reads mon.moves.
+GameState.makeHatchling = function (player, speciesId) {
+  const mon = GameState.addPokemonToParty(player, speciesId);
+  if (mon) {
+    mon.isShiny = true;
+    mon.fromEgg = true;
+    mon.maxHp = Math.round(mon.maxHp * 1.25);
+    mon.hp = mon.maxHp;
+    mon.moves.forEach(mv => { mv.power = Math.round((mv.power || 0) * 1.25); });
+  }
+  return mon;
+};
+
+// Advance every Egg's countdown by one at the START of the owner's turn, and
+// return the Eggs that are ready to hatch (turnsLeft 0) AND have party room.
+// Eggs are spliced out atomically so they can never double-hatch; ready Eggs
+// with no party room stay parked at 0 until a slot frees up. A per-turn guard
+// stops any double endTurn from decrementing twice.
+GameState.tickEggsTurnStart = function (player) {
+  if (!player || !Array.isArray(player.eggs) || player.eggs.length === 0) return [];
+  if (player._lastEggTickTurn === GameState.turnCount) return [];
+  player._lastEggTickTurn = GameState.turnCount;
+  player.eggs.forEach(egg => { egg.turnsLeft = Math.max(0, (egg.turnsLeft || 0) - 1); });
+  const hatched = [];
+  let i = 0;
+  while (i < player.eggs.length && (player.party.length + hatched.length) < 6) {
+    if (player.eggs[i].turnsLeft <= 0) {
+      hatched.push(player.eggs.splice(i, 1)[0]);
+    } else {
+      i++;
+    }
+  }
+  return hatched;
 };
 
 GameState.giveBall = function (player, ballId) {
@@ -275,6 +338,11 @@ GameState.load = function () {
     GameState.activePlayerIdx = snap.activePlayerIdx;
     GameState.turnCount = snap.turnCount;
     GameState.options = snap.options || GameState.options;
+    // Backward-compat: older saves predate the Egg system / new flags.
+    GameState.players.forEach(p => {
+      if (!Array.isArray(p.eggs)) p.eggs = [];
+      if (!p.flags) p.flags = {};
+    });
     return true;
   } catch (e) { return false; }
 };

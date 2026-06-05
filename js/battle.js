@@ -80,6 +80,10 @@ GameBattle.start = function (opts) {
     opponentColor = '#888';
   }
 
+  // Callers may override the displayed opponent label (e.g. Team Rocket reuses
+  // the gym battle engine but shouldn't read "Gym Leader Team Rocket").
+  if (opts.opponentLabel) opponentLabel = opts.opponentLabel;
+
   // Defensive: backfill PP on any move that's missing it (legacy saves).
   playerTeam.forEach(m => GameBattle.ensurePP(m));
   oppTeam.forEach(m => GameBattle.ensurePP(m));
@@ -125,6 +129,10 @@ GameBattle.start = function (opts) {
     oppActive: 0,
     awaitingDice: false,
     pendingMoveIdx: null,
+    // Final-boss mechanic: gym leaders may carry a Hyper Potion allowance
+    // (Giovanni = 2). Decremented as they spend them mid-fight.
+    oppHyperPotionsLeft: (opts.kind === 'gym' && opts.leader && opts.leader.hyperPotions)
+      ? (Number(opts.leader.hyperPotions) || 0) : 0,
     message: 'Battle start.',
     onWin: opts.onWin,
     onLose: opts.onLose,
@@ -329,6 +337,25 @@ GameBattle.opponentTurn = function () {
   const oMon = b.oppTeam[b.oppActive];
   if (!oMon || oMon.fainted) return;
   GameBattle.ensurePP(oMon);
+
+  // ===== Final-boss Hyper Potion (Giovanni) =====
+  // If the leader still has Hyper Potions and their active Pokemon is
+  // critically low (below 10 HP) but still conscious and not already full,
+  // spend one INSTEAD of attacking. Never wasted on a fainted or full mon;
+  // capped by oppHyperPotionsLeft (Giovanni = 2 total). Uses the turn.
+  if ((b.oppHyperPotionsLeft || 0) > 0 && oMon.hp > 0 && oMon.hp < 10 && oMon.hp < oMon.maxHp) {
+    const healItem = (window.GameData && GameData.getItem && GameData.getItem('hyper_potion'));
+    const healAmt = (healItem && healItem.amount) || 120;
+    oMon.hp = Math.min(oMon.maxHp, oMon.hp + healAmt);
+    b.oppHyperPotionsLeft -= 1;
+    const left = b.oppHyperPotionsLeft;
+    b.message = `${b.opponentLabel} used a Hyper Potion on ${oMon.name}! HP restored to ${oMon.hp}/${oMon.maxHp}.${left > 0 ? ` (${left} left)` : ''}`;
+    GameUI.log(`<span class="crit">💉 ${b.opponentLabel} used a HYPER POTION on ${oMon.name}! HP → ${oMon.hp}/${oMon.maxHp}.</span>`, 'crit');
+    if (GameAudio.sfx && GameAudio.sfx.heal) GameAudio.sfx.heal();
+    b.opponentPending = false;
+    GameBattle.renderBattle(b);
+    return;
+  }
 
   // Build candidate move list (PP > 0). If none, Struggle.
   const usable = oMon.moves

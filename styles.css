@@ -2768,3 +2768,147 @@ body {
   grid-column: 1 / -1; font-size: 10px; color: var(--ink-dim, #8aa0bd);
   margin-top: -2px;
 }
+
+/* =========================================================
+   NEW FEATURES (2026): starter egg, gym intro, egg hatch,
+   status chips, Team Rocket. Reuses existing design tokens.
+========================================================= */
+
+/* ---------- Starter choice (egg vs question mark) ---------- */
+.starter-choice { display: flex; gap: 10px; flex-wrap: wrap; }
+.starter-choice-card {
+  flex: 1; min-width: 130px;
+  background: var(--bg);
+  border: 2px solid #314863;
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  cursor: pointer; color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: transform 0.1s, border-color 0.1s, background 0.1s;
+}
+.starter-choice-card:hover { transform: translateY(-2px); background: #1c2f4a; }
+.starter-choice-card.egg-choice { border-color: #f5c451; }
+.starter-choice-card.egg-choice:hover { box-shadow: 0 0 16px rgba(245,196,81,0.35); }
+.starter-choice-card.question-choice { border-color: var(--pop-2); }
+.scc-emoji { font-size: 30px; line-height: 1; }
+.starter-choice-card.egg-choice .scc-emoji { animation: eggBobble 1.6s ease-in-out infinite; }
+.scc-title { font-size: 12px; font-weight: bold; }
+.scc-sub { font-size: 10px; color: var(--ink-dim); }
+.starter-grid-wrap { margin-top: 4px; }
+.starter-egg-hatch { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; }
+.starter-egg-hatch .egg-shake { font-size: 44px; }
+.starter-egg-hatch .egg-shake.hatching { animation: eggWiggle 0.35s ease-in-out infinite; }
+.starter-egg-hatch .hatch-caption { font-size: 11px; color: var(--ink-dim); }
+.starter-chosen {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #2a3e5e, #1a2c47);
+  border: 2px solid var(--pop); border-radius: var(--radius-sm); padding: 8px 12px;
+}
+.starter-chosen-img { width: 52px; height: 52px; image-rendering: pixelated; object-fit: contain; }
+.starter-chosen-text { display: flex; flex-direction: column; flex: 1; }
+.starter-chosen-name { font-weight: bold; font-size: 13px; }
+.starter-chosen-tag { font-size: 10px; color: var(--pop); }
+.starter-rechoose {
+  background: var(--bg-3); border: 1px solid #4b5563; color: var(--ink);
+  border-radius: var(--radius-sm); padding: 6px 10px; font-size: 11px; cursor: pointer;
+}
+.starter-rechoose:hover { background: #34506e; }
+@keyframes eggBobble { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-2px); } }
+@keyframes eggWiggle { 0%,100% { transform: rotate(-12deg); } 25% { transform: rotate(10deg); } 50% { transform: rotate(-8deg) translateY(-3px); } 75% { transform: rotate(12deg); } }
+
+/* ---------- Gym leader intro animation ---------- */
+.gym-intro-card {
+  --leader-color: #cc4422;
+  max-width: 600px; text-align: center; position: relative; overflow: hidden;
+  border-color: var(--leader-color);
+}
+.gym-intro-flash {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--leader-color) 45%, transparent), transparent 70%);
+  animation: giFlash 0.7s ease-out;
+}
+@keyframes giFlash { from { opacity: 0.9; } to { opacity: 0; } }
+.gym-intro-leader-wrap { display: flex; justify-content: center; }
+.gym-intro-leader {
+  width: 120px; height: 120px; image-rendering: pixelated; object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5));
+  animation: giLeaderIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes giLeaderIn { from { transform: translateY(-30px) scale(0.6); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+#gymIntroName { margin: 6px 0 2px; color: var(--leader-color); }
+.gym-intro-subtitle { font-size: 13px; color: var(--ink); margin: 8px 0 14px; font-weight: bold; }
+.gym-intro-team { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.gym-intro-mon {
+  position: relative; width: 86px;
+  background: var(--bg-3); border: 1.5px solid #34506e; border-radius: var(--radius-sm);
+  padding: 8px 4px; opacity: 0;
+  animation: giMonIn 0.4s ease forwards;
+}
+.gym-intro-mon img { width: 64px; height: 64px; image-rendering: pixelated; object-fit: contain; }
+.gym-intro-mon .gi-name { font-size: 11px; font-weight: bold; margin-top: 2px; }
+.gym-intro-mon .gi-order {
+  position: absolute; top: -8px; left: -8px; width: 22px; height: 22px;
+  background: var(--leader-color); color: #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;
+  border: 2px solid #14253a;
+}
+@keyframes giMonIn { from { transform: translateY(16px) scale(0.7); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.gym-intro-skip { width: 100%; }
+
+/* ---------- Egg hatch animation ---------- */
+.egg-hatch-card { max-width: 420px; text-align: center; }
+.egg-hatch-stage { position: relative; height: 160px; display: flex; align-items: center; justify-content: center; }
+.egg-hatch-egg { font-size: 90px; line-height: 1; }
+.egg-hatch-egg.hatching { animation: eggWiggle 0.3s ease-in-out infinite; }
+.egg-hatch-sprite { width: 130px; height: 130px; image-rendering: pixelated; object-fit: contain; filter: drop-shadow(0 0 14px rgba(255,255,255,0.5)); }
+.egg-hatch-sprite.revealed { animation: hatchPop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes hatchPop { 0% { transform: scale(0.2); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+.egg-hatch-sparkle {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,210,0.45), transparent 60%);
+  opacity: 0; animation: hatchSparkle 2.6s ease-in-out infinite;
+}
+@keyframes hatchSparkle { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+.egg-hatch-message { font-size: 13px; margin: 10px 0; min-height: 1.4em; }
+.egg-hatch-message strong { color: var(--pop); }
+
+/* ---------- Status chips (Lucky Egg active, Egg countdown) ---------- */
+.tp-status { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.tp-status-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 999px;
+  background: var(--bg-3); border: 1px solid #3a516e; color: var(--ink);
+}
+.tp-status-chip.lucky-egg-chip { background: rgba(120,200,80,0.16); border-color: var(--grass); color: #c7f0a0; }
+.tp-status-chip.egg-chip { background: rgba(245,196,81,0.14); border-color: #f5c451; color: #ffe39a; }
+.tp-status-chip.egg-chip.ready { animation: chipPulse 1s ease-in-out infinite; }
+@keyframes chipPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(245,196,81,0.5); } 50% { box-shadow: 0 0 0 4px rgba(245,196,81,0); } }
+.egg-chip-egg { position: relative; display: inline-block; }
+.egg-chip-count {
+  position: absolute; top: -7px; right: -9px; min-width: 14px; height: 14px;
+  background: #f5c451; color: #3a2c00; border-radius: 999px;
+  font-size: 9px; font-weight: bold; line-height: 14px; text-align: center; padding: 0 2px;
+  border: 1px solid #14253a;
+}
+
+/* ---------- Team Rocket encounter ---------- */
+.team-rocket-card {
+  max-width: 420px; text-align: center;
+  background: linear-gradient(180deg, #2a0f24, #150a18);
+  border-color: #d0307a;
+}
+.team-rocket-card.tr-animate { animation: trShake 0.5s ease; }
+@keyframes trShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+.tr-logo {
+  width: 64px; height: 64px; margin: 0 auto 6px;
+  background: #d0307a; color: #fff; border-radius: 50%;
+  font-family: var(--font-display); font-size: 30px; line-height: 64px; font-weight: bold;
+  box-shadow: 0 0 22px rgba(208,48,122,0.7);
+  animation: trLogoSpin 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes trLogoSpin { from { transform: rotate(-180deg) scale(0.2); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
+.tr-stage { height: 120px; display: flex; align-items: center; justify-content: center; }
+.tr-sprite { width: 110px; height: 110px; image-rendering: pixelated; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); animation: eggBobble 1.4s ease-in-out infinite; }
+.tr-title { font-family: var(--font-display); font-size: 18px; color: #ff5fa2 !important; letter-spacing: 1px; }
+.tr-subtitle { font-size: 13px; color: var(--ink); margin: 6px 0 12px; min-height: 1.3em; }
+.tr-actions { display: flex; justify-content: center; }

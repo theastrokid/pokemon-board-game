@@ -95,6 +95,18 @@ GameGame.handleTileLanding = function (player, onAfter) {
   // Random tile event (small chance bonus on top of the normal tile effect).
   GameGame.fireRandomTileEvent(player, tile);
 
+  // Team Rocket ambush: a 1-in-20 surprise on landing (human players only).
+  // It resolves FIRST — battle or theft — and only then does the tile's own
+  // effect play out, via the onDone continuation.
+  if (GameGame._maybeTeamRocket(player, tile, () => GameGame._resolveTile(player, tile, area, onAfter))) {
+    return;
+  }
+  GameGame._resolveTile(player, tile, area, onAfter);
+};
+
+// The tile's normal landing effect. Split out of handleTileLanding so the
+// Team Rocket event can run ahead of it without re-rolling tile events.
+GameGame._resolveTile = function (player, tile, area, onAfter) {
   const after = () => {
     GameState.pendingTileResolution = false;
     if (onAfter) onAfter();
@@ -185,7 +197,15 @@ GameGame.handleTileLanding = function (player, onAfter) {
         GameGame.afterTileResolved();
         return;
       }
-      GameTrade.start(() => GameGame.afterTileResolved());
+      const after = () => GameGame.afterTileResolved();
+      // CPUs auto-generate a trade offer to another player; the offer is then
+      // routed through the normal accept/decline flow (a human target must
+      // explicitly accept). Humans open the trade builder as before.
+      if (player.isCpu && GameTrade.startCpuOffer) {
+        GameTrade.startCpuOffer(after);
+      } else {
+        GameTrade.start(after);
+      }
       break;
     }
     case 'pokecentre': {
@@ -305,6 +325,57 @@ GameGame.endTurn = function () {
   const np = GameState.currentPlayer();
   GameAudio.playArea(GameData.getTile(np.tile).area);
   GameUI.log(`<span class="actor">${np.name}</span>'s turn.`);
+  // Egg countdown advances once per handoff for the player whose turn is now
+  // starting. Any that reach 0 (with party room) hatch right here on their turn.
+  const hatched = GameState.tickEggsTurnStart(np);
+  if (hatched.length) GameGame._runHatches(np, hatched);
+};
+
+// Hatch a queue of ready Eggs one at a time. Humans get the reveal animation
+// (blocking the roll via GameState.busy until they continue); CPUs hatch
+// silently so play stays snappy. Room is already guaranteed by tickEggsTurnStart.
+GameGame._runHatches = function (player, eggs) {
+  const queue = eggs.slice();
+  const next = () => {
+    if (!queue.length) { GameUI.refreshAll(); return; }
+    const egg = queue.shift();
+    if (player.isCpu || !GameUI.showEggHatch) {
+      const mon = GameState.makeHatchling(player, egg.speciesId);
+      GameUI.log(`<span class="crit">✨ ${player.name}'s Egg hatched into a SHINY ${mon ? mon.name : 'Pokemon'}!</span>`, 'crit');
+      GameUI.refreshAll();
+      next();
+    } else {
+      GameUI.showEggHatch(player, egg, next);
+    }
+  };
+  next();
+};
+
+// Choose the Pokemon a gym leader will actually fight with THIS battle.
+// Leaders now carry a `pool` (6 for the first three gyms, 10 for Giovanni)
+// and a `teamSize` (3, or 6 for Giovanni). We draw `teamSize` at random from
+// the pool. Called exactly once per battle (in startGymBattle) so the team is
+// stable across the intro animation, the prep modal, and the fight itself.
+GameGame._selectGymTeam = function (leader) {
+  // Backward-compat: a leader defined with a fixed `team` and no `pool`.
+  if (!leader.pool || !leader.pool.length) return (leader.team || []).slice();
+  const size = Math.min(leader.teamSize || leader.pool.length, leader.pool.length);
+  const arr = leader.pool.map(m => Object.assign({}, m));
+  // Fisher-Yates shuffle, then take the first `size`.
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  let picked = arr.slice(0, size);
+  if (leader.bossEscalating) {
+    // Final boss: order the drawn six by level and lay an escalating power
+    // curve over them, so the LAST mon sent out is always the strongest no
+    // matter which six were drawn. Preserves the boss-fight feel.
+    picked.sort((a, b) => (a.level || 0) - (b.level || 0));
+    const curve = [1, 1.1, 1.2, 1.3, 1.4, 1.5];
+    picked = picked.map((m, idx) => Object.assign({}, m, { scale: curve[Math.min(idx, curve.length - 1)] }));
+  }
+  return picked;
 };
 
 GameGame.startGymBattle = function (tile) {
@@ -315,19 +386,29 @@ GameGame.startGymBattle = function (tile) {
     GameGame.gymLoss(tile, leader);
     return;
   }
+  // Pick the battle team ONCE. The same selection drives the intro animation,
+  // the prep modal, and GameBattle.start — so the Pokemon the player is shown
+  // are exactly the Pokemon they fight.
+  const battleLeader = Object.assign({}, leader, { team: GameGame._selectGymTeam(leader) });
   GameUI.log(`<span class="crit">${player.name} challenges Gym Leader ${leader.name}!</span>`, 'crit');
   const fight = () => GameBattle.start({
     kind: 'gym',
-    leader,
-    onWin: () => GameGame.gymWin(tile, leader),
-    onLose: () => GameGame.gymLoss(tile, leader),
+    leader: battleLeader,
+    onWin: () => GameGame.gymWin(tile, battleLeader),
+    onLose: () => GameGame.gymLoss(tile, battleLeader),
   });
   // Humans get the pre-fight prep modal (see leader's team + reorder party).
   // CPUs skip it — they already optimize battle slots pre-roll.
-  if (player.isCpu || !GameUI.showGymPrep) {
-    fight();
+  const toPrep = () => {
+    if (player.isCpu || !GameUI.showGymPrep) fight();
+    else GameUI.showGymPrep(battleLeader, fight);
+  };
+  // Brief cinematic intro: who they're facing + the exact team coming up.
+  // Humans only — CPUs go straight to the fight to keep play snappy.
+  if (!player.isCpu && GameUI.showGymIntro) {
+    GameUI.showGymIntro(battleLeader, toPrep);
   } else {
-    GameUI.showGymPrep(tile, fight);
+    toPrep();
   }
 };
 
@@ -565,6 +646,87 @@ GameGame.fireRandomTileEvent = function (player, tile) {
   if (window.GameAudio && GameAudio.sfx.item) GameAudio.sfx.item();
   GameUI.refreshAll();
   return true;
+};
+
+// ============================== TEAM ROCKET ==============================
+GameGame.TEAM_ROCKET_CHANCE = 1 / 20;
+// Thematic Team Rocket Pokemon, all present in the dex: Meowth, Koffing,
+// Weezing, Gastly, Haunter, Ekans, Arbok, Zubat, Golbat, Raticate, Houndour,
+// Murkrow, Wobbuffet, Sneasel.
+GameGame.TEAM_ROCKET_POOL = [52, 109, 110, 92, 93, 23, 24, 41, 42, 20, 228, 198, 202, 215];
+
+// Roll for a Team Rocket ambush on landing. Returns true if one triggered — the
+// caller then STOPS and lets the TR flow call onDone to continue the tile.
+// Human players only; never stacked on a gym / fainted / battle / start tile.
+GameGame._maybeTeamRocket = function (player, tile, onDone) {
+  if (!player || player.isCpu) return false;
+  if (!tile || ['gym', 'fainted', 'battle', 'start'].includes(tile.type)) return false;
+  if (Math.random() >= GameGame.TEAM_ROCKET_CHANCE) return false;
+  // Decide the outcome up front: 50% battle, 50% theft. If a battle is chosen
+  // but the player has nothing able to fight, fall back to theft so we never
+  // open a broken battle.
+  const canFight = player.party.some(m => !m.fainted);
+  const wantBattle = Math.random() < 0.5 && canFight;
+  const run = () => {
+    if (wantBattle) GameGame._teamRocketBattle(player, onDone);
+    else GameGame._teamRocketTheft(player, onDone);
+  };
+  if (GameUI.showTeamRocketIntro) GameUI.showTeamRocketIntro(wantBattle ? 'battle' : 'theft', run);
+  else run();
+  return true;
+};
+
+GameGame._teamRocketBattle = function (player, onDone) {
+  if (GameUI.hideTeamRocket) GameUI.hideTeamRocket();
+  const badgeCount = (player.badges || []).length;
+  const level = 12 + badgeCount * 10;            // scales with how far they've come
+  const pool = GameGame.TEAM_ROCKET_POOL.slice();
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+  const size = Math.min(3, 2 + Math.floor(badgeCount / 2));
+  const team = pool.slice(0, size).map(id => ({ id, level }));
+  const rocketLeader = { name: 'Team Rocket', city: '', color: '#b0246a', team, scaleMultiplier: 1 };
+  GameUI.log(`<span class="crit">🚀 Team Rocket wants to battle!</span>`, 'crit');
+  GameBattle.start({
+    kind: 'gym',
+    leader: rocketLeader,
+    opponentLabel: '🚀 Team Rocket',
+    onWin: () => {
+      const it = GameData.pickItemCard();
+      GameState.giveItem(player, it.id);
+      GameUI.log(`<span class="win">${player.name} sent Team Rocket blasting off! They dropped a ${it.name}.</span>`, 'win');
+      GameUI.refreshAll();
+      if (onDone) onDone();
+    },
+    onLose: () => {
+      GameUI.log(`<span class="lose">Team Rocket overpowered ${player.name} and fled.</span>`, 'lose');
+      GameState.healPlayer(player); // never strand the player with a fainted party
+      GameUI.refreshAll();
+      if (onDone) onDone();
+    },
+  });
+};
+
+GameGame._teamRocketTheft = function (player, onDone) {
+  // Steal from consumable items only — never balls, Eggs (not in items), or
+  // any future key items. Up to 3 units; as many as possible if fewer exist.
+  const units = [];
+  Object.entries(player.items || {}).forEach(([id, n]) => { for (let i = 0; i < n; i++) units.push(id); });
+  for (let i = units.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = units[i]; units[i] = units[j]; units[j] = t; }
+  const stolen = units.slice(0, Math.min(3, units.length));
+  const counts = {};
+  stolen.forEach(id => {
+    player.items[id]--; if (player.items[id] <= 0) delete player.items[id];
+    counts[id] = (counts[id] || 0) + 1;
+  });
+  const summary = Object.entries(counts).map(([id, n]) => `${n}× ${(GameData.getItem(id) || {}).name || id}`).join(', ');
+  const msg = stolen.length
+    ? `Team Rocket snatched ${stolen.length} item${stolen.length === 1 ? '' : 's'} from your bag! (${summary})`
+    : `Team Rocket rummaged through your bag but found nothing to steal!`;
+  GameUI.log(`<span class="${stolen.length ? 'lose' : 'system'}">🚀 ${msg}</span>`, stolen.length ? 'lose' : 'system');
+  GameUI.refreshAll();
+  const finish = () => { if (onDone) onDone(); };
+  if (GameUI.showTeamRocketResult) GameUI.showTeamRocketResult(msg, stolen.length > 0, finish);
+  else finish();
 };
 
 // If a legendary spawn is parked on this tile, return its speciesId and clear

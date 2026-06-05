@@ -120,6 +120,7 @@ GameTrade.start = function (onDone) {
 };
 
 GameTrade._bundleHasItems = function (bundle) {
+  if (!bundle) return false;
   const has = (obj) => Object.values(obj || {}).some(n => n > 0);
   return has(bundle.items) || has(bundle.balls);
 };
@@ -287,6 +288,9 @@ GameTrade._proposeTradeToTarget = function () {
     fromIdx: GameState.players.indexOf(s.from),
     targetIdx: GameState.players.indexOf(s.target),
     fromMonInstanceId: s.fromMon.instanceId,
+    // Human-built proposals always give a Pokemon from the initiator, so the
+    // from-side bundle stays empty. CPU offers (below) may populate it.
+    fromBundle: null,
     targetMonInstanceId: s.targetMon ? s.targetMon.instanceId : null,
     targetBundle: JSON.parse(JSON.stringify(s.targetBundle || { items: {}, balls: {} })),
     offerMode: s.offerMode,
@@ -309,42 +313,46 @@ GameTrade._proposeTradeToTarget = function () {
   }
 };
 
+// Icon grid HTML for an item/ball bundle (shared by both trade sides).
+GameTrade._bundleTilesHtml = function (bundle) {
+  return [
+    ...Object.entries((bundle && bundle.items) || {}).map(([id, qty]) =>
+      qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteItem(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
+    ...Object.entries((bundle && bundle.balls) || {}).map(([id, qty]) =>
+      qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteBall(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
+  ].join('');
+};
+
+// Render one trade side — a Pokemon or an item/ball bundle.
+GameTrade._sideHtml = function (player, label, spec) {
+  if (spec.bundle && GameTrade._bundleHasItems(spec.bundle)) {
+    return `
+      <div class="hint">${player.name} ${label}</div>
+      <div class="trade-bundle-grid">${GameTrade._bundleTilesHtml(spec.bundle)}</div>
+      <div class="trade-confirm-name">${GameTrade._bundleSummary(spec.bundle).join(' · ')}</div>
+    `;
+  }
+  const mon = spec.monInstanceId ? player.party.find(m => m.instanceId === spec.monInstanceId) : null;
+  return mon ? `
+    <div class="hint">${player.name} ${label}</div>
+    <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
+    <div class="trade-confirm-name">${mon.name}${spec.forced ? ' <span class="hint">(forced pick)</span>' : ''}</div>
+  ` : `<div class="hint">${player.name}'s offered ${spec.bundle ? 'items are' : 'Pokemon is'} no longer available.</div>`;
+};
+
 GameTrade._renderConfirmSides = function (proposal) {
   const from = GameState.players[proposal.fromIdx];
   const target = GameState.players[proposal.targetIdx];
   if (!from || !target) return;
-  const fromMon = from.party.find(m => m.instanceId === proposal.fromMonInstanceId);
-  const targetMon = proposal.targetMonInstanceId
-    ? target.party.find(m => m.instanceId === proposal.targetMonInstanceId)
-    : null;
-  const fromSide = GameUI.el('tradeConfirmFromSide');
-  const targetSide = GameUI.el('tradeConfirmTargetSide');
-  fromSide.innerHTML = fromMon ? `
-    <div class="hint">${from.name} gives</div>
-    <img src="${GameData.spriteStatic(fromMon.speciesId)}" alt="${fromMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
-    <div class="trade-confirm-name">${fromMon.name}</div>
-  ` : `<div class="hint">${from.name}'s Pokemon is no longer available.</div>`;
-  if (proposal.offerMode === 'pokemon') {
-    targetSide.innerHTML = targetMon ? `
-      <div class="hint">${target.name} gives</div>
-      <img src="${GameData.spriteStatic(targetMon.speciesId)}" alt="${targetMon.name}" style="width:96px;height:96px;image-rendering:pixelated;" />
-      <div class="trade-confirm-name">${targetMon.name}${proposal.forced ? ' <span class="hint">(forced pick)</span>' : ''}</div>
-    ` : `<div class="hint">${target.name}'s offered Pokemon is no longer available.</div>`;
-  } else {
-    const bundle = proposal.targetBundle || { items: {}, balls: {} };
-    const parts = GameTrade._bundleSummary(bundle);
-    const iconsHtml = [
-      ...Object.entries(bundle.items || {}).map(([id, qty]) =>
-        qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteItem(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
-      ...Object.entries(bundle.balls || {}).map(([id, qty]) =>
-        qty > 0 ? `<div class="trade-bundle-tile"><img src="${GameData.spriteBall(id)}" onerror="this.style.display='none'" alt="" /><span>×${qty}</span></div>` : ''),
-    ].join('');
-    targetSide.innerHTML = `
-      <div class="hint">${target.name} gives</div>
-      <div class="trade-bundle-grid">${iconsHtml}</div>
-      <div class="trade-confirm-name">${parts.join(' · ')}</div>
-    `;
-  }
+  GameUI.el('tradeConfirmFromSide').innerHTML = GameTrade._sideHtml(from, 'gives', {
+    monInstanceId: proposal.fromMonInstanceId,
+    bundle: proposal.fromBundle,
+  });
+  GameUI.el('tradeConfirmTargetSide').innerHTML = GameTrade._sideHtml(target, 'gives', {
+    monInstanceId: proposal.targetMonInstanceId,
+    bundle: proposal.offerMode === 'pokemon' ? null : proposal.targetBundle,
+    forced: proposal.forced,
+  });
 };
 
 GameTrade._showInitiatorWaiting = function (proposal) {
@@ -505,11 +513,37 @@ GameTrade.onNetMessage = function (msg) {
 // Execute the agreed-upon proposal. Resolves all references (player, mons)
 // against the LIVE GameState — never against the captured `state` from the
 // builder UI — because MP state sync may have moved things since.
+// Is an item/ball bundle available in full from this player?
+GameTrade._bundleAvailable = function (player, bundle) {
+  for (const [id, qty] of Object.entries((bundle && bundle.items) || {})) {
+    if ((player.items[id] || 0) < qty) return false;
+  }
+  for (const [id, qty] of Object.entries((bundle && bundle.balls) || {})) {
+    if ((player.balls[id] || 0) < qty) return false;
+  }
+  return true;
+};
+
+// Move an item/ball bundle from src to dst (assumes availability validated).
+GameTrade._moveBundle = function (src, dst, bundle) {
+  Object.entries((bundle && bundle.items) || {}).forEach(([id, qty]) => {
+    for (let i = 0; i < qty; i++) { GameState.consumeItem(src, id); GameState.giveItem(dst, id); }
+  });
+  Object.entries((bundle && bundle.balls) || {}).forEach(([id, qty]) => {
+    for (let i = 0; i < qty; i++) { GameState.consumeBall(src, id); GameState.giveBall(dst, id); }
+  });
+};
+
 GameTrade._executeProposal = function (proposal) {
   const from = GameState.players[proposal.fromIdx];
   const target = GameState.players[proposal.targetIdx];
   if (!from || !target) {
     GameUI.log('Trade aborted — a participant is missing.', 'system');
+    return;
+  }
+  // Initiator gives an item/ball bundle (CPU-only shapes: items↔mon, items↔items).
+  if (GameTrade._bundleHasItems(proposal.fromBundle)) {
+    GameTrade._executeGeneralized(proposal, from, target);
     return;
   }
   const fromIdxInParty = from.party.findIndex(m => m.instanceId === proposal.fromMonInstanceId);
@@ -566,6 +600,224 @@ GameTrade._executeProposal = function (proposal) {
     GameUI.log(`<span class="actor">${from.name}</span> traded <strong>${givenMon.name}</strong> for ${summary} with ${target.name}.`, 'crit');
   }
   GameUI.refreshAll();
+};
+
+// Execute a proposal whose INITIATOR gives an item/ball bundle. Target gives
+// either a Pokemon (offerMode 'pokemon') or its own bundle (offerMode 'items').
+// Resolves all references against the live GameState.
+GameTrade._executeGeneralized = function (proposal, from, target) {
+  const fromBundle = proposal.fromBundle || { items: {}, balls: {} };
+  const targetGivesMon = proposal.offerMode === 'pokemon' && !!proposal.targetMonInstanceId;
+  const targetBundle = proposal.targetBundle || { items: {}, balls: {} };
+
+  if (!GameTrade._bundleAvailable(from, fromBundle)) {
+    GameUI.log(`Trade aborted — ${from.name} no longer has the offered items.`, 'system');
+    return;
+  }
+  let targetMon = null;
+  if (targetGivesMon) {
+    targetMon = target.party.find(m => m.instanceId === proposal.targetMonInstanceId);
+    if (!targetMon) {
+      GameUI.log(`Trade aborted — ${target.name} no longer has the offered Pokemon.`, 'system');
+      return;
+    }
+    if (target.party.length <= 1) {
+      GameUI.log(`Trade aborted — ${target.name} must keep at least 1 Pokemon.`, 'system');
+      return;
+    }
+  } else if (!GameTrade._bundleAvailable(target, targetBundle)) {
+    GameUI.log(`Trade aborted — ${target.name} no longer has the offered items.`, 'system');
+    return;
+  }
+
+  // Execute — initiator's bundle goes to the target first.
+  GameTrade._moveBundle(from, target, fromBundle);
+  let targetLabel;
+  if (targetGivesMon) {
+    const idx = target.party.findIndex(m => m.instanceId === proposal.targetMonInstanceId);
+    const mon = target.party.splice(idx, 1)[0];
+    if (from.party.length < 6) from.party.push(mon);
+    else GameUI.log(`${from.name}'s party was full — released ${mon.name}.`, 'system');
+    targetLabel = `<strong>${mon.name}</strong>`;
+  } else {
+    GameTrade._moveBundle(target, from, targetBundle);
+    targetLabel = GameTrade._bundleSummary(targetBundle).join(' + ');
+  }
+  const fromLabel = GameTrade._bundleSummary(fromBundle).join(' + ');
+  GameUI.log(`<span class="actor">${from.name}</span> traded ${fromLabel} for ${targetLabel} with ${target.name}.`, 'crit');
+  GameUI.refreshAll();
+};
+
+// ===================== CPU-INITIATED TRADE OFFERS =====================
+// A rough "worth" for a Pokemon: HP + 2×best move power, nudged up for shiny
+// and for later evolution stages. Used only to keep CPU offers roughly fair.
+GameTrade._monValue = function (mon) {
+  if (!mon) return 0;
+  const maxMove = (mon.moves || []).reduce((mx, mv) => Math.max(mx, mv.power || 0), 0);
+  let v = (mon.maxHp || 0) + 2 * maxMove;
+  if (mon.isShiny) v = Math.round(v * 1.3);
+  if (window.GameItems && GameItems.getEvolutionStage) {
+    const stage = GameItems.getEvolutionStage(mon.speciesId);
+    v = Math.round(v * (1 + 0.12 * (stage - 1)));
+  }
+  return v;
+};
+
+GameTrade._itemUnitValue = function (id, kind) {
+  const def = kind === 'ball' ? GameData.getPokeball(id) : GameData.getItem(id);
+  return (def && def.value) || 5;
+};
+
+// Flatten a player's items + balls into one unit per count, for greedy bundling.
+GameTrade._inventoryUnits = function (player) {
+  const units = [];
+  Object.entries(player.items || {}).forEach(([id, n]) => {
+    for (let i = 0; i < n; i++) units.push({ id, kind: 'item', value: GameTrade._itemUnitValue(id, 'item') });
+  });
+  Object.entries(player.balls || {}).forEach(([id, n]) => {
+    for (let i = 0; i < n; i++) units.push({ id, kind: 'ball', value: GameTrade._itemUnitValue(id, 'ball') });
+  });
+  return units;
+};
+
+GameTrade._bundleFromUnits = function (units) {
+  const bundle = { items: {}, balls: {} };
+  units.forEach(u => {
+    const bucket = u.kind === 'ball' ? bundle.balls : bundle.items;
+    bucket[u.id] = (bucket[u.id] || 0) + 1;
+  });
+  return bundle;
+};
+
+// Greedily assemble a bundle from a player's inventory approaching targetValue
+// (or just `maxUnits` random units when targetValue <= 0). Returns null if the
+// player has nothing.
+GameTrade._buildBundleNear = function (player, targetValue, maxUnits) {
+  const units = GameTrade._inventoryUnits(player);
+  if (units.length === 0) return null;
+  for (let i = units.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = units[i]; units[i] = units[j]; units[j] = tmp;
+  }
+  const chosen = [];
+  let total = 0;
+  for (const u of units) {
+    if (chosen.length >= maxUnits) break;
+    if (targetValue > 0 && total >= targetValue) break;
+    chosen.push(u);
+    total += u.value;
+  }
+  if (chosen.length === 0) return null;
+  return { bundle: GameTrade._bundleFromUnits(chosen), value: total };
+};
+
+// Build a fair-ish CPU trade proposal from `from` to `target`, or null if no
+// reasonable offer exists. Mixes the four shapes (mon↔mon, mon↔items,
+// items↔mon, items↔items) with light randomness so play feels varied.
+GameTrade._buildCpuProposal = function (from, target) {
+  const fromMons = (from.party || []).slice();
+  const targetMons = (target.party || []).slice();
+  const fromUnits = GameTrade._inventoryUnits(from);
+  const targetUnits = GameTrade._inventoryUnits(target);
+
+  const mk = (fromMonId, fromBundle, targetMonId, targetBundle, offerMode) => ({
+    fromIdx: GameState.players.indexOf(from),
+    targetIdx: GameState.players.indexOf(target),
+    fromMonInstanceId: fromMonId || null,
+    fromBundle: fromBundle || null,
+    targetMonInstanceId: targetMonId || null,
+    targetBundle: targetBundle || { items: {}, balls: {} },
+    offerMode,
+    forced: false,
+  });
+  // Offer a "spare" mon: never the single strongest while the party has depth.
+  const pickSpareMon = (party) => {
+    if (party.length === 0) return null;
+    const sorted = party.slice().sort((a, b) => GameTrade._monValue(a) - GameTrade._monValue(b));
+    const pickable = party.length > 1 ? sorted.slice(0, sorted.length - 1) : sorted;
+    return pickable[Math.floor(Math.random() * pickable.length)];
+  };
+  const fair = (give, get) => get >= give * 0.6 && get <= give * 1.5;
+
+  const tryMonMon = () => {
+    if (fromMons.length === 0 || targetMons.length === 0) return null;
+    const fMon = pickSpareMon(fromMons);
+    if (!fMon) return null;
+    const fv = GameTrade._monValue(fMon);
+    const cands = targetMons.filter(m => fair(fv, GameTrade._monValue(m)));
+    const pool = cands.length ? cands : targetMons;
+    const tMon = pool[Math.floor(Math.random() * pool.length)];
+    return mk(fMon.instanceId, null, tMon.instanceId, null, 'pokemon');
+  };
+  const tryMonItems = () => {
+    if (fromMons.length < 2 || targetUnits.length === 0) return null; // from keeps >=1
+    const fMon = pickSpareMon(fromMons);
+    const fv = GameTrade._monValue(fMon);
+    const built = GameTrade._buildBundleNear(target, fv, 4);
+    if (!built || !fair(fv, built.value)) return null;
+    return mk(fMon.instanceId, null, null, built.bundle, 'items');
+  };
+  const tryItemsMon = () => {
+    if (targetMons.length < 2 || fromUnits.length === 0) return null; // target keeps >=1
+    const tMon = pickSpareMon(targetMons);
+    const tv = GameTrade._monValue(tMon);
+    const built = GameTrade._buildBundleNear(from, tv, 4);
+    if (!built || !fair(built.value, tv)) return null;
+    return mk(null, built.bundle, tMon.instanceId, null, 'pokemon');
+  };
+  const tryItemsItems = () => {
+    if (fromUnits.length === 0 || targetUnits.length === 0) return null;
+    const fromBuilt = GameTrade._buildBundleNear(from, 0, 1 + Math.floor(Math.random() * 2));
+    if (!fromBuilt) return null;
+    const targetBuilt = GameTrade._buildBundleNear(target, fromBuilt.value, 3);
+    if (!targetBuilt || !fair(fromBuilt.value, targetBuilt.value)) return null;
+    return mk(null, fromBuilt.bundle, null, targetBuilt.bundle, 'items');
+  };
+
+  const r = Math.random();
+  const order = r < 0.55 ? [tryMonMon, tryItemsItems, tryMonItems, tryItemsMon]
+              : r < 0.75 ? [tryItemsItems, tryMonMon, tryItemsMon, tryMonItems]
+              : r < 0.88 ? [tryMonItems, tryMonMon, tryItemsItems, tryItemsMon]
+                         : [tryItemsMon, tryItemsItems, tryMonMon, tryMonItems];
+  for (const fn of order) {
+    const p = fn();
+    if (p) return p;
+  }
+  return null;
+};
+
+// Entry point used by game.js when a CPU lands on a trade tile. Builds an offer
+// and routes it through the SAME propose/accept flow humans use, so a human
+// target sees an explicit Accept / Decline prompt and a CPU target auto-accepts.
+GameTrade.startCpuOffer = function (onDone) {
+  const from = GameState.currentPlayer();
+  const targets = GameState.players.filter(p => p !== from);
+  if (targets.length === 0) { if (onDone) onDone(false); return; }
+  const target = targets[Math.floor(Math.random() * targets.length)];
+  const proposal = GameTrade._buildCpuProposal(from, target);
+  if (!proposal) {
+    GameUI.log(`<span class="actor">${from.name}</span> looked for a trade with ${target.name} but had nothing fair to offer.`, 'system');
+    if (onDone) onDone(false);
+    return;
+  }
+  // Seed state so the shared response handler can find onDone + names.
+  GameTrade.state = {
+    from, target, fromMon: null, targetMon: null,
+    targetBundle: proposal.targetBundle, offerMode: proposal.offerMode,
+    forced: false, onDone,
+  };
+  GameTrade._pendingProposal = proposal;
+  GameUI.el('tradeModal').hidden = true;
+  GameUI.log(`<span class="actor">${from.name}</span> offers ${target.name} a trade.`, 'system');
+  GameTrade._showInitiatorWaiting(proposal);
+  if (window.GameMP && GameMP.enabled) {
+    GameMP.send({ type: 'trade-proposal', proposal, ts: Date.now() });
+  }
+  // If the target is driven by this device (single-device, or host-run CPU),
+  // pop their recipient prompt. Humans must click Accept/Decline; CPUs auto-accept.
+  if (GameTrade._isPlayerLocal(proposal.targetIdx)) {
+    setTimeout(() => GameTrade._receiveProposal(proposal), 120);
+  }
 };
 
 // Kept as a thin wrapper for any legacy caller that still invokes the old

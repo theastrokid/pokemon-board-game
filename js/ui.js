@@ -409,6 +409,7 @@ GameUI.renderPlayerPanel = function () {
         </div>
       </div>
       <div class="tp-party"></div>
+      <div class="tp-status" hidden></div>
       <div class="tp-inv">
         <div class="tp-inv-section"><h4>Items</h4><ul class="tp-list tp-items"></ul></div>
         <div class="tp-inv-section"><h4>Balls</h4><ul class="tp-list tp-balls"></ul></div>
@@ -486,6 +487,24 @@ GameUI.renderPlayerPanel = function () {
         ballsEl.appendChild(li);
       });
     }
+    // Status row: active Lucky Egg multiplier + Eggs with hatch countdown.
+    const statusEl = panel.querySelector('.tp-status');
+    const statusBits = [];
+    if (p.flags && p.flags.luckyEgg) {
+      statusBits.push(`<span class="tp-status-chip lucky-egg-chip" title="Your next gym leader's reward is doubled">🍀 Lucky Egg active · 2× next gym reward</span>`);
+    }
+    (p.eggs || []).forEach(egg => {
+      const left = egg.turnsLeft || 0;
+      const ready = left <= 0;
+      const label = ready ? 'ready to hatch!' : `${left} turn${left === 1 ? '' : 's'} left`;
+      statusBits.push(
+        `<span class="tp-status-chip egg-chip${ready ? ' ready' : ''}" title="Hatches into a shiny Pokémon">` +
+        `<span class="egg-chip-egg">🥚<span class="egg-chip-count">${ready ? '★' : left}</span></span>` +
+        ` Egg · ${label}</span>`
+      );
+    });
+    statusEl.innerHTML = statusBits.join('');
+    statusEl.hidden = statusBits.length === 0;
     wrap.appendChild(panel);
   });
   // Topbar area pill + turn pill from active player
@@ -658,6 +677,59 @@ GameUI.showEncounter = function (speciesId, ctx) {
   GameAudio.sfx.encounter();
 };
 
+// ============================== GYM LEADER INTRO ==============================
+// Brief cinematic shown right before a gym fight: the leader, then the exact
+// Pokemon they will use (the team already drawn in startGymBattle). Auto-
+// advances after the reveal plays; tapping "Battle!" skips ahead. `leader`
+// must already carry the selected `.team`.
+GameUI.showGymIntro = function (leader, onDone) {
+  const modal = GameUI.el('gymIntroModal');
+  if (!modal || !leader || !leader.team) { if (onDone) onDone(); return; }
+  GameUI._unspectate('gymIntroModal');
+  const team = leader.team;
+  const leaderId = leader.name.toLowerCase();
+  const sprite = GameUI.el('gymIntroLeaderSprite');
+  sprite.style.display = '';
+  sprite.src = `sprites/trainers/${leaderId}.png`;
+  sprite.onerror = function () { this.style.display = 'none'; };
+  GameUI.el('gymIntroName').textContent = `Gym Leader ${leader.name}`;
+  GameUI.el('gymIntroCity').textContent = leader.city || '';
+  GameUI.el('gymIntroSubtitle').textContent = `is about to send out ${team.length} Pokémon!`;
+  const card = modal.querySelector('.gym-intro-card');
+  if (card) card.style.setProperty('--leader-color', leader.color || '#cc4422');
+  const teamEl = GameUI.el('gymIntroTeam');
+  teamEl.innerHTML = '';
+  team.forEach((spec, i) => {
+    const p = GameData.getPokemon(spec.id);
+    if (!p) return;
+    const mon = document.createElement('div');
+    mon.className = 'gym-intro-mon';
+    mon.style.animationDelay = (0.3 + i * 0.22) + 's';
+    mon.innerHTML = `
+      <div class="gi-order">${i + 1}</div>
+      <img src="${GameData.spriteFront(spec.id)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(spec.id)}'" alt="${p.name}" />
+      <div class="gi-name">${p.name}</div>
+    `;
+    teamEl.appendChild(mon);
+  });
+  modal.hidden = false;
+  if (GameAudio.sfx && GameAudio.sfx.gymStart) GameAudio.sfx.gymStart();
+
+  // Single-fire finish guard: auto-advance OR skip button, never both.
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    if (GameUI._gymIntroTimer) { clearTimeout(GameUI._gymIntroTimer); GameUI._gymIntroTimer = null; }
+    modal.hidden = true;
+    if (onDone) onDone();
+  };
+  const holdMs = Math.min(4200, 1500 + team.length * 220 + 700);
+  GameUI._gymIntroTimer = setTimeout(finish, holdMs);
+  const skipBtn = GameUI.el('gymIntroSkipBtn');
+  if (skipBtn) skipBtn.onclick = finish;
+};
+
 // ============================== GYM LEADER PREVIEW ==============================
 // Opens a modal showing the gym leader's team in battle order. Read-only —
 // just a scouting tool so players can plan which Pokemon to use.
@@ -674,7 +746,17 @@ GameUI.showGymPreview = function (tile) {
   const team = document.getElementById('gymPreviewTeam');
   team.innerHTML = '';
   const mul = Number(leader.scaleMultiplier) || 1;
-  leader.team.forEach((spec, i) => {
+  // Leaders now field a random subset of a larger pool each battle. Show the
+  // whole pool so players can scout possibilities; note how many are drawn.
+  const roster = leader.pool || leader.team || [];
+  const teamSize = leader.teamSize || roster.length;
+  const subtitleEl = document.getElementById('gymPreviewSubtitle');
+  if (subtitleEl) {
+    subtitleEl.textContent = (leader.pool && teamSize < roster.length)
+      ? `Pool of ${roster.length} — ${teamSize} chosen at random each battle:`
+      : 'Team in battle order:';
+  }
+  roster.forEach((spec, i) => {
     const p = GameData.getPokemon(spec.id);
     if (!p) return;
     const lvlBoost = (typeof spec.scale === 'number') ? spec.scale : (1 + (spec.level / 50) * 0.6) * mul;
@@ -682,10 +764,9 @@ GameUI.showGymPreview = function (tile) {
     const card = document.createElement('div');
     card.className = 'gym-preview-mon';
     card.innerHTML = `
-      <div class="order-badge">${i + 1}</div>
       <img src="${GameData.spriteFront(spec.id)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(spec.id)}'" alt="${p.name}" />
       <div class="mn">${p.name}</div>
-      <div class="ml">Lv ${spec.level} · HP ${scaledHp}</div>
+      <div class="ml">Lv ${spec.level} · ~HP ${scaledHp}</div>
       <div class="mt">${(p.types || []).map(t => GameUI.typePill(t)).join('')}</div>
     `;
     team.appendChild(card);
@@ -710,8 +791,7 @@ GameUI.showGymPreview = function (tile) {
 // Shown when the active player lands on a gym. Lets them rearrange their
 // party (top 3 fight) and study the leader's team side-by-side before
 // committing to the battle. Click-to-pick + click-to-place swap UI.
-GameUI.showGymPrep = function (tile, onFight) {
-  const leader = GameData.getGymLeader(tile.leader);
+GameUI.showGymPrep = function (leader, onFight) {
   const player = GameState.currentPlayer();
   if (!leader || !player) { if (onFight) onFight(); return; }
   const modal = document.getElementById('gymPrepModal');
@@ -1497,6 +1577,112 @@ GameUI.playEvolutionAnimation = function (fromSpeciesId, toSpeciesId, fromName, 
     stage.classList.remove('evolve-running');
     if (onComplete) onComplete();
   }, 2800);
+};
+
+// ============================== EGG HATCH ==============================
+// Reveal animation for a hatching Egg, shown on the owner's turn. The egg
+// wobbles ~2.2s, then the shiny hatchling is revealed and added to the party.
+// GameState.busy is held true for the duration so the player can't roll into a
+// half-resolved state; it's released only when they tap Continue.
+GameUI.showEggHatch = function (player, egg, onComplete) {
+  const modal = GameUI.el('eggHatchModal');
+  if (!modal) {
+    // No modal available — finalize immediately so we never soft-lock.
+    const mon = GameState.makeHatchling(player, egg.speciesId);
+    GameUI.log(`<span class="crit">✨ ${player.name}'s Egg hatched into a SHINY ${mon ? mon.name : 'Pokemon'}!</span>`, 'crit');
+    GameUI.refreshAll();
+    if (onComplete) onComplete();
+    return;
+  }
+  GameUI._unspectate('eggHatchModal');
+  const poke = GameData.getPokemon(egg.speciesId);
+  const eggEl = GameUI.el('eggHatchEgg');
+  const spriteEl = GameUI.el('eggHatchSprite');
+  const msgEl = GameUI.el('eggHatchMessage');
+  const actions = GameUI.el('eggHatchActions');
+  const titleEl = GameUI.el('eggHatchTitle');
+  // Reset to "wobbling egg" state.
+  titleEl.textContent = 'Your Egg is hatching!';
+  msgEl.innerHTML = `${player.name}'s Egg is wobbling…`;
+  eggEl.hidden = false;
+  eggEl.className = 'egg-hatch-egg';
+  spriteEl.hidden = true;
+  spriteEl.className = 'egg-hatch-sprite';
+  actions.hidden = true;
+  modal.hidden = false;
+  void eggEl.offsetWidth;
+  eggEl.classList.add('hatching');
+  GameState.busy = true; // block rolling while the hatch plays out
+  if (GameAudio.sfx && GameAudio.sfx.encounter) GameAudio.sfx.encounter();
+
+  let finished = false;
+  const reveal = () => {
+    if (finished) return;
+    finished = true;
+    eggEl.hidden = true;
+    // Add the shiny hatchling now (room guaranteed by tickEggsTurnStart).
+    const mon = GameState.makeHatchling(player, egg.speciesId);
+    spriteEl.src = GameData.spriteFront(egg.speciesId);
+    spriteEl.onerror = function () { this.onerror = null; this.src = GameData.spriteStatic(egg.speciesId); };
+    spriteEl.hidden = false;
+    void spriteEl.offsetWidth;
+    spriteEl.classList.add('revealed');
+    titleEl.textContent = 'Congratulations!';
+    msgEl.innerHTML = `✨ It's a <strong>SHINY ${(mon && mon.name) || (poke && poke.name) || 'Pokémon'}</strong>! It joined ${player.name}'s party.`;
+    if (GameAudio.sfx && GameAudio.sfx.fanfare) GameAudio.sfx.fanfare();
+    GameUI.refreshAll();
+    actions.hidden = false;
+    GameUI.el('eggHatchContinueBtn').onclick = () => {
+      modal.hidden = true;
+      GameState.busy = false;
+      if (onComplete) onComplete();
+    };
+  };
+  setTimeout(reveal, 2200);
+};
+
+// ============================== TEAM ROCKET ==============================
+// Cinematic appearance, styled like a gym loading screen. Plays ~1.8s then
+// calls onReady (the caller starts the battle or runs the theft). Holds
+// GameState.busy so the player can't roll mid-cinematic.
+GameUI.showTeamRocketIntro = function (mode, onReady) {
+  const modal = GameUI.el('teamRocketModal');
+  if (!modal) { if (onReady) onReady(); return; }
+  GameUI._unspectate('teamRocketModal');
+  GameUI.el('teamRocketSubtitle').textContent = mode === 'battle' ? '…wants to battle!' : '…is after your items!';
+  GameUI.el('teamRocketActions').hidden = true;
+  const card = modal.querySelector('.team-rocket-card');
+  if (card) { card.classList.remove('tr-animate'); void card.offsetWidth; card.classList.add('tr-animate'); }
+  modal.hidden = false;
+  GameState.busy = true;
+  if (GameAudio.sfx && GameAudio.sfx.gymStart) GameAudio.sfx.gymStart();
+  if (GameUI._trTimer) clearTimeout(GameUI._trTimer);
+  GameUI._trTimer = setTimeout(() => {
+    GameState.busy = false;
+    if (onReady) onReady();
+  }, 1800);
+};
+
+GameUI.hideTeamRocket = function () {
+  const m = GameUI.el('teamRocketModal');
+  if (m) m.hidden = true;
+};
+
+// Theft result view — reuses the Team Rocket modal, adds a Continue button.
+GameUI.showTeamRocketResult = function (message, didSteal, onDone) {
+  const modal = GameUI.el('teamRocketModal');
+  if (!modal) { if (onDone) onDone(); return; }
+  modal.hidden = false;
+  GameUI.el('teamRocketSubtitle').textContent = message;
+  GameUI.el('teamRocketActions').hidden = false;
+  if (GameAudio.sfx) {
+    const cue = didSteal ? GameAudio.sfx.gameOver : GameAudio.sfx.item;
+    if (cue) cue();
+  }
+  GameUI.el('teamRocketContinueBtn').onclick = () => {
+    modal.hidden = true;
+    if (onDone) onDone();
+  };
 };
 
 // ============================== HALL OF FAME ==============================

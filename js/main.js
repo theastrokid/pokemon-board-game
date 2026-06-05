@@ -99,9 +99,32 @@
           <h4>Sprite</h4>
           <div class="trainer-sprite-grid">${trainerPickerHtml}</div>
         </div>
-        <div class="trainer-pick-section">
+        <div class="trainer-pick-section starter-choice-section">
           <h4>Starter</h4>
-          <div class="starter-grid">${starterPickerHtml}</div>
+          <div class="starter-choice" data-state="choice">
+            <button type="button" class="starter-choice-card egg-choice" title="Hatch a random early-route Pokemon">
+              <div class="scc-emoji">🥚</div>
+              <div class="scc-title">Lucky Starter Egg</div>
+              <div class="scc-sub">Hatch a surprise Pokémon</div>
+            </button>
+            <button type="button" class="starter-choice-card question-choice" title="Reveal the classic starter picks">
+              <div class="scc-emoji">❓</div>
+              <div class="scc-title">Choose a Starter</div>
+              <div class="scc-sub">Reveal the classic picks</div>
+            </button>
+          </div>
+          <div class="starter-egg-hatch" hidden>
+            <div class="egg-shake">🥚</div>
+            <div class="hatch-caption">Hatching…</div>
+          </div>
+          <div class="starter-grid-wrap" hidden>
+            <div class="starter-grid">${starterPickerHtml}</div>
+          </div>
+          <div class="starter-chosen" hidden>
+            <img class="starter-chosen-img" alt="" />
+            <div class="starter-chosen-text"><span class="starter-chosen-name"></span><span class="starter-chosen-tag"></span></div>
+            <button type="button" class="starter-rechoose">Change</button>
+          </div>
         </div>
       `;
       wrap.appendChild(row);
@@ -132,11 +155,67 @@
           setDefault(baseName);
         });
       });
+      // ===== Starter choice: egg (random) vs question-mark (classic picks) =====
+      const choiceWrap   = row.querySelector('.starter-choice');
+      const hatchWrap    = row.querySelector('.starter-egg-hatch');
+      const gridWrap     = row.querySelector('.starter-grid-wrap');
+      const chosenWrap   = row.querySelector('.starter-chosen');
+      const showChoice = () => {
+        choiceWrap.hidden = false;
+        hatchWrap.hidden = true;
+        gridWrap.hidden = true;
+        chosenWrap.hidden = true;
+      };
+      const showChosen = (speciesId, tag) => {
+        const poke = GameData.getPokemon(speciesId);
+        if (!poke) return;
+        row.dataset.starter = String(speciesId);
+        choiceWrap.hidden = true;
+        hatchWrap.hidden = true;
+        gridWrap.hidden = true;
+        chosenWrap.hidden = false;
+        chosenWrap.querySelector('.starter-chosen-img').src = `sprites/static/${speciesId}.png`;
+        chosenWrap.querySelector('.starter-chosen-name').textContent = poke.name;
+        chosenWrap.querySelector('.starter-chosen-tag').textContent = tag || '';
+      };
+
+      // Egg: ~2s hatch animation, then reveal a random pre-first-gym Pokemon.
+      row.querySelector('.egg-choice').addEventListener('click', () => {
+        choiceWrap.hidden = true;
+        gridWrap.hidden = true;
+        chosenWrap.hidden = true;
+        hatchWrap.hidden = false;
+        const egg = hatchWrap.querySelector('.egg-shake');
+        const cap = hatchWrap.querySelector('.hatch-caption');
+        egg.classList.remove('hatching'); void egg.offsetWidth; egg.classList.add('hatching');
+        cap.textContent = 'Hatching…';
+        if (window.GameAudio && GameAudio.sfx && GameAudio.sfx.encounter) GameAudio.sfx.encounter();
+        const speciesId = GameData.randomPreGym1SpeciesId();
+        setTimeout(() => {
+          if (window.GameAudio && GameAudio.sfx && GameAudio.sfx.fanfare) GameAudio.sfx.fanfare();
+          showChosen(speciesId, '🥚 hatched!');
+        }, 2000);
+      });
+
+      // Question mark: reveal the classic starter grid.
+      row.querySelector('.question-choice').addEventListener('click', () => {
+        choiceWrap.hidden = true;
+        hatchWrap.hidden = true;
+        chosenWrap.hidden = true;
+        gridWrap.hidden = false;
+      });
+
+      row.querySelector('.starter-rechoose').addEventListener('click', () => {
+        row.dataset.starter = String(STARTER_IDS[i % STARTER_IDS.length]);
+        row.querySelectorAll('.starter-pick').forEach(b => b.classList.remove('selected'));
+        showChoice();
+      });
+
       row.querySelectorAll('.starter-pick').forEach(btn => {
         btn.addEventListener('click', () => {
           row.querySelectorAll('.starter-pick').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
-          row.dataset.starter = btn.dataset.starter;
+          showChosen(Number(btn.dataset.starter), 'classic starter');
         });
       });
       // CPU toggle: visual state + name swap (only if still on a default).

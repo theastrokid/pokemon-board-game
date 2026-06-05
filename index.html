@@ -164,6 +164,21 @@
     </div>
   </div>
 
+  <!-- =====================  GYM LEADER INTRO ANIMATION ===================== -->
+  <div id="gymIntroModal" class="modal" hidden>
+    <div class="modal-card gym-intro-card">
+      <div class="gym-intro-flash"></div>
+      <div class="gym-intro-leader-wrap">
+        <img id="gymIntroLeaderSprite" class="gym-intro-leader" alt="" />
+      </div>
+      <h2 id="gymIntroName">Gym Leader</h2>
+      <p class="hint" id="gymIntroCity"></p>
+      <p class="gym-intro-subtitle" id="gymIntroSubtitle"></p>
+      <div id="gymIntroTeam" class="gym-intro-team"></div>
+      <button id="gymIntroSkipBtn" class="primary-btn gym-intro-skip">Battle!</button>
+    </div>
+  </div>
+
   <!-- =====================  PRE-GYM PARTY REORDER ===================== -->
   <div id="gymPrepModal" class="modal" hidden>
     <div class="modal-card gym-prep-card">
@@ -378,6 +393,37 @@
           <div class="evolve-flash"></div>
         </div>
         <div id="evolveAnimMessage" class="evolve-anim-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  EGG HATCH ANIMATION  ===================== -->
+  <div id="eggHatchModal" class="modal" hidden>
+    <div class="modal-card egg-hatch-card">
+      <h2 id="eggHatchTitle">Your Egg is hatching!</h2>
+      <div class="egg-hatch-stage">
+        <div class="egg-hatch-sparkle"></div>
+        <div class="egg-hatch-egg" id="eggHatchEgg">🥚</div>
+        <img class="egg-hatch-sprite" id="eggHatchSprite" alt="" hidden />
+      </div>
+      <p class="egg-hatch-message" id="eggHatchMessage"></p>
+      <div class="egg-hatch-actions" id="eggHatchActions" hidden>
+        <button id="eggHatchContinueBtn" class="primary-btn">Nice!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  TEAM ROCKET ENCOUNTER  ===================== -->
+  <div id="teamRocketModal" class="modal" hidden>
+    <div class="modal-card team-rocket-card">
+      <div class="tr-logo">R</div>
+      <div class="tr-stage">
+        <img id="teamRocketSprite" class="tr-sprite" src="sprites/front/52.gif" alt="Team Rocket" onerror="this.onerror=null;this.src='sprites/static/52.png'" />
+      </div>
+      <h2 class="tr-title">TEAM ROCKET!</h2>
+      <p class="tr-subtitle" id="teamRocketSubtitle"></p>
+      <div class="tr-actions" id="teamRocketActions" hidden>
+        <button id="teamRocketContinueBtn" class="primary-btn">Continue</button>
       </div>
     </div>
   </div>

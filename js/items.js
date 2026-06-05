@@ -162,6 +162,7 @@ GameItems.applyEvolve = function (item, player) {
       GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! +25% HP, +25% move power, PP raised to 40/5.</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
+      GameItems._maybeReopenEvolve(item, livePlayer); // keep candying like Potions
       return;
     }
     const evolved = chosenEvolutionId;
@@ -203,6 +204,7 @@ GameItems.applyEvolve = function (item, player) {
       GameUI.log(`<span class="crit">${finalPlayer.name}'s ${oldName} evolved into ${newData.name}${suffix}!</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
+      GameItems._maybeReopenEvolve(item, finalPlayer); // keep candying like Potions
     });
   });
 };
@@ -220,6 +222,29 @@ GameItems.applyStatBoost = function (player, mon) {
     mv.pp = mv.maxPp;
   });
   mon.boostCount = (mon.boostCount || 0) + 1;
+};
+
+// Is there any party member that can still take a Rare Candy this turn? Used
+// to decide whether to re-open the picker for back-to-back use (like Potions).
+GameItems._hasEvolveEligible = function (player) {
+  if (!player || !player.party) return false;
+  return player.party.some(m => {
+    if (GameState.candiedInstancesThisTurn[m.instanceId]) return false; // 1/mon/turn
+    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return true; // can evolve
+    return (m.boostCount || 0) < 1; // fully evolved but boost still available
+  });
+};
+
+// After a Rare Candy is applied, re-open the picker so the player can keep
+// candying back-to-back — mirroring how Potions re-prompt. Stops cleanly when
+// the player is out of Rare Candies or every Pokemon has been candied this
+// turn. Re-resolves the live player (multiplayer may have swapped the object).
+GameItems._maybeReopenEvolve = function (item, player) {
+  const live = GameState.players.find(p => p && p.id === (player && player.id)) || player;
+  if (!live || !live.items) return;
+  if ((live.items[item.id] || 0) <= 0) return;       // out of Rare Candies → close
+  if (!GameItems._hasEvolveEligible(live)) return;    // nothing left to candy → close
+  setTimeout(() => GameItems.applyEvolve(item, live), 150);
 };
 
 GameItems.applyBuff = function (item, player) {
@@ -351,6 +376,41 @@ GameItems.getEvolutionOptions = function (speciesId) {
   if (multi) return multi.filter(id => GameData.pokemon[String(id)]);
   const single = GameItems.getEvolution(speciesId);
   return single ? [single] : [];
+};
+
+// ============== SINGLE-STAGE POOL (Egg hatch source) ==============
+// A "single-stage" Pokemon does NOT evolve into anything AND nothing evolves
+// into it — judged against the same evolution maps that drive Rare Candy, so
+// the rule stays consistent with the rest of the game. Pinsir, Tauros,
+// Kangaskhan, Lapras, Ditto, Aerodactyl, Snorlax etc. qualify; Bulbasaur,
+// Pikachu (evolves to/from), Eevee do not.
+GameItems.isSingleStage = function (speciesId) {
+  const id = Number(speciesId);
+  if (GameItems.evolutions[id] != null) return false;       // evolves INTO something
+  if (GameItems.multiEvolutions[id] != null) return false;  // branching evolution
+  for (const to of Object.values(GameItems.evolutions)) {
+    if (Number(to) === id) return false;                    // something evolves into it
+  }
+  for (const opts of Object.values(GameItems.multiEvolutions)) {
+    if (opts.map(Number).includes(id)) return false;        // a branch target
+  }
+  return true;
+};
+
+// All single-stage species present in the dex, legendaries excluded so a
+// hatched shiny can't trivialise progression. Cached after first build.
+GameItems.getSingleStagePool = function () {
+  if (GameItems._singleStagePool) return GameItems._singleStagePool;
+  const legendary = new Set([...((window.GameState && GameState.LEGENDARY_POOL) || []), 251]);
+  GameItems._singleStagePool = Object.keys(GameData.pokemon || {})
+    .map(Number)
+    .filter(id => GameItems.isSingleStage(id) && !legendary.has(id));
+  return GameItems._singleStagePool;
+};
+
+GameItems.randomSingleStageSpeciesId = function () {
+  const pool = GameItems.getSingleStagePool();
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : 128; // Tauros fallback
 };
 
 // ============== PROMPT PICKERS ==============

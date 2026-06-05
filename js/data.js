@@ -118,3 +118,29 @@ GameData.pickItemCard = function () {
 GameData.pickPokeballCard = function () {
   return GameData.weightedPick(GameData.pokeballs, 'weight');
 };
+
+// ============== DERIVED POOLS ==============
+// Pokemon available in the FIRST region, before the first gym — used by the
+// "lucky starter egg" pick on the setup screen. Derived from the first gym's
+// area encounter table (data-driven; no hard-coded list). Legendaries are
+// filtered out so a starter egg can't gift a game-breaking Mewtwo/Celebi.
+// Cached after first build.
+GameData.getPreGym1Pool = function () {
+  if (GameData._preGym1Pool) return GameData._preGym1Pool;
+  const tiles = (GameData.board && GameData.board.tiles) || [];
+  const firstGym = tiles.filter(t => t.type === 'gym').sort((a, b) => a.i - b.i)[0];
+  const firstArea = firstGym ? firstGym.area : 'pallet';
+  const area = GameData.board.areas[firstArea];
+  const pool = (area && area.encounters) || [];
+  const legendary = new Set([...((window.GameState && GameState.LEGENDARY_POOL) || []), 251]);
+  const ids = pool
+    .map(e => (typeof e === 'number' ? e : e.id))
+    .filter(id => GameData.pokemon[String(id)] && !legendary.has(id));
+  GameData._preGym1Pool = Array.from(new Set(ids));
+  return GameData._preGym1Pool;
+};
+
+GameData.randomPreGym1SpeciesId = function () {
+  const pool = GameData.getPreGym1Pool();
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : 1;
+};
