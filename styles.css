@@ -3064,3 +3064,13 @@ body {
 .arena-fight-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
 .arena-team { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 6px; }
 .arena-team img { width: 38px; height: 38px; image-rendering: pixelated; object-fit: contain; }
+
+/* ---------- Type effectiveness feedback ---------- */
+.battle-message.super { color: #34d399; text-shadow: 0 0 10px rgba(52,211,153,0.55); font-weight: bold; }
+.battle-message.resisted { color: #93c5fd; }
+.battle-message.no-effect { color: #9ca3af; font-style: italic; }
+.effect-flash { position: absolute; inset: 0; pointer-events: none; animation: effFlash 0.45s ease-out; }
+.effect-flash.super { background: radial-gradient(circle at 50% 45%, rgba(52,211,153,0.4), transparent 70%); }
+.effect-flash.resisted { background: radial-gradient(circle at 50% 45%, rgba(147,197,253,0.32), transparent 72%); }
+.effect-flash.no-effect { background: radial-gradient(circle at 50% 45%, rgba(156,163,175,0.3), transparent 72%); }
+@keyframes effFlash { from { opacity: 0.95; } to { opacity: 0; } }

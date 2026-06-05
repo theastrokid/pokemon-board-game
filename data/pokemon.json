@@ -14,9 +14,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Leech Seed",
+          "name": "Scratch",
           "power": 20,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Vine Whip",
@@ -36,9 +36,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Leech Seed",
+          "name": "Pound",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Vine Whip",
@@ -58,9 +58,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Dangerous Toxwhip",
@@ -79,9 +79,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Blazing Destruction",
+          "name": "Tackle",
           "power": 15,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Steady Firebreathing",
@@ -100,9 +100,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Combustion",
+          "name": "Scratch",
           "power": 20,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Fire Blast",
@@ -122,9 +122,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Brave Wing",
+          "name": "Slam",
           "power": 35,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Explosive Vortex",
@@ -143,9 +143,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Withdraw",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Skull Bash",
@@ -164,9 +164,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Free Diving",
+          "name": "Tackle",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Spinning Attack",
@@ -185,9 +185,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Scratch",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Twin Cannons",
@@ -227,9 +227,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Defensive Posture",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Tackle",
@@ -249,9 +249,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Bye-Bye Flight",
+          "name": "Tackle",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Whirlwind",
@@ -271,9 +271,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Ram",
+          "name": "Scratch",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Bug Bite",
@@ -315,9 +315,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Nadir Needle",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Pierce",
@@ -337,9 +337,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Call for Family",
+          "name": "Wing Attack",
           "power": 15,
-          "type": "normal"
+          "type": "flying"
         },
         {
           "name": "Tackle",
@@ -359,9 +359,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Flap",
+          "name": "Wing Attack",
           "power": 20,
-          "type": "normal"
+          "type": "flying"
         },
         {
           "name": "Tackle",
@@ -381,9 +381,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Flap",
+          "name": "Wing Attack",
           "power": 30,
-          "type": "normal"
+          "type": "flying"
         },
         {
           "name": "Fly",
@@ -402,9 +402,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Gnaw the Wound",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Quick Attack",
@@ -423,9 +423,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Second Bite",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Tackle",
@@ -467,9 +467,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Beak Catch",
+          "name": "Wing Attack",
           "power": 15,
-          "type": "normal"
+          "type": "flying"
         },
         {
           "name": "Speed Dive",
@@ -488,9 +488,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Acid Spray",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "poison"
+          "type": "normal"
         },
         {
           "name": "Wrap",
@@ -509,9 +509,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Bind Down",
+          "name": "Body Slam",
           "power": 35,
-          "type": "poison"
+          "type": "normal"
         },
         {
           "name": "Menacing Fangs",
@@ -530,9 +530,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Charge",
+          "name": "Scratch",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Pika Punch",
@@ -551,9 +551,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Thunder Shock",
+          "name": "Pound",
           "power": 25,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Thunder",
@@ -593,9 +593,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Rumble",
+          "name": "Tackle",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Spike Rend",
@@ -635,9 +635,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Fetch Family",
+          "name": "Pound",
           "power": 15,
-          "type": "dark"
+          "type": "normal"
         },
         {
           "name": "Sharp Fang",
@@ -656,9 +656,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Queen Press",
+          "name": "Stomp",
           "power": 35,
-          "type": "dark"
+          "type": "normal"
         },
         {
           "name": "Lunge Out",
@@ -698,9 +698,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Sharp Fang",
+          "name": "Scratch",
           "power": 25,
-          "type": "dark"
+          "type": "normal"
         },
         {
           "name": "Superpowered Horns",
@@ -720,9 +720,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Bite",
+          "name": "Pound",
           "power": 25,
-          "type": "poison"
+          "type": "normal"
         },
         {
           "name": "Venomous Impact",
@@ -741,9 +741,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Moon-Viewing Invitation",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Smack",
@@ -762,9 +762,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Follow Me",
+          "name": "Tackle",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "More Moon",
@@ -783,9 +783,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Super Singe",
+          "name": "Scratch",
           "power": 20,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Ember",
@@ -804,9 +804,9 @@
       "hp": 135,
       "moves": [
         {
-          "name": "Heat Wave",
+          "name": "Pound",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Mirrored Flames",
@@ -826,9 +826,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Lead",
+          "name": "Fairy Wind",
           "power": 15,
-          "type": "normal"
+          "type": "fairy"
         },
         {
           "name": "Stompy Stomp",
@@ -847,9 +847,9 @@
       "hp": 135,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Friend Tackle",
@@ -891,9 +891,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Skill Dive",
+          "name": "Pound",
           "power": 15,
-          "type": "poison"
+          "type": "normal"
         },
         {
           "name": "Bite",
@@ -912,9 +912,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Razor Leaf",
+          "name": "Quick Attack",
           "power": 20,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Absorb",
@@ -933,9 +933,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Drool",
+          "name": "Tackle",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Vine Whip",
@@ -954,9 +954,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Scratch",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Solar Beam",
@@ -975,9 +975,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Stampede",
+          "name": "Pound",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Spore Ball",
@@ -996,9 +996,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Spread Filaments",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Claw Slash",
@@ -1017,9 +1017,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Gnaw",
+          "name": "Tackle",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Beam",
@@ -1038,9 +1038,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Perplexing Powder",
+          "name": "Scratch",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Speed Wing",
@@ -1059,9 +1059,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Headbutt Bounce",
+          "name": "Pound",
           "power": 15,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Mud-Slap",
@@ -1080,9 +1080,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Headbutt Bounce",
+          "name": "Stomp",
           "power": 30,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Mud Bomb",
@@ -1101,9 +1101,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Come Here Right Meow",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Dig Claws",
@@ -1122,9 +1122,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Slash",
@@ -1143,9 +1143,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Overthink",
+          "name": "Pound",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Water Gun",
@@ -1164,9 +1164,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Aquatic Rescue",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Super Splash",
@@ -1206,9 +1206,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Rant and Rave",
+          "name": "Headbutt",
           "power": 30,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Raging Smash",
@@ -1248,9 +1248,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Torrid Torrent",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Dynamite Fang",
@@ -1269,9 +1269,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Bubble",
+          "name": "Tackle",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Bubble",
@@ -1290,9 +1290,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Wave Splash",
+          "name": "Scratch",
           "power": 20,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Frog Hop",
@@ -1312,9 +1312,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Bubble Beam",
+          "name": "Slam",
           "power": 30,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Heroic Punch",
@@ -1333,9 +1333,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Psyshot",
+          "name": "Quick Attack",
           "power": 20,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Confusion",
@@ -1354,9 +1354,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Teleportation Attack",
+          "name": "Tackle",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Confusion",
@@ -1375,9 +1375,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Mind Jack",
+          "name": "Headbutt",
           "power": 35,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Dimensional Hand",
@@ -1396,9 +1396,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Mountain Mashing",
+          "name": "Pound",
           "power": 15,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Punch",
@@ -1417,9 +1417,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Mountain Ramming",
+          "name": "Stomp",
           "power": 30,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Karate Chop",
@@ -1438,9 +1438,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Karate Chop",
+          "name": "Tackle",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Mountain Chopping",
@@ -1460,9 +1460,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Cut",
+          "name": "Scratch",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Bind Down",
@@ -1481,9 +1481,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Cut",
+          "name": "Pound",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Spray Fluid",
@@ -1503,9 +1503,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Spit Up",
+          "name": "Stomp",
           "power": 30,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Slow-Acting Acid",
@@ -1525,9 +1525,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Tingle",
+          "name": "Tackle",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Watering",
@@ -1547,9 +1547,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Poisonous Whip",
+          "name": "Scratch",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Tentacular Panic",
@@ -1569,9 +1569,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Stiffen",
+          "name": "Pound",
           "power": 15,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Knuckle Punch",
@@ -1590,9 +1590,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Rock Cannon",
+          "name": "Stomp",
           "power": 30,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Heavy Impact",
@@ -1612,9 +1612,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Dynamic Roll",
+          "name": "Body Slam",
           "power": 30,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Rock Blaster",
@@ -1633,9 +1633,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Collect",
+          "name": "Scratch",
           "power": 15,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Flop",
@@ -1654,9 +1654,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Singe",
+          "name": "Pound",
           "power": 15,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Mach Turn",
@@ -1676,9 +1676,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Sea Bathing",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Headbutt",
@@ -1697,9 +1697,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Big Yawn",
+          "name": "Tackle",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Laid-Back Tackle",
@@ -1719,9 +1719,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Tiny Charge",
+          "name": "Scratch",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Big Explosion",
@@ -1740,9 +1740,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Junk Magnet",
+          "name": "Pound",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Head Bolt",
@@ -1761,9 +1761,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Package Deal",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Leek Clobber",
@@ -1804,9 +1804,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Ballistic Beak",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Tackle",
@@ -1847,9 +1847,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Dual Splash",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Aurora Beam",
@@ -1889,9 +1889,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Sticky Jail",
+          "name": "Scratch",
           "power": 25,
-          "type": "dark"
+          "type": "normal"
         },
         {
           "name": "Sludge Bomb",
@@ -1910,9 +1910,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Shell Press",
+          "name": "Pound",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Withdraw",
@@ -1932,9 +1932,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Protect Charge",
@@ -1975,9 +1975,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Mumble",
+          "name": "Scratch",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Confusion",
@@ -1997,9 +1997,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Poltergeist",
+          "name": "Slam",
           "power": 30,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Hollow Dive",
@@ -2019,9 +2019,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Thumpalanche",
+          "name": "Stomp",
           "power": 35,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Heavy Impact",
@@ -2040,9 +2040,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Zen Headbutt",
+          "name": "Tackle",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Confusion",
@@ -2061,9 +2061,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Scratch",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Super Psy Bolt",
@@ -2082,9 +2082,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Salt Water",
+          "name": "Pound",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Crabhammer",
@@ -2103,9 +2103,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Hammer Arm",
+          "name": "Stomp",
           "power": 35,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Guillotine",
@@ -2124,9 +2124,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Tumbling Attack",
+          "name": "Tackle",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Tackle",
@@ -2145,9 +2145,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Bang Boom Chain",
+          "name": "Scratch",
           "power": 20,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Electro Ball",
@@ -2187,9 +2187,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Psychic",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Hammer In",
@@ -2229,9 +2229,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Bone Throw",
+          "name": "Scratch",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Boundless Power",
@@ -2250,9 +2250,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Twister Kick",
+          "name": "Pound",
           "power": 15,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Low Kick",
@@ -2271,9 +2271,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Karate Chop",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Excited Punch",
@@ -2292,9 +2292,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Tongue-Tied",
@@ -2334,9 +2334,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Spinning Fumes",
+          "name": "Slam",
           "power": 30,
-          "type": "dark"
+          "type": "normal"
         },
         {
           "name": "Bite",
@@ -2356,9 +2356,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Push Down",
+          "name": "Quick Attack",
           "power": 20,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Boulder Crush",
@@ -2378,9 +2378,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Wrack Down",
+          "name": "Tackle",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Charismatic Drill",
@@ -2399,9 +2399,9 @@
       "hp": 200,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Gentle Slap",
@@ -2420,9 +2420,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Tactful Tangling",
+          "name": "Pound",
           "power": 15,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Bind",
@@ -2441,9 +2441,9 @@
       "hp": 135,
       "moves": [
         {
-          "name": "Triple Draw",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Incessant Punching",
@@ -2462,9 +2462,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Rain Splash",
+          "name": "Tackle",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Sharp Fin",
@@ -2483,9 +2483,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Blinding Ink",
+          "name": "Headbutt",
           "power": 30,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Water Gun",
@@ -2504,9 +2504,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Triple Strike",
+          "name": "Pound",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Sprinkle Water",
@@ -2525,9 +2525,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Swim Freely",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Aqua Horn",
@@ -2546,9 +2546,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Swift",
+          "name": "Tackle",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Tackle",
@@ -2568,9 +2568,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Speed Attack",
+          "name": "Headbutt",
           "power": 30,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Water Gun",
@@ -2589,9 +2589,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Psypower",
+          "name": "Pound",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Confusion",
@@ -2611,9 +2611,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Helpful Slash",
+          "name": "Quick Attack",
           "power": 20,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Slicing Blade",
@@ -2633,9 +2633,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Heart-Stopping Kiss",
+          "name": "Tackle",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Icy Wind",
@@ -2654,9 +2654,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Electro Combo",
+          "name": "Scratch",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Light Punch",
@@ -2675,9 +2675,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Live Coal",
+          "name": "Pound",
           "power": 15,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Flare Combo",
@@ -2696,9 +2696,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Vise Grip",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Reckless Throw",
@@ -2717,9 +2717,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Gather the Crew",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Rage",
@@ -2738,9 +2738,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Splashy Splash",
+          "name": "Scratch",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Tackle",
@@ -2760,9 +2760,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Pound",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Hyper Beam",
@@ -2782,9 +2782,9 @@
       "hp": 130,
       "moves": [
         {
-          "name": "Hop on My Back",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Aqua Edge",
@@ -2803,9 +2803,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Splup",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Transform",
@@ -2824,9 +2824,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Colorful Friends",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Skip",
@@ -2845,9 +2845,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Spiral Drain",
+          "name": "Pound",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Fighting Whirlpool",
@@ -2866,9 +2866,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Linear Attack",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Fighting Lightning",
@@ -2887,9 +2887,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Destructive Flame",
+          "name": "Tackle",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Fighting Blaze",
@@ -2908,9 +2908,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Conversion 4",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Conversion",
@@ -2950,9 +2950,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Aqua Split",
@@ -2992,9 +2992,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Karate Chop",
+          "name": "Scratch",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Draining Blade",
@@ -3013,9 +3013,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Glide",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Devolution Ray",
@@ -3034,9 +3034,9 @@
       "hp": 160,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Thudding Press",
@@ -3056,9 +3056,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Tackle",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Blizzard",
@@ -3078,9 +3078,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Thunder Shock",
+          "name": "Scratch",
           "power": 25,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Multishot Lightning",
@@ -3100,9 +3100,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Blazing Flight",
+          "name": "Pound",
           "power": 15,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Ember",
@@ -3121,9 +3121,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Beat",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Draconic Whip",
@@ -3142,9 +3142,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Beat",
+          "name": "Tackle",
           "power": 20,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Aqua Slash",
@@ -3185,9 +3185,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Reflective Barrier",
+          "name": "Pound",
           "power": 20,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psyslash",
@@ -3206,9 +3206,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Genome Hacking",
+          "name": "Quick Attack",
           "power": 15,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Pound",
@@ -3227,9 +3227,9 @@
       "hp": 45,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Tackle",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -3248,9 +3248,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Scratch",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -3269,9 +3269,9 @@
       "hp": 80,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Pound",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -3311,9 +3311,9 @@
       "hp": 58,
       "moves": [
         {
-          "name": "Ember",
+          "name": "Tackle",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Flamethrower",
@@ -3332,9 +3332,9 @@
       "hp": 110,
       "moves": [
         {
-          "name": "Flame Wheel",
+          "name": "Headbutt",
           "power": 35,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Fire Blast",
@@ -3374,9 +3374,9 @@
       "hp": 65,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Surf",
@@ -3416,9 +3416,9 @@
       "hp": 45,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 15,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Quick Attack",
@@ -3437,9 +3437,9 @@
       "hp": 85,
       "moves": [
         {
-          "name": "Scratch",
+          "name": "Karate Chop",
           "power": 22,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Hyper Voice",
@@ -3569,9 +3569,9 @@
       "hp": 80,
       "moves": [
         {
-          "name": "Poison Sting",
+          "name": "Tackle",
           "power": 22,
-          "type": "poison"
+          "type": "normal"
         },
         {
           "name": "Cross Poison",
@@ -3720,9 +3720,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Pound",
+          "name": "Fairy Wind",
           "power": 20,
-          "type": "normal"
+          "type": "fairy"
         },
         {
           "name": "Metronome",
@@ -3828,9 +3828,9 @@
       "hp": 70,
       "moves": [
         {
-          "name": "Spark",
+          "name": "Tackle",
           "power": 25,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Thunderbolt",
@@ -3849,9 +3849,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Thunder Punch",
+          "name": "Headbutt",
           "power": 35,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Thunder",
@@ -3870,9 +3870,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Pound",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -3935,9 +3935,9 @@
       "hp": 70,
       "moves": [
         {
-          "name": "Rock Throw",
+          "name": "Scratch",
           "power": 25,
-          "type": "rock"
+          "type": "normal"
         },
         {
           "name": "Rock Slide",
@@ -3956,9 +3956,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Pound",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Surf",
@@ -4043,9 +4043,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Scratch",
+          "name": "Karate Chop",
           "power": 25,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Fury Swipes",
@@ -4064,9 +4064,9 @@
       "hp": 30,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -4085,9 +4085,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Vine Whip",
+          "name": "Tackle",
           "power": 25,
-          "type": "grass"
+          "type": "normal"
         },
         {
           "name": "Razor Leaf",
@@ -4172,9 +4172,9 @@
       "hp": 95,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Body Slam",
           "power": 35,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psychic",
@@ -4237,9 +4237,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Stomp",
           "power": 35,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psychic",
@@ -4258,9 +4258,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Lick",
+          "name": "Tackle",
           "power": 20,
-          "type": "ghost"
+          "type": "normal"
         },
         {
           "name": "Shadow Ball",
@@ -4279,9 +4279,9 @@
       "hp": 48,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Scratch",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psychic",
@@ -4300,9 +4300,9 @@
       "hp": 200,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Pound",
           "power": 25,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psychic",
@@ -4343,9 +4343,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Bug Bite",
+          "name": "Tackle",
           "power": 20,
-          "type": "bug"
+          "type": "normal"
         },
         {
           "name": "Signal Beam",
@@ -4386,9 +4386,9 @@
       "hp": 100,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -4451,9 +4451,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Fairy Wind",
+          "name": "Scratch",
           "power": 25,
-          "type": "fairy"
+          "type": "normal"
         },
         {
           "name": "Dazzling Gleam",
@@ -4472,9 +4472,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Fairy Wind",
+          "name": "Pound",
           "power": 25,
-          "type": "fairy"
+          "type": "normal"
         },
         {
           "name": "Dazzling Gleam",
@@ -4603,9 +4603,9 @@
       "hp": 60,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -4624,9 +4624,9 @@
       "hp": 105,
       "moves": [
         {
-          "name": "Fury Swipes",
+          "name": "Karate Chop",
           "power": 35,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Slash",
@@ -4645,9 +4645,9 @@
       "hp": 40,
       "moves": [
         {
-          "name": "Ember",
+          "name": "Pound",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Flamethrower",
@@ -4754,9 +4754,9 @@
       "hp": 35,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Surf",
@@ -4775,9 +4775,9 @@
       "hp": 75,
       "moves": [
         {
-          "name": "Water Gun",
+          "name": "Tackle",
           "power": 25,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Surf",
@@ -4928,9 +4928,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Mud Slap",
+          "name": "Quick Attack",
           "power": 20,
-          "type": "ground"
+          "type": "normal"
         },
         {
           "name": "Earthquake",
@@ -4949,9 +4949,9 @@
       "hp": 90,
       "moves": [
         {
-          "name": "Mud Slap",
+          "name": "Tackle",
           "power": 20,
-          "type": "ground"
+          "type": "normal"
         },
         {
           "name": "Earthquake",
@@ -4970,9 +4970,9 @@
       "hp": 85,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -4991,9 +4991,9 @@
       "hp": 85,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 30,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Stomp",
@@ -5012,9 +5012,9 @@
       "hp": 55,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -5033,9 +5033,9 @@
       "hp": 35,
       "moves": [
         {
-          "name": "Karate Chop",
+          "name": "Tackle",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Cross Chop",
@@ -5054,9 +5054,9 @@
       "hp": 50,
       "moves": [
         {
-          "name": "Karate Chop",
+          "name": "Scratch",
           "power": 25,
-          "type": "fighting"
+          "type": "normal"
         },
         {
           "name": "Cross Chop",
@@ -5097,9 +5097,9 @@
       "hp": 45,
       "moves": [
         {
-          "name": "Spark",
+          "name": "Quick Attack",
           "power": 25,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Thunderbolt",
@@ -5118,9 +5118,9 @@
       "hp": 45,
       "moves": [
         {
-          "name": "Ember",
+          "name": "Tackle",
           "power": 25,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Flamethrower",
@@ -5139,9 +5139,9 @@
       "hp": 95,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -5160,9 +5160,9 @@
       "hp": 255,
       "moves": [
         {
-          "name": "Tackle",
+          "name": "Karate Chop",
           "power": 20,
-          "type": "normal"
+          "type": "fighting"
         },
         {
           "name": "Body Slam",
@@ -5181,9 +5181,9 @@
       "hp": 130,
       "moves": [
         {
-          "name": "Thunder Shock",
+          "name": "Strength",
           "power": 50,
-          "type": "electric"
+          "type": "normal"
         },
         {
           "name": "Thunder",
@@ -5202,9 +5202,9 @@
       "hp": 130,
       "moves": [
         {
-          "name": "Fire Spin",
+          "name": "Take Down",
           "power": 50,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Fire Blast",
@@ -5223,9 +5223,9 @@
       "hp": 130,
       "moves": [
         {
-          "name": "Bubble Beam",
+          "name": "Double-Edge",
           "power": 50,
-          "type": "water"
+          "type": "normal"
         },
         {
           "name": "Hydro Pump",
@@ -5333,9 +5333,9 @@
       "hp": 150,
       "moves": [
         {
-          "name": "Sacred Fire",
+          "name": "Mega Punch",
           "power": 55,
-          "type": "fire"
+          "type": "normal"
         },
         {
           "name": "Fire Blast",
@@ -5355,9 +5355,9 @@
       "hp": 125,
       "moves": [
         {
-          "name": "Confusion",
+          "name": "Stomp",
           "power": 45,
-          "type": "psychic"
+          "type": "normal"
         },
         {
           "name": "Psychic",

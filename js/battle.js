@@ -240,7 +240,9 @@ GameBattle.renderBattle = function (b) {
     }
   }
 
-  GameUI.el('battleMessage').textContent = b.message;
+  const msgEl = GameUI.el('battleMessage');
+  msgEl.textContent = b.message;
+  msgEl.className = 'battle-message' + (b._effectClass ? ' ' + b._effectClass : '');
 
   // Move buttons
   const moveRow = GameUI.el('moveRow');
@@ -332,6 +334,7 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded, skipOpponent) {
   const b = GameBattle.active;
   const pMon = b.playerTeam[b.playerActive];
   const oMon = b.oppTeam[b.oppActive];
+  b._effectClass = '';
 
   // The player's chosen move resolves here. skipOpponent=true means the
   // opponent already struck first this exchange (speed order), so no counter.
@@ -352,6 +355,7 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded, skipOpponent) {
     b.message = x2Atk
       ? `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag} (X-ATK · ${remainingAtk} left).`
       : `${pMon.name} used ${move.name}. Hit for ${dmg}${critTag}.`;
+    GameBattle._applyEffectiveness(b);
     GameBattle._shakeSprite('opp');
     if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${pMon.name}'s ${move.name} hit for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
     if (x2Atk && remainingAtk === 0) {
@@ -438,6 +442,7 @@ GameBattle.opponentTurn = function () {
   const oMon = b.oppTeam[b.oppActive];
   if (!oMon || oMon.fainted) { GameBattle._finishOpponentTurn(); return; }
   GameBattle.ensurePP(oMon);
+  b._effectClass = '';
 
   // ===== Final-boss Hyper Potion (Giovanni) =====
   // If the leader still has Hyper Potions and their active Pokemon is
@@ -505,6 +510,7 @@ GameBattle.opponentTurn = function () {
   b.message = struggled
     ? `${oMon.name} has no PP and used Struggle! Hit for ${dmg}${oppCritTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`
     : `${oMon.name} used ${move.name}. Hit for ${dmg}${oppCritTag}${x2Def ? ` (X-DEF · ${remainingDef} left)` : ''}.`;
+  GameBattle._applyEffectiveness(b);
   GameBattle._shakeSprite('player');
   if (GameBattle._lastCrit) { GameUI.log(`<span class="crit">⚡ Critical hit!</span> ${oMon.name}'s ${move.name} struck for ${dmg}.`, 'crit'); GameBattle._flashCrit(); }
   if (x2Def && remainingDef === 0) {
@@ -533,8 +539,31 @@ GameBattle.opponentTurn = function () {
   GameBattle._finishOpponentTurn();
 };
 
-// Set by computeDamage so the caller can announce a crit. Reset every call.
+// Set by computeDamage so the caller can announce a crit + type effectiveness.
 GameBattle._lastCrit = false;
+GameBattle._lastEffect = 1;
+
+// Turn a type-effectiveness multiplier into a message suffix + colour class.
+GameBattle._effectivenessLabel = function (eff) {
+  if (eff === 0) return { text: ' It had no effect…', cls: 'no-effect' };
+  if (eff >= 2) return { text: " It's super effective!", cls: 'super' };
+  if (eff > 0 && eff < 1) return { text: " It's not very effective…", cls: 'resisted' };
+  return { text: '', cls: '' };
+};
+
+// Applied by resolveTurn / opponentTurn after a damaging hit: appends the
+// "super effective" text to b.message, tags the colour class, and flashes the
+// arena. Returns nothing.
+GameBattle._applyEffectiveness = function (b) {
+  const eff = GameBattle._effectivenessLabel(GameBattle._lastEffect);
+  b._effectClass = eff.cls;
+  if (eff.text) {
+    b.message += eff.text;
+    GameBattle._flashEffect(eff.cls);
+    if (eff.cls === 'super') GameUI.log(`<span class="crit">It's super effective!</span>`, 'crit');
+    else if (eff.cls === 'no-effect') GameUI.log(`It had no effect…`, 'system');
+  }
+};
 
 // Visual cue helpers — flash the arena on crits, shake the struck sprite.
 GameBattle._flashCrit = function () {
@@ -546,6 +575,17 @@ GameBattle._flashCrit = function () {
   flash.id = 'critFlash';
   holder.appendChild(flash);
   setTimeout(() => flash.remove(), 500);
+};
+GameBattle._flashEffect = function (cls) {
+  const holder = document.getElementById('critFlashHolder');
+  if (!holder || !cls) return;
+  const existing = document.getElementById('effectFlash');
+  if (existing) existing.remove();
+  const flash = document.createElement('div');
+  flash.id = 'effectFlash';
+  flash.className = 'effect-flash ' + cls;
+  holder.appendChild(flash);
+  setTimeout(() => flash.remove(), 450);
 };
 GameBattle._shakeSprite = function (which) {
   const el = document.getElementById(which === 'opp' ? 'oppSprite' : 'playerSprite');
@@ -561,8 +601,10 @@ GameBattle.computeDamage = function (move, attacker, defender, attackerBuff, def
   let dmg = move.power;
   // Simple STAB bonus
   if (attacker.types && attacker.types.includes(move.type)) dmg = Math.round(dmg * 1.2);
-  // Type effectiveness (mini chart)
+  // Type effectiveness (mini chart) — remembered so the caller can announce
+  // "super effective" / "not very effective".
   const eff = GameBattle.typeEffect(move.type, defender.types);
+  GameBattle._lastEffect = eff;
   dmg = Math.round(dmg * eff);
   // Random variance 85-100%
   dmg = Math.round(dmg * (0.85 + Math.random() * 0.15));
