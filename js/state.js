@@ -462,12 +462,16 @@ GameState.arenaTeamFromEntry = function (entry) {
   return (entry && entry.party || []).map(m => {
     const base = GameData.getPokemon(m.speciesId) || {};
     const moves = (m.moves && m.moves.length) ? m.moves : (base.moves || []);
+    // Legacy Hall of Fame entries (saved before maxHp was persisted) have no
+    // maxHp — fall back to the stored hp, then the species base, so champions
+    // never enter battle at "NaN / undefined" HP.
+    const fullHp = Number(m.maxHp) || Number(m.hp) || Number(base.hp) || 50;
     return {
       speciesId: m.speciesId,
       name: m.name || base.name,
       types: (m.types && m.types.length ? m.types : (base.types || [])).slice(),
       moves: GameState.cloneMoves(moves),
-      hp: m.maxHp, maxHp: m.maxHp,
+      hp: fullHp, maxHp: fullHp,
       isShiny: !!m.isShiny,
       fainted: false,
       instanceId: 'arena-' + Math.random().toString(36).slice(2, 8),

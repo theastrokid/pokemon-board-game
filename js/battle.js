@@ -15,6 +15,20 @@ GameBattle.ensurePP = function (mon) {
   });
 };
 
+// Defensive: backfill HP on any mon that's missing a usable maxHp/hp (legacy
+// saves, old Hall of Fame entries). Without this, an undefined maxHp shows as
+// "NaN / undefined" and the mon can never faint (NaN <= 0 is false).
+GameBattle.ensureHP = function (mon) {
+  if (!mon) return;
+  if (!(typeof mon.maxHp === 'number' && isFinite(mon.maxHp) && mon.maxHp > 0)) {
+    const base = GameData.getPokemon(mon.speciesId) || {};
+    const hp = (typeof mon.hp === 'number' && isFinite(mon.hp) && mon.hp > 0) ? mon.hp : 0;
+    mon.maxHp = hp || Number(base.hp) || 50;
+  }
+  if (!(typeof mon.hp === 'number' && isFinite(mon.hp))) mon.hp = mon.maxHp;
+  mon.hp = Math.max(0, Math.min(mon.hp, mon.maxHp));
+};
+
 GameBattle.start = function (opts) {
   // opts: { kind: 'gym'|'pvp', leader, opponentPlayer, prizePokemon, onWin, onLose }
   const player = GameState.currentPlayer();
@@ -89,9 +103,10 @@ GameBattle.start = function (opts) {
   // the gym battle engine but shouldn't read "Gym Leader Team Rocket").
   if (opts.opponentLabel) opponentLabel = opts.opponentLabel;
 
-  // Defensive: backfill PP on any move that's missing it (legacy saves).
-  playerTeam.forEach(m => GameBattle.ensurePP(m));
-  oppTeam.forEach(m => GameBattle.ensurePP(m));
+  // Defensive: backfill PP + HP on any mon that's missing it (legacy saves,
+  // pre-maxHp Hall of Fame entries).
+  playerTeam.forEach(m => { GameBattle.ensurePP(m); GameBattle.ensureHP(m); });
+  oppTeam.forEach(m => { GameBattle.ensurePP(m); GameBattle.ensureHP(m); });
 
   // Use the whole party for gym/pvp/arena, or all non-fainted for wild
   let teamForBattle = playerTeam;
@@ -395,6 +410,11 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded, skipOpponent) {
         b.oppActive = nextOpp;
         b.message += ` Opponent sent out ${b.oppTeam[nextOpp].name}.`;
         if (b.onBattleMonUsed) b.onBattleMonUsed(b.oppTeam[nextOpp]);
+        // Control returns to the player vs the freshly-sent mon. If this KO
+        // came from a queued move (opponent moved first this exchange),
+        // opponentPending was left TRUE by _finishOpponentTurn — clear it or
+        // the player's input stays locked forever ("no options").
+        b.opponentPending = false;
         GameBattle.renderBattle(b);
         return;
       }
