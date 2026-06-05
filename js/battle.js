@@ -287,6 +287,22 @@ GameBattle.renderBattle = function (b) {
     moveRow.appendChild(btn);
   });
 
+  // When the active mon has no PP on ANY move, surface a Struggle button so the
+  // player always has a legal action (otherwise a lone, dried-out mon would
+  // have every move greyed and no way to proceed — a soft-lock).
+  if (!pMon.moves.some(m => (m.pp || 0) > 0)) {
+    const sb = document.createElement('button');
+    sb.className = 'move-btn struggle';
+    sb.innerHTML = `
+      <div class="mn">Struggle</div>
+      <div class="mp">normal type · Power 15</div>
+      <div class="mpp">out of PP</div>
+    `;
+    sb.onclick = () => GameBattle.choosePlayerMove(-1);
+    sb.disabled = !!b.opponentPending;
+    moveRow.appendChild(sb);
+  }
+
   // Team strip
   const team = GameUI.el('battleTeam');
   team.innerHTML = '';
@@ -318,17 +334,30 @@ GameBattle.renderBattle = function (b) {
   GameUI.el('forfeitBtn').disabled = !!b.opponentPending;
 };
 
+// Last-resort move when a Pokemon has no PP left on anything. Both sides use
+// it: the opponent already did, and now the player does too — so a lone mon
+// that's run dry can never soft-lock the battle.
+GameBattle.STRUGGLE = { name: 'Struggle', power: 15, type: 'normal' };
+
 GameBattle.choosePlayerMove = function (moveIdx) {
   const b = GameBattle.active;
   if (!b || b.opponentPending) return;
   if (b._spectator) return; // multiplayer spectator view — no interaction
   const pMon = b.playerTeam[b.playerActive];
-  const move = pMon.moves[moveIdx];
   GameBattle.ensurePP(pMon);
-  if ((move.pp || 0) <= 0) {
-    b.message = `${move.name} has no PP left.`;
-    GameBattle.renderBattle(b);
-    return;
+  // moveIdx === -1 is an explicit Struggle (costs no PP, uses STRUGGLE).
+  const struggling = moveIdx === -1;
+  const move = struggling ? GameBattle.STRUGGLE : pMon.moves[moveIdx];
+  if (!struggling && (move.pp || 0) <= 0) {
+    // This move is out of PP. If another move still has PP, nudge the player to
+    // use that; if EVERY move is out, fall back to Struggle automatically so a
+    // lone, dry Pokemon can never freeze the battle.
+    if (pMon.moves.some(mv => (mv.pp || 0) > 0)) {
+      b.message = `${move.name} has no PP left.`;
+      GameBattle.renderBattle(b);
+      return;
+    }
+    return GameBattle.choosePlayerMove(-1);
   }
   // Speed-based turn order: the faster active Pokemon strikes first, via a
   // speed-weighted coin flip (equal speed = 50/50). If the opponent wins, it
@@ -364,7 +393,7 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded, skipOpponent) {
   // The player's chosen move resolves here. skipOpponent=true means the
   // opponent already struck first this exchange (speed order), so no counter.
   if (playerLanded && playerMoveIdx != null) {
-    const move = pMon.moves[playerMoveIdx];
+    const move = (playerMoveIdx === -1) ? GameBattle.STRUGGLE : pMon.moves[playerMoveIdx];
     if (move.pp != null) move.pp = Math.max(0, move.pp - 1);
     // X-Attack: +25% damage on outgoing hit, consumes one stacked turn.
     const x2Atk = b.buffs && b.buffs.x2AttackOnInstance === pMon.instanceId && (b.buffs.x2AttackTurns || 0) > 0;
@@ -457,8 +486,9 @@ GameBattle._finishOpponentTurn = function () {
   b._queuedPlayerMonId = null;
   const curMon = b.playerTeam[b.playerActive];
   if (curMon && !curMon.fainted && curMon.instanceId === monId) {
-    const mv = curMon.moves[moveIdx];
-    if (mv && (mv.pp || 0) > 0) {
+    const isStruggle = moveIdx === -1;
+    const mv = isStruggle ? GameBattle.STRUGGLE : curMon.moves[moveIdx];
+    if (mv && (isStruggle || (mv.pp || 0) > 0)) {
       b.opponentPending = true;
       GameBattle.renderBattle(b);
       setTimeout(() => GameBattle.resolveTurn(moveIdx, true, true), 600);

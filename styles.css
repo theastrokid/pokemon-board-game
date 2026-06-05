@@ -3144,3 +3144,7 @@ body {
 .gauntlet-result { text-align: center; padding: 14px; }
 .gr-wave { font-size: 20px; margin-bottom: 6px; }
 .gr-wave strong { color: var(--pop); }
+
+/* Struggle fallback button (shown only when a Pokemon is out of PP) */
+.move-btn.struggle { border-style: dashed; opacity: 0.92; }
+.move-btn.struggle .mpp { color: #e0a; }

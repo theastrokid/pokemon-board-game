@@ -557,7 +557,7 @@ GameCpu._handleBattle = function () {
   if (usable.length === 0) {
     const haveAlternate = b.playerTeam.some((m, i) => i !== b.playerActive && !m.fainted && m.moves.some(mv => (mv.pp || 0) > 0));
     if (haveAlternate) GameCpu._click('switchBtn');
-    else GameBattle.forfeit();
+    else GameBattle.choosePlayerMove(-1); // Struggle rather than throw the fight
     return;
   }
   usable.sort((a, c) => GameCpu._moveScore(c.mv, pMon, oMon) - GameCpu._moveScore(a.mv, pMon, oMon));
