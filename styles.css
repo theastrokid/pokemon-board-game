@@ -2969,3 +2969,48 @@ body {
 .shop-buy-btn:disabled { background: #39424e; color: #6b7785; cursor: not-allowed; }
 .shop-sell-btn { background: var(--grass); color: #08350f; }
 .shop-buy-btn:hover:not(:disabled), .shop-sell-btn:hover { filter: brightness(1.1); }
+
+/* =========================================================
+   HALL OF FAME RANKING (victory rank panel + leaderboard)
+========================================================= */
+.victory-rank {
+  margin: 14px auto 4px; max-width: 420px;
+  background: rgba(255,203,5,0.08); border: 1.5px solid var(--pop);
+  border-radius: var(--radius-sm); padding: 12px 14px; text-align: center;
+}
+.victory-rank.top {
+  background: linear-gradient(135deg, rgba(255,203,5,0.22), rgba(255,160,0,0.12));
+  box-shadow: 0 0 22px rgba(255,203,5,0.35);
+}
+.vr-headline { font-size: 15px; font-weight: bold; color: var(--pop); }
+.vr-headline strong { color: #fff; }
+.vr-score { font-size: 13px; margin-top: 4px; color: var(--ink); }
+.vr-score strong { color: var(--pop); font-size: 16px; }
+.vr-breakdown { font-size: 11px; color: var(--ink-dim); margin-top: 4px; }
+.vr-breakdown strong { color: var(--ink); }
+.vr-view-btn {
+  margin-top: 10px; background: var(--bg-3); border: 1px solid var(--pop);
+  color: var(--pop); border-radius: var(--radius-sm); padding: 7px 14px;
+  font-size: 12px; font-weight: bold; cursor: pointer;
+}
+.vr-view-btn:hover { background: #34506e; }
+
+.hof-entry.hof-champ { border-color: var(--pop); box-shadow: 0 0 14px rgba(255,203,5,0.25); }
+.hof-entry.hof-you { outline: 2px solid #0ea5e9; outline-offset: 1px; }
+.hof-entry-head { display: flex; align-items: center; gap: 10px; }
+.hof-headinfo { flex: 1; min-width: 0; }
+.hof-rank {
+  font-size: 22px; min-width: 34px; text-align: center; font-weight: bold;
+  color: var(--ink-dim); flex-shrink: 0;
+}
+.hof-score-badge {
+  display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+  background: rgba(255,203,5,0.14); border: 1px solid #f5c451; border-radius: var(--radius-sm);
+  padding: 4px 10px;
+}
+.hof-score-num { font-size: 16px; font-weight: bold; color: #fff; }
+.hof-score-lbl { font-size: 9px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.hof-you-tag {
+  font-size: 10px; background: #0ea5e9; color: #fff; padding: 1px 6px;
+  border-radius: 999px; vertical-align: middle; margin-left: 4px;
+}

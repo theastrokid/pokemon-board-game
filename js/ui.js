@@ -1403,7 +1403,12 @@ GameUI.showFaintedPopup = function (player, returnTile, onClose) {
 };
 
 // ============================== VICTORY ==============================
-GameUI.showVictory = function (player, defeatedLeader) {
+GameUI._ordinal = function (n) {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+GameUI.showVictory = function (player, defeatedLeader, hofEntry) {
   GameUI._unspectate('victoryModal');
   const modal = GameUI.el('victoryModal');
   modal.hidden = false;
@@ -1439,6 +1444,28 @@ GameUI.showVictory = function (player, defeatedLeader) {
   nameSpan.textContent = player.name;
   nameSpan.style.cssText = `color:${player.color};`;
   winnerName.appendChild(nameSpan);
+
+  // Hall of Fame ranking: team strength × speed bonus → leaderboard position.
+  if (hofEntry && GameState.rankInHallOfFame) {
+    const r = GameState.rankInHallOfFame(hofEntry);
+    const stats = GameState.hofTeamStats(hofEntry);
+    const mul = GameState.hofTurnMultiplier(hofEntry.turns);
+    const isTop = r.rank === 1;
+    const panel = document.createElement('div');
+    panel.className = 'victory-rank' + (isTop ? ' top' : '');
+    panel.innerHTML = `
+      <div class="vr-headline">${isTop
+        ? `🏆 #1 CHAMPION${r.total > 1 ? ' on the leaderboard!' : '!'}`
+        : `Hall of Fame rank <strong>${GameUI._ordinal(r.rank)}</strong> of ${r.total}`}</div>
+      <div class="vr-score">Score <strong>${r.score.toLocaleString()}</strong></div>
+      <div class="vr-breakdown">${stats.toLocaleString()} team stats × <strong>${mul.toFixed(2)}×</strong> speed bonus · finished in <strong>${hofEntry.turns}</strong> turn${hofEntry.turns === 1 ? '' : 's'}</div>
+      <button type="button" class="vr-view-btn" id="victoryViewHofBtn">🏆 View full leaderboard</button>
+    `;
+    winnerName.appendChild(panel);
+    const viewBtn = panel.querySelector('#victoryViewHofBtn');
+    if (viewBtn) viewBtn.onclick = () => { if (GameUI.showHallOfFame) GameUI.showHallOfFame(hofEntry); };
+  }
+
   const team = GameUI.el('winnerTeam');
   team.innerHTML = '';
   player.party.forEach(m => {
@@ -1769,7 +1796,9 @@ GameUI.showTeamRocketResult = function (message, didSteal, onDone) {
 };
 
 // ============================== HALL OF FAME ==============================
-GameUI.showHallOfFame = function () {
+// Leaderboard ranked by hofScore (team stats × speed bonus). `highlightEntry`
+// (the run just completed) is scrolled to + outlined.
+GameUI.showHallOfFame = function (highlightEntry) {
   GameState.loadHallOfFame();
   const modal = GameUI.el('hofModal');
   modal.hidden = false;
@@ -1777,48 +1806,70 @@ GameUI.showHallOfFame = function () {
   list.innerHTML = '';
   if (GameState.hallOfFame.length === 0) {
     list.innerHTML = `<div class="hint">No champions yet. Beat Giovanni to enter the Hall.</div>`;
-  } else {
-    GameState.hallOfFame.forEach((entry, entryIdx) => {
-      const div = document.createElement('div');
-      div.className = 'hof-entry';
-      const date = new Date(entry.date).toLocaleDateString();
-      const trainerImg = entry.trainerSprite
-        ? `<img class="hof-trainer-sprite" src="sprites/trainers/${entry.trainerSprite}.png" alt="${entry.name}" onerror="this.style.display='none'" />`
-        : '';
-      // Career-report ribbon: total items + balls used + best streak
-      const itemTotal = Object.values(entry.itemsUsed || {}).reduce((s, n) => s + n, 0);
-      const ballTotal = Object.values(entry.ballsUsed || {}).reduce((s, n) => s + n, 0);
-      const ribbonBits = [];
-      if (entry.turns) ribbonBits.push(`<span>${entry.turns} turns</span>`);
-      if (itemTotal) ribbonBits.push(`<span>${itemTotal} items used</span>`);
-      if (ballTotal) ribbonBits.push(`<span>${ballTotal} balls thrown</span>`);
-      if (entry.bestCatchStreak) ribbonBits.push(`<span>🔥 best streak ×${entry.bestCatchStreak}</span>`);
-      const ribbon = ribbonBits.length ? `<div class="hof-ribbon">${ribbonBits.join(' · ')}</div>` : '';
-      div.innerHTML = `
-        <div class="hof-entry-head">
-          ${trainerImg}
-          <div>
-            <h3 style="color:${entry.color};">${entry.name}</h3>
-            <div class="hof-date">Champion on ${date}</div>
-          </div>
-        </div>
-        ${ribbon}
-        <div class="hof-team"></div>
-      `;
-      const teamRow = div.querySelector('.hof-team');
-      entry.party.forEach((m, monIdx) => {
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'hof-mon-btn' + (m.isShiny ? ' shiny' : '');
-        card.title = `${m.isShiny ? '✨ ' : ''}${m.name} — click for stats`;
-        card.innerHTML = `<img src="${GameData.spriteFront(m.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(m.speciesId)}'" alt="${m.name}" />`;
-        card.onclick = () => GameUI.showHallOfFameDetail(entryIdx, monIdx);
-        teamRow.appendChild(card);
-      });
-      list.appendChild(div);
-    });
+    GameUI.el('hofCloseBtn').onclick = () => { modal.hidden = true; };
+    return;
   }
+  // Rank by score (best first), keeping each entry's original index for the
+  // detail lookup (showHallOfFameDetail reads GameState.hallOfFame[idx]).
+  const ranked = GameState.hallOfFame
+    .map((entry, origIdx) => ({ entry, origIdx, score: GameState.hofScore(entry) }))
+    .sort((a, b) => b.score - a.score);
+  const medals = ['🥇', '🥈', '🥉'];
+  // loadHallOfFame() re-parsed localStorage into fresh objects, so match the
+  // "this run" highlight by a stable key (date + name + turns), not reference.
+  const sameRun = (a, b) => !!a && !!b && a.date === b.date && a.name === b.name && a.turns === b.turns;
+  let highlightEl = null;
+  ranked.forEach((item, rankIdx) => {
+    const entry = item.entry;
+    const entryIdx = item.origIdx;
+    const rank = rankIdx + 1;
+    const isMine = sameRun(entry, highlightEntry);
+    const div = document.createElement('div');
+    div.className = 'hof-entry' + (isMine ? ' hof-you' : '') + (rank === 1 ? ' hof-champ' : '');
+    if (isMine) highlightEl = div;
+    const date = new Date(entry.date).toLocaleDateString();
+    const trainerImg = entry.trainerSprite
+      ? `<img class="hof-trainer-sprite" src="sprites/trainers/${entry.trainerSprite}.png" alt="${entry.name}" onerror="this.style.display='none'" />`
+      : '';
+    const stats = GameState.hofTeamStats(entry);
+    const mul = GameState.hofTurnMultiplier(entry.turns);
+    const itemTotal = Object.values(entry.itemsUsed || {}).reduce((s, n) => s + n, 0);
+    const ballTotal = Object.values(entry.ballsUsed || {}).reduce((s, n) => s + n, 0);
+    const ribbonBits = [];
+    if (entry.turns) ribbonBits.push(`<span>${entry.turns} turns · ${mul.toFixed(2)}× speed</span>`);
+    ribbonBits.push(`<span>${stats.toLocaleString()} team stats</span>`);
+    if (itemTotal) ribbonBits.push(`<span>${itemTotal} items used</span>`);
+    if (ballTotal) ribbonBits.push(`<span>${ballTotal} balls thrown</span>`);
+    if (entry.bestCatchStreak) ribbonBits.push(`<span>🔥 best streak ×${entry.bestCatchStreak}</span>`);
+    const ribbon = `<div class="hof-ribbon">${ribbonBits.join(' · ')}</div>`;
+    div.innerHTML = `
+      <div class="hof-entry-head">
+        <div class="hof-rank">${medals[rankIdx] || '#' + rank}</div>
+        ${trainerImg}
+        <div class="hof-headinfo">
+          <h3 style="color:${entry.color};">${entry.name}${isMine ? ' <span class="hof-you-tag">YOU</span>' : ''}</h3>
+          <div class="hof-date">Champion on ${date}</div>
+        </div>
+        <div class="hof-score-badge"><span class="hof-score-num">${item.score.toLocaleString()}</span><span class="hof-score-lbl">score</span></div>
+      </div>
+      ${ribbon}
+      <div class="hof-team"></div>
+    `;
+    const teamRow = div.querySelector('.hof-team');
+    entry.party.forEach((m, monIdx) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'hof-mon-btn' + (m.isShiny ? ' shiny' : '');
+      card.title = `${m.isShiny ? '✨ ' : ''}${m.name} — click for stats`;
+      card.innerHTML = `<img src="${GameData.spriteFront(m.speciesId)}" onerror="this.onerror=null;this.src='${GameData.spriteStatic(m.speciesId)}'" alt="${m.name}" />`;
+      card.onclick = () => GameUI.showHallOfFameDetail(entryIdx, monIdx);
+      teamRow.appendChild(card);
+    });
+    list.appendChild(div);
+  });
   GameUI.el('hofCloseBtn').onclick = () => { modal.hidden = true; };
+  // Scroll the player's own run into view.
+  if (highlightEl) setTimeout(() => { try { highlightEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 60);
 };
 
 // Detail view: a single champion's Pokemon + the trainer's item usage during

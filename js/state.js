@@ -352,7 +352,7 @@ GameState.loadHallOfFame = function () {
 
 GameState.addToHallOfFame = function (player) {
   GameState.loadHallOfFame();
-  GameState.hallOfFame.unshift({
+  const entry = {
     name: player.name,
     color: player.color,
     trainerSprite: player.trainerSprite || null,
@@ -378,9 +378,47 @@ GameState.addToHallOfFame = function (player) {
     bestCatchStreak: player.bestCatchStreak || 0,
     turns: GameState.turnCount,
     date: new Date().toISOString(),
-  });
+  };
+  GameState.hallOfFame.unshift(entry);
   if (GameState.hallOfFame.length > 50) GameState.hallOfFame.length = 50;
   localStorage.setItem('pbg.hof', JSON.stringify(GameState.hallOfFame));
+  return entry;
+};
+
+// ============== HALL OF FAME SCORING / RANKING ==============
+// Champions are ranked by team strength × a speed bonus, so a quick clear with
+// a good team outranks a 100-turn grind with a slightly stronger one.
+
+// Total team stats = sum of (maxHp + total move power) across the saved party.
+GameState.hofTeamStats = function (entry) {
+  if (!entry || !Array.isArray(entry.party)) return 0;
+  return entry.party.reduce((sum, m) => {
+    const movePower = (m.moves || []).reduce((s, mv) => s + (mv.power || 0), 0);
+    return sum + (m.maxHp || 0) + movePower;
+  }, 0);
+};
+
+// Speed bonus: decays from ~2.5× for a very fast finish toward 1.1× for a long
+// grind. HOF_SPEED_REF is the turn count that yields a ~2× multiplier.
+GameState.HOF_SPEED_REF = 50;
+GameState.hofTurnMultiplier = function (turns) {
+  const t = Math.max(1, turns || 999);
+  return Math.max(1.1, Math.min(2.5, 1 + GameState.HOF_SPEED_REF / t));
+};
+
+// Final leaderboard score.
+GameState.hofScore = function (entry) {
+  return Math.round(GameState.hofTeamStats(entry) * GameState.hofTurnMultiplier(entry && entry.turns));
+};
+
+// 1-based rank of `entry` among all champions by hofScore (ties share the
+// better rank). Returns { rank, total, score }.
+GameState.rankInHallOfFame = function (entry) {
+  const list = GameState.hallOfFame || [];
+  const myScore = GameState.hofScore(entry);
+  let higher = 0;
+  list.forEach(e => { if (e !== entry && GameState.hofScore(e) > myScore) higher++; });
+  return { rank: higher + 1, total: list.length, score: myScore };
 };
 
 // True random 1-6 via crypto (rejection-sampled for unbiased modulo).
