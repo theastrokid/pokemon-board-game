@@ -421,6 +421,60 @@ GameState.rankInHallOfFame = function (entry) {
   return { rank: higher + 1, total: list.length, score: myScore };
 };
 
+// ============== CHAMPION ARENA (fight Hall of Fame teams) ==============
+GameState.arena = { wins: 0, losses: 0, vs: {} };
+GameState.loadArena = function () {
+  try {
+    GameState.arena = JSON.parse(localStorage.getItem('pbg.arena')) || { wins: 0, losses: 0, vs: {} };
+  } catch (e) { GameState.arena = { wins: 0, losses: 0, vs: {} }; }
+  if (!GameState.arena.vs) GameState.arena.vs = {};
+  if (typeof GameState.arena.wins !== 'number') GameState.arena.wins = 0;
+  if (typeof GameState.arena.losses !== 'number') GameState.arena.losses = 0;
+  return GameState.arena;
+};
+GameState.arenaKey = function (entry) { return (entry && entry.name || '?') + '|' + (entry && entry.date || ''); };
+GameState.recordArenaResult = function (oppEntry, won) {
+  GameState.loadArena();
+  if (won) GameState.arena.wins++; else GameState.arena.losses++;
+  const k = GameState.arenaKey(oppEntry);
+  const r = GameState.arena.vs[k] || { wins: 0, losses: 0 };
+  if (won) r.wins++; else r.losses++;
+  GameState.arena.vs[k] = r;
+  localStorage.setItem('pbg.arena', JSON.stringify(GameState.arena));
+};
+
+// Opponent AI difficulty derived from the team's speed-bonus multiplier — the
+// faster they finished their run, the tougher the AI: more Hyper Potions, a
+// Max Revive, and a preference for the highest-damage move.
+GameState.arenaSkill = function (entry) {
+  const mul = GameState.hofTurnMultiplier(entry && entry.turns);
+  return {
+    mul,
+    hyperPotions: mul >= 2.0 ? 2 : (mul >= 1.5 ? 1 : 0),
+    maxRevives: mul >= 1.8 ? 1 : 0,
+    smartMoves: mul >= 1.4,
+    tier: mul >= 2.0 ? 'Elite' : (mul >= 1.5 ? 'Skilled' : 'Rookie'),
+  };
+};
+
+// Rehydrate a saved Hall of Fame party into fresh, full-HP battle Pokemon.
+GameState.arenaTeamFromEntry = function (entry) {
+  return (entry && entry.party || []).map(m => {
+    const base = GameData.getPokemon(m.speciesId) || {};
+    const moves = (m.moves && m.moves.length) ? m.moves : (base.moves || []);
+    return {
+      speciesId: m.speciesId,
+      name: m.name || base.name,
+      types: (m.types && m.types.length ? m.types : (base.types || [])).slice(),
+      moves: GameState.cloneMoves(moves),
+      hp: m.maxHp, maxHp: m.maxHp,
+      isShiny: !!m.isShiny,
+      fainted: false,
+      instanceId: 'arena-' + Math.random().toString(36).slice(2, 8),
+    };
+  });
+};
+
 // True random 1-6 via crypto (rejection-sampled for unbiased modulo).
 // Falls back to Math.random if crypto is unavailable.
 GameState.rollD6 = function () {

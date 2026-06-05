@@ -71,6 +71,8 @@ GameCpu._chooseAction = function () {
       case 'victoryModal':     return () => GameCpu._click('victoryContinueBtn');
       case 'hofModal':         return () => GameCpu._click('hofCloseBtn');
       case 'itemPickerModal':  return () => GameCpu._click('itemPickerCancel');
+      case 'dicePickerModal':  return () => GameCpu._click('dicePickCancel');
+      case 'gymPrepModal':     return () => GameCpu._click('gymPrepFightBtn');
       case 'shopModal':        return () => GameCpu._click('shopCloseBtn');
       // Team Rocket: during the theft RESULT (Continue button shown) the CPU
       // clicks through; during the intro / battle phases it waits (the intro
@@ -136,6 +138,9 @@ GameCpu._chooseStrategicAction = function () {
   if (GameCpu._hasLuckyEgg(player)) {
     return () => GameCpu._doUseLuckyEgg(player);
   }
+  if (GameCpu._hasLoadedDice(player)) {
+    return () => GameCpu._doUseLoadedDice(player);
+  }
   if (GameCpu._shouldOptimizeBattleSlots(player)) {
     return () => GameCpu._doOptimizeBattleSlots(player);
   }
@@ -153,6 +158,20 @@ GameCpu._doUseLuckyEgg = function (player) {
   player.flags.luckyEgg = true;
   GameState.consumeItem(player, 'lucky_egg');
   GameUI.log(`${player.name} clutches a Lucky Egg for the next gym battle.`, 'system');
+  GameUI.refreshAll();
+};
+
+// Loaded Dice: a CPU just sets its next roll to 6 for max progress (movement
+// absolute-stops at gyms, so it never overshoots a gym).
+GameCpu._hasLoadedDice = function (player) {
+  return !!(player.items && player.items.loaded_dice > 0) && !(player.flags && player.flags.loadedDice > 0);
+};
+GameCpu._doUseLoadedDice = function (player) {
+  if (!player.items || !player.items.loaded_dice) return;
+  player.flags = player.flags || {};
+  player.flags.loadedDice = 6;
+  GameState.consumeItem(player, 'loaded_dice');
+  GameUI.log(`${player.name} loaded the dice (next roll: 6).`, 'system');
   GameUI.refreshAll();
 };
 

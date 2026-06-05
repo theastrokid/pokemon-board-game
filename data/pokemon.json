@@ -24,7 +24,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "2": {
       "name": "Ivysaur",
@@ -45,7 +46,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "3": {
       "name": "Venusaur",
@@ -66,7 +68,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "4": {
       "name": "Charmander",
@@ -86,7 +89,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "5": {
       "name": "Charmeleon",
@@ -106,7 +110,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "6": {
       "name": "Charizard",
@@ -127,7 +132,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "7": {
       "name": "Squirtle",
@@ -147,7 +153,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 43
     },
     "8": {
       "name": "Wartortle",
@@ -167,7 +174,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 58
     },
     "9": {
       "name": "Blastoise",
@@ -187,7 +195,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 78
     },
     "10": {
       "name": "Caterpie",
@@ -207,7 +216,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "11": {
       "name": "Metapod",
@@ -227,7 +237,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "12": {
       "name": "Butterfree",
@@ -248,7 +259,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "13": {
       "name": "Weedle",
@@ -269,7 +281,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "14": {
       "name": "Kakuna",
@@ -290,7 +303,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "15": {
       "name": "Beedrill",
@@ -311,7 +325,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 145
     },
     "16": {
       "name": "Pidgey",
@@ -332,7 +347,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 56
     },
     "17": {
       "name": "Pidgeotto",
@@ -353,7 +369,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 71
     },
     "18": {
       "name": "Pidgeot",
@@ -374,7 +391,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 121
     },
     "19": {
       "name": "Rattata",
@@ -394,7 +412,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 72
     },
     "20": {
       "name": "Raticate",
@@ -414,7 +433,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 77
     },
     "21": {
       "name": "Spearow",
@@ -435,7 +455,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "22": {
       "name": "Fearow",
@@ -456,7 +477,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "23": {
       "name": "Ekans",
@@ -476,7 +498,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "24": {
       "name": "Arbok",
@@ -496,7 +519,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "25": {
       "name": "Pikachu",
@@ -516,7 +540,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "26": {
       "name": "Raichu",
@@ -536,7 +561,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 130
     },
     "27": {
       "name": "Sandshrew",
@@ -556,7 +582,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "28": {
       "name": "Sandslash",
@@ -576,7 +603,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "29": {
       "name": "Nidoran ♀",
@@ -596,7 +624,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 41
     },
     "30": {
       "name": "Nidorina",
@@ -616,7 +645,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 56
     },
     "31": {
       "name": "Nidoqueen",
@@ -636,7 +666,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 76
     },
     "32": {
       "name": "Nidoran ♂",
@@ -656,7 +687,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "33": {
       "name": "Nidorino",
@@ -676,7 +708,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "34": {
       "name": "Nidoking",
@@ -697,7 +730,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "35": {
       "name": "Clefairy",
@@ -717,7 +751,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "36": {
       "name": "Clefable",
@@ -737,7 +772,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "37": {
       "name": "Vulpix",
@@ -757,7 +793,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "38": {
       "name": "Ninetales",
@@ -777,7 +814,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 109
     },
     "39": {
       "name": "Jigglypuff",
@@ -798,7 +836,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 20
     },
     "40": {
       "name": "Wigglytuff",
@@ -818,7 +857,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "41": {
       "name": "Zubat",
@@ -839,7 +879,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "42": {
       "name": "Golbat",
@@ -860,7 +901,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "43": {
       "name": "Oddish",
@@ -880,7 +922,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "44": {
       "name": "Gloom",
@@ -900,7 +943,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "45": {
       "name": "Vileplume",
@@ -920,7 +964,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "46": {
       "name": "Paras",
@@ -940,7 +985,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 25
     },
     "47": {
       "name": "Parasect",
@@ -960,7 +1006,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "48": {
       "name": "Venonat",
@@ -980,7 +1027,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "49": {
       "name": "Venomoth",
@@ -1000,7 +1048,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "50": {
       "name": "Diglett",
@@ -1020,7 +1069,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "51": {
       "name": "Dugtrio",
@@ -1040,7 +1090,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "52": {
       "name": "Meowth",
@@ -1060,7 +1111,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "53": {
       "name": "Persian",
@@ -1080,7 +1132,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 115
     },
     "54": {
       "name": "Psyduck",
@@ -1100,7 +1153,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "55": {
       "name": "Golduck",
@@ -1120,7 +1174,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "56": {
       "name": "Mankey",
@@ -1140,7 +1195,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "57": {
       "name": "Primeape",
@@ -1160,7 +1216,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "58": {
       "name": "Growlithe",
@@ -1180,7 +1237,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "59": {
       "name": "Arcanine",
@@ -1200,7 +1258,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "60": {
       "name": "Poliwag",
@@ -1220,7 +1279,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "61": {
       "name": "Poliwhirl",
@@ -1240,7 +1300,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "62": {
       "name": "Poliwrath",
@@ -1261,7 +1322,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "63": {
       "name": "Abra",
@@ -1281,7 +1343,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "64": {
       "name": "Kadabra",
@@ -1301,7 +1364,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 105
     },
     "65": {
       "name": "Alakazam",
@@ -1321,7 +1385,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 150
     },
     "66": {
       "name": "Machop",
@@ -1341,7 +1406,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "67": {
       "name": "Machoke",
@@ -1361,7 +1427,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "68": {
       "name": "Machamp",
@@ -1381,7 +1448,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "69": {
       "name": "Bellsprout",
@@ -1402,7 +1470,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "70": {
       "name": "Weepinbell",
@@ -1422,7 +1491,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "71": {
       "name": "Victreebel",
@@ -1443,7 +1513,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "72": {
       "name": "Tentacool",
@@ -1464,7 +1535,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "73": {
       "name": "Tentacruel",
@@ -1485,7 +1557,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "74": {
       "name": "Geodude",
@@ -1506,7 +1579,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 20
     },
     "75": {
       "name": "Graveler",
@@ -1526,7 +1600,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "76": {
       "name": "Golem",
@@ -1547,7 +1622,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "77": {
       "name": "Ponyta",
@@ -1567,7 +1643,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "78": {
       "name": "Rapidash",
@@ -1587,7 +1664,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 105
     },
     "79": {
       "name": "Slowpoke",
@@ -1608,7 +1686,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 15
     },
     "80": {
       "name": "Slowbro",
@@ -1628,7 +1707,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "81": {
       "name": "Magnemite",
@@ -1649,7 +1729,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "82": {
       "name": "Magneton",
@@ -1669,7 +1750,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "83": {
       "name": "Farfetch'd",
@@ -1689,7 +1771,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "84": {
       "name": "Doduo",
@@ -1710,7 +1793,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "85": {
       "name": "Dodrio",
@@ -1730,7 +1814,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "86": {
       "name": "Seel",
@@ -1750,7 +1835,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "87": {
       "name": "Dewgong",
@@ -1771,7 +1857,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "88": {
       "name": "Grimer",
@@ -1791,7 +1878,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 25
     },
     "89": {
       "name": "Muk",
@@ -1811,7 +1899,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "90": {
       "name": "Shellder",
@@ -1831,7 +1920,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "91": {
       "name": "Cloyster",
@@ -1852,7 +1942,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "92": {
       "name": "Gastly",
@@ -1873,7 +1964,8 @@
           "type": "ghost",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "93": {
       "name": "Haunter",
@@ -1893,7 +1985,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "94": {
       "name": "Gengar",
@@ -1914,7 +2007,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "95": {
       "name": "Onix",
@@ -1935,7 +2029,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "96": {
       "name": "Drowzee",
@@ -1955,7 +2050,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 42
     },
     "97": {
       "name": "Hypno",
@@ -1975,7 +2071,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 67
     },
     "98": {
       "name": "Krabby",
@@ -1995,7 +2092,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "99": {
       "name": "Kingler",
@@ -2015,7 +2113,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "100": {
       "name": "Voltorb",
@@ -2035,7 +2134,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "101": {
       "name": "Electrode",
@@ -2055,7 +2155,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 150
     },
     "102": {
       "name": "Exeggcute",
@@ -2075,7 +2176,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "103": {
       "name": "Exeggutor",
@@ -2095,7 +2197,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "104": {
       "name": "Cubone",
@@ -2115,7 +2218,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "105": {
       "name": "Marowak",
@@ -2135,7 +2239,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "106": {
       "name": "Hitmonlee",
@@ -2155,7 +2260,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 87
     },
     "107": {
       "name": "Hitmonchan",
@@ -2175,7 +2281,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 76
     },
     "108": {
       "name": "Lickitung",
@@ -2195,7 +2302,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "109": {
       "name": "Koffing",
@@ -2215,7 +2323,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "110": {
       "name": "Weezing",
@@ -2235,7 +2344,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "111": {
       "name": "Rhyhorn",
@@ -2256,7 +2366,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 25
     },
     "112": {
       "name": "Rhydon",
@@ -2277,7 +2388,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "113": {
       "name": "Chansey",
@@ -2297,7 +2409,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "114": {
       "name": "Tangela",
@@ -2317,7 +2430,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "115": {
       "name": "Kangaskhan",
@@ -2337,7 +2451,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "116": {
       "name": "Horsea",
@@ -2357,7 +2472,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "117": {
       "name": "Seadra",
@@ -2377,7 +2493,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "118": {
       "name": "Goldeen",
@@ -2397,7 +2514,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 63
     },
     "119": {
       "name": "Seaking",
@@ -2417,7 +2535,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 68
     },
     "120": {
       "name": "Staryu",
@@ -2437,7 +2556,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "121": {
       "name": "Starmie",
@@ -2458,7 +2578,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 120
     },
     "122": {
       "name": "Mr. Mime",
@@ -2478,7 +2599,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "123": {
       "name": "Scyther",
@@ -2499,7 +2621,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 105
     },
     "124": {
       "name": "Jynx",
@@ -2520,7 +2643,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "125": {
       "name": "Electabuzz",
@@ -2540,7 +2664,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 105
     },
     "126": {
       "name": "Magmar",
@@ -2560,7 +2685,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 93
     },
     "127": {
       "name": "Pinsir",
@@ -2580,7 +2706,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 105
     },
     "128": {
       "name": "Tauros",
@@ -2600,7 +2727,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "129": {
       "name": "Magikarp",
@@ -2620,7 +2748,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "130": {
       "name": "Gyarados",
@@ -2641,7 +2770,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 81
     },
     "131": {
       "name": "Lapras",
@@ -2662,7 +2792,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "132": {
       "name": "Ditto",
@@ -2682,7 +2813,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 48
     },
     "133": {
       "name": "Eevee",
@@ -2702,7 +2834,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "134": {
       "name": "Vaporeon",
@@ -2722,7 +2855,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "135": {
       "name": "Jolteon",
@@ -2742,7 +2876,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 130
     },
     "136": {
       "name": "Flareon",
@@ -2762,7 +2897,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "137": {
       "name": "Porygon",
@@ -2782,7 +2918,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "138": {
       "name": "Omanyte",
@@ -2802,7 +2939,8 @@
           "type": "rock",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "139": {
       "name": "Omastar",
@@ -2822,7 +2960,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "140": {
       "name": "Kabuto",
@@ -2842,7 +2981,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "141": {
       "name": "Kabutops",
@@ -2862,7 +3002,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "142": {
       "name": "Aerodactyl",
@@ -2882,7 +3023,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 150
     },
     "143": {
       "name": "Snorlax",
@@ -2902,7 +3044,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "144": {
       "name": "Articuno",
@@ -2923,7 +3066,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "145": {
       "name": "Zapdos",
@@ -2944,7 +3088,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "146": {
       "name": "Moltres",
@@ -2965,7 +3110,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "147": {
       "name": "Dratini",
@@ -2985,7 +3131,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "148": {
       "name": "Dragonair",
@@ -3005,7 +3152,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "149": {
       "name": "Dragonite",
@@ -3026,7 +3174,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "150": {
       "name": "Mewtwo",
@@ -3046,7 +3195,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 140
     },
     "151": {
       "name": "Mew",
@@ -3066,7 +3216,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "152": {
       "name": "Chikorita",
@@ -3086,7 +3237,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "153": {
       "name": "Bayleef",
@@ -3106,7 +3258,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "154": {
       "name": "Meganium",
@@ -3126,7 +3279,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "155": {
       "name": "Cyndaquil",
@@ -3146,7 +3300,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "156": {
       "name": "Quilava",
@@ -3166,7 +3321,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "157": {
       "name": "Typhlosion",
@@ -3186,7 +3342,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "158": {
       "name": "Totodile",
@@ -3206,7 +3363,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 43
     },
     "159": {
       "name": "Croconaw",
@@ -3226,7 +3384,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 58
     },
     "160": {
       "name": "Feraligatr",
@@ -3246,7 +3405,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 78
     },
     "161": {
       "name": "Sentret",
@@ -3266,7 +3426,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 20
     },
     "162": {
       "name": "Furret",
@@ -3286,7 +3447,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "163": {
       "name": "Hoothoot",
@@ -3307,7 +3469,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "164": {
       "name": "Noctowl",
@@ -3328,7 +3491,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "165": {
       "name": "Ledyba",
@@ -3349,7 +3513,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "166": {
       "name": "Ledian",
@@ -3370,7 +3535,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "167": {
       "name": "Spinarak",
@@ -3391,7 +3557,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "168": {
       "name": "Ariados",
@@ -3412,7 +3579,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "169": {
       "name": "Crobat",
@@ -3433,7 +3601,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 130
     },
     "170": {
       "name": "Chinchou",
@@ -3454,7 +3623,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 67
     },
     "171": {
       "name": "Lanturn",
@@ -3475,7 +3645,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 67
     },
     "172": {
       "name": "Pichu",
@@ -3495,7 +3666,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "173": {
       "name": "Cleffa",
@@ -3515,7 +3687,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 15
     },
     "174": {
       "name": "Igglybuff",
@@ -3536,7 +3709,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 15
     },
     "175": {
       "name": "Togepi",
@@ -3556,7 +3730,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 20
     },
     "176": {
       "name": "Togetic",
@@ -3577,7 +3752,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "177": {
       "name": "Natu",
@@ -3598,7 +3774,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "178": {
       "name": "Xatu",
@@ -3619,7 +3796,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "179": {
       "name": "Mareep",
@@ -3639,7 +3817,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "180": {
       "name": "Flaaffy",
@@ -3659,7 +3838,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "181": {
       "name": "Ampharos",
@@ -3679,7 +3859,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "182": {
       "name": "Bellossom",
@@ -3699,7 +3880,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "183": {
       "name": "Marill",
@@ -3720,7 +3902,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "184": {
       "name": "Azumarill",
@@ -3741,7 +3924,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "185": {
       "name": "Sudowoodo",
@@ -3761,7 +3945,8 @@
           "type": "rock",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "186": {
       "name": "Politoed",
@@ -3781,7 +3966,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "187": {
       "name": "Hoppip",
@@ -3802,7 +3988,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "188": {
       "name": "Skiploom",
@@ -3823,7 +4010,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 80
     },
     "189": {
       "name": "Jumpluff",
@@ -3844,7 +4032,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "190": {
       "name": "Aipom",
@@ -3864,7 +4053,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "191": {
       "name": "Sunkern",
@@ -3884,7 +4074,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "192": {
       "name": "Sunflora",
@@ -3904,7 +4095,8 @@
           "type": "grass",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "193": {
       "name": "Yanma",
@@ -3925,7 +4117,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "194": {
       "name": "Wooper",
@@ -3946,7 +4139,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 15
     },
     "195": {
       "name": "Quagsire",
@@ -3967,7 +4161,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "196": {
       "name": "Espeon",
@@ -3987,7 +4182,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "197": {
       "name": "Umbreon",
@@ -4007,7 +4203,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "198": {
       "name": "Murkrow",
@@ -4028,7 +4225,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 91
     },
     "199": {
       "name": "Slowking",
@@ -4049,7 +4247,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "200": {
       "name": "Misdreavus",
@@ -4069,7 +4268,8 @@
           "type": "ghost",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "201": {
       "name": "Unown",
@@ -4089,7 +4289,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 48
     },
     "202": {
       "name": "Wobbuffet",
@@ -4109,7 +4310,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 33
     },
     "203": {
       "name": "Girafarig",
@@ -4130,7 +4332,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "204": {
       "name": "Pineco",
@@ -4150,7 +4353,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 15
     },
     "205": {
       "name": "Forretress",
@@ -4171,7 +4375,8 @@
           "type": "steel",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "206": {
       "name": "Dunsparce",
@@ -4191,7 +4396,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "207": {
       "name": "Gligar",
@@ -4212,7 +4418,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "208": {
       "name": "Steelix",
@@ -4233,7 +4440,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "209": {
       "name": "Snubbull",
@@ -4253,7 +4461,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "210": {
       "name": "Granbull",
@@ -4273,7 +4482,8 @@
           "type": "fairy",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "211": {
       "name": "Qwilfish",
@@ -4294,7 +4504,8 @@
           "type": "poison",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "212": {
       "name": "Scizor",
@@ -4315,7 +4526,8 @@
           "type": "steel",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "213": {
       "name": "Shuckle",
@@ -4336,7 +4548,8 @@
           "type": "rock",
           "gated": true
         }
-      ]
+      ],
+      "speed": 5
     },
     "214": {
       "name": "Heracross",
@@ -4357,7 +4570,8 @@
           "type": "bug",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "215": {
       "name": "Sneasel",
@@ -4378,7 +4592,8 @@
           "type": "ice",
           "gated": true
         }
-      ]
+      ],
+      "speed": 115
     },
     "216": {
       "name": "Teddiursa",
@@ -4398,7 +4613,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "217": {
       "name": "Ursaring",
@@ -4418,7 +4634,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "218": {
       "name": "Slugma",
@@ -4438,7 +4655,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 20
     },
     "219": {
       "name": "Magcargo",
@@ -4459,7 +4677,8 @@
           "type": "rock",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "220": {
       "name": "Swinub",
@@ -4480,7 +4699,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "221": {
       "name": "Piloswine",
@@ -4501,7 +4721,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "222": {
       "name": "Corsola",
@@ -4522,7 +4743,8 @@
           "type": "rock",
           "gated": true
         }
-      ]
+      ],
+      "speed": 30
     },
     "223": {
       "name": "Remoraid",
@@ -4542,7 +4764,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "224": {
       "name": "Octillery",
@@ -4562,7 +4785,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 45
     },
     "225": {
       "name": "Delibird",
@@ -4583,7 +4807,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "226": {
       "name": "Mantine",
@@ -4604,7 +4829,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "227": {
       "name": "Skarmory",
@@ -4625,7 +4851,8 @@
           "type": "flying",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "228": {
       "name": "Houndour",
@@ -4646,7 +4873,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "229": {
       "name": "Houndoom",
@@ -4667,7 +4895,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 115
     },
     "230": {
       "name": "Kingdra",
@@ -4688,7 +4917,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "231": {
       "name": "Phanpy",
@@ -4708,7 +4938,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 40
     },
     "232": {
       "name": "Donphan",
@@ -4728,7 +4959,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 50
     },
     "233": {
       "name": "Porygon2",
@@ -4748,7 +4980,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 60
     },
     "234": {
       "name": "Stantler",
@@ -4768,7 +5001,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "235": {
       "name": "Smeargle",
@@ -4788,7 +5022,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 75
     },
     "236": {
       "name": "Tyrogue",
@@ -4808,7 +5043,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 35
     },
     "237": {
       "name": "Hitmontop",
@@ -4828,7 +5064,8 @@
           "type": "fighting",
           "gated": true
         }
-      ]
+      ],
+      "speed": 70
     },
     "238": {
       "name": "Smoochum",
@@ -4849,7 +5086,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 65
     },
     "239": {
       "name": "Elekid",
@@ -4869,7 +5107,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 95
     },
     "240": {
       "name": "Magby",
@@ -4889,7 +5128,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 83
     },
     "241": {
       "name": "Miltank",
@@ -4909,7 +5149,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "242": {
       "name": "Blissey",
@@ -4929,7 +5170,8 @@
           "type": "normal",
           "gated": true
         }
-      ]
+      ],
+      "speed": 55
     },
     "243": {
       "name": "Raikou",
@@ -4949,7 +5191,8 @@
           "type": "electric",
           "gated": true
         }
-      ]
+      ],
+      "speed": 115
     },
     "244": {
       "name": "Entei",
@@ -4969,7 +5212,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     },
     "245": {
       "name": "Suicune",
@@ -4989,7 +5233,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 85
     },
     "246": {
       "name": "Larvitar",
@@ -5010,7 +5255,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 41
     },
     "247": {
       "name": "Pupitar",
@@ -5031,7 +5277,8 @@
           "type": "ground",
           "gated": true
         }
-      ]
+      ],
+      "speed": 51
     },
     "248": {
       "name": "Tyranitar",
@@ -5052,7 +5299,8 @@
           "type": "dark",
           "gated": true
         }
-      ]
+      ],
+      "speed": 71
     },
     "249": {
       "name": "Lugia",
@@ -5073,7 +5321,8 @@
           "type": "water",
           "gated": true
         }
-      ]
+      ],
+      "speed": 110
     },
     "250": {
       "name": "Ho-Oh",
@@ -5094,7 +5343,8 @@
           "type": "fire",
           "gated": true
         }
-      ]
+      ],
+      "speed": 90
     },
     "251": {
       "name": "Celebi",
@@ -5115,7 +5365,8 @@
           "type": "psychic",
           "gated": true
         }
-      ]
+      ],
+      "speed": 100
     }
   }
 }

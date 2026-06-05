@@ -47,6 +47,8 @@
       }
     });
     document.getElementById('hallOfFameBtn').addEventListener('click', () => GameUI.showHallOfFame());
+    const arenaBtn = document.getElementById('arenaBtn');
+    if (arenaBtn) arenaBtn.addEventListener('click', () => { if (GameUI.showArena) GameUI.showArena(); });
 
     document.getElementById('optMusic').addEventListener('change', e => {
       GameState.options.music = e.target.checked;

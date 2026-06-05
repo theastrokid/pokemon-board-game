@@ -107,7 +107,7 @@ GameUI.renderParty = function (player) {
     if (mon) {
       const hpPct = Math.max(0, Math.round((mon.hp / mon.maxHp) * 100));
       const hpClass = hpPct > 50 ? '' : hpPct > 20 ? 'mid' : 'low';
-      const isBattleSlot = i < 3;
+      const isBattleSlot = true; // whole party (up to 6) fights now
       const card = document.createElement('div');
       card.className = 'party-card draggable' + (mon.fainted ? ' fainted' : '') + (isBattleSlot ? ' battle-slot' : '');
       card.dataset.partyIdx = i;
@@ -271,11 +271,8 @@ GameUI.reorderPartyByDrop = function (player, fromIdx, toIdx) {
   // the multiplayer broadcast fires — without this, a peer reorder stays
   // invisible to other devices until some other mutation triggers a sync.
   GameUI.refreshAll();
-  const fromWasBattle = fromIdx < 3;
-  const toIsBattle = clampedTo < 3;
-  if (fromWasBattle !== toIsBattle) {
-    const swapInOut = toIsBattle ? 'into' : 'out of';
-    GameUI.log(`${player.name} moved <strong>${moved.name}</strong> ${swapInOut} the battle 3.`, 'system');
+  if (clampedTo === 0 && fromIdx !== 0) {
+    GameUI.log(`${player.name} moved <strong>${moved.name}</strong> to the front of the battle lineup.`, 'system');
   }
 };
 
@@ -423,11 +420,11 @@ GameUI.renderPlayerPanel = function () {
         const hpPct = Math.max(0, Math.round((mon.hp / mon.maxHp) * 100));
         const hpClass = hpPct > 50 ? '' : hpPct > 20 ? 'mid' : 'low';
         const card = document.createElement('div');
-        card.className = 'tp-mon' + (mon.fainted ? ' fainted' : '') + (i < 3 ? ' battle-slot' : '') + (mon.isShiny ? ' shiny' : '');
+        card.className = 'tp-mon battle-slot' + (mon.fainted ? ' fainted' : '') + (mon.isShiny ? ' shiny' : '');
         card.draggable = owned;
         card.dataset.partyIdx = i;
         card.innerHTML = `
-          ${i < 3 ? `<div class="tp-mon-slot">${i + 1}</div>` : ''}
+          <div class="tp-mon-slot">${i + 1}</div>
           <img src="${GameData.spriteStatic(mon.speciesId)}" alt="${mon.name}" draggable="false" />
           <div class="tp-mon-name">${mon.isShiny ? '✨ ' : ''}${mon.name}</div>
           <div class="tp-mon-hp"><div class="tp-mon-hp-fill ${hpClass}" style="width:${hpPct}%"></div></div>
@@ -781,9 +778,12 @@ GameUI.showGymPrep = function (leader, onFight) {
   const modal = document.getElementById('gymPrepModal');
   if (!modal) { if (onFight) onFight(); return; }
   const leaderId = leader.name.toLowerCase();
-  document.getElementById('gymPrepLeaderSprite').src = `sprites/trainers/${leaderId}.png`;
-  document.getElementById('gymPrepLeaderSprite').onerror = function () { this.style.display = 'none'; };
-  document.getElementById('gymPrepTitle').textContent = `${player.name} vs Gym Leader ${leader.name}`;
+  const sprite = document.getElementById('gymPrepLeaderSprite');
+  sprite.style.display = '';
+  sprite.src = leader.prepSprite || `sprites/trainers/${leaderId}.png`;
+  sprite.onerror = function () { this.style.display = 'none'; };
+  // prepLabel lets non-gym callers (Team Rocket) override "Gym Leader X".
+  document.getElementById('gymPrepTitle').textContent = `${player.name} vs ${leader.prepLabel || ('Gym Leader ' + leader.name)}`;
 
   // Render opponent's team in battle order
   const oppRow = document.getElementById('gymPrepOppTeam');
@@ -808,7 +808,7 @@ GameUI.showGymPrep = function (leader, onFight) {
     for (let i = 0; i < 6; i++) {
       const mon = player.party[i];
       const slot = document.createElement('div');
-      const isBattle = i < 3;
+      const isBattle = !!mon; // all party Pokemon fight now
       slot.className = 'gym-prep-slot' + (isBattle ? ' battle-slot' : '') + (mon ? '' : ' empty') + (mon && mon.fainted ? ' fainted' : '') + (i === selectedIdx ? ' selected' : '');
       slot.dataset.idx = i;
       if (mon) {
@@ -1157,8 +1157,8 @@ GameUI.showPokemonDetail = function (mon, player) {
   const owned = GameUI.isLocallyOwned(player, slotIdx);
   const currentPartyIdx = player.party.findIndex(m => m.instanceId === mon.instanceId);
   // Position buttons let the user tap to move a mon into another party slot.
-  // Slots 1-3 are battle slots (highlighted gold), 4-6 are storage. Empty
-  // slots beyond the current party length are clamped down by reorder.
+  // All party Pokemon (up to 6) fight; the lower the slot number, the sooner
+  // it's sent out. Empty slots beyond the party are clamped down by reorder.
   const canReorder = owned && player.party.length > 1 && currentPartyIdx >= 0;
   // Offer a Release button inside the detail modal so tapping a party
   // Pokemon gives a clear discard path — the small ✕ overlay on the party
@@ -1172,12 +1172,11 @@ GameUI.showPokemonDetail = function (mon, player) {
     const buttons = [];
     for (let i = 0; i < 6; i++) {
       const isCurrent = i === currentPartyIdx;
-      const isBattle = i < 3;
       const beyondParty = i > player.party.length - 1;
-      const label = isBattle ? `Battle ${i + 1}` : `Storage ${i - 2}`;
-      const bg = isCurrent ? '#0ea5e9' : (isBattle ? '#f59e0b22' : '#39424e');
-      const border = isCurrent ? '#0ea5e9' : (isBattle ? '#f59e0b' : '#4b5563');
-      const color = isCurrent ? '#fff' : (isBattle ? '#fbbf24' : '#e5e7eb');
+      const label = `Slot ${i + 1}`;
+      const bg = isCurrent ? '#0ea5e9' : '#f59e0b22';
+      const border = isCurrent ? '#0ea5e9' : '#f59e0b';
+      const color = isCurrent ? '#fff' : '#fbbf24';
       buttons.push(`
         <button type="button" class="pos-btn" data-target-slot="${i}" ${isCurrent ? 'disabled' : ''}
           style="flex:1;min-width:60px;background:${bg};border:1.5px solid ${border};color:${color};
@@ -1191,7 +1190,7 @@ GameUI.showPokemonDetail = function (mon, player) {
     return `
       <div style="margin-top:16px;">
         <h3 style="margin:0 0 8px;color:var(--pop);font-size:14px;">PARTY POSITION</h3>
-        <p class="hint" style="margin:0 0 8px;font-size:11px;">Slots 1-3 fight in battle. Tap a slot to move ${mon.name} there.</p>
+        <p class="hint" style="margin:0 0 8px;font-size:11px;">All your Pokémon fight; lower slot = sent out sooner. Tap a slot to move ${mon.name} there.</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">${buttons.join('')}</div>
       </div>
     `;
@@ -1204,7 +1203,7 @@ GameUI.showPokemonDetail = function (mon, player) {
         <div style="margin-top:4px;">${mon.types.map(GameUI.typePill).join('')}</div>
         <div style="margin-top:6px;font-size:13px;">HP: <strong>${mon.hp} / ${mon.maxHp}</strong></div>
         ${mon.fainted ? '<div style="color:#f87171;font-weight:bold;margin-top:4px;">FAINTED</div>' : ''}
-        ${currentPartyIdx >= 0 ? `<div style="margin-top:4px;font-size:11px;color:var(--ink-dim);">Slot ${currentPartyIdx + 1}${currentPartyIdx < 3 ? ' (battle)' : ' (storage)'}</div>` : ''}
+        ${currentPartyIdx >= 0 ? `<div style="margin-top:4px;font-size:11px;color:var(--ink-dim);">Battle order ${currentPartyIdx + 1}</div>` : ''}
       </div>
     </div>
     <div style="margin-top:16px;">
@@ -1369,6 +1368,25 @@ GameUI.showShop = function () {
   });
   GameUI.el('shopCloseBtn').onclick = () => { modal.hidden = true; };
   render();
+};
+
+// ============================== DICE PICKER (Loaded Dice) ==============================
+GameUI.showDicePicker = function (onPick) {
+  const modal = GameUI.el('dicePickerModal');
+  if (!modal) return;
+  GameUI._unspectate('dicePickerModal');
+  const grid = GameUI.el('dicePickGrid');
+  grid.innerHTML = '';
+  for (let n = 1; n <= 6; n++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dice-pick-btn';
+    btn.textContent = n;
+    btn.onclick = () => { modal.hidden = true; if (onPick) onPick(n); };
+    grid.appendChild(btn);
+  }
+  GameUI.el('dicePickCancel').onclick = () => { modal.hidden = true; };
+  modal.hidden = false;
 };
 
 // ============================== OUT OF BALLS POPUP ==============================
@@ -1970,4 +1988,121 @@ GameUI.showHallOfFameDetail = function (entryIdx, monIdx) {
   `;
   modal.hidden = false;
   document.getElementById('hofDetailClose').onclick = () => { modal.hidden = true; };
+};
+
+// ============================== CHAMPION ARENA ==============================
+// Battle saved Hall of Fame teams. You pick one champion as YOUR team and
+// fight another (CPU-controlled, difficulty scaled by its score). A global +
+// per-opponent win/loss record is kept.
+GameUI._arenaYourKey = null;
+GameUI.showArena = function (resultMsg) {
+  GameState.loadHallOfFame();
+  GameState.loadArena();
+  const modal = GameUI.el('arenaModal');
+  if (!modal) return;
+  GameUI._unspectate('arenaModal');
+  modal.hidden = false;
+  const champs = GameState.hallOfFame || [];
+  // Default YOUR team to the highest-scoring champion.
+  if (!GameUI._arenaYourKey || !champs.some(e => GameState.arenaKey(e) === GameUI._arenaYourKey)) {
+    const best = champs.slice().sort((a, b) => GameState.hofScore(b) - GameState.hofScore(a))[0];
+    GameUI._arenaYourKey = best ? GameState.arenaKey(best) : null;
+  }
+  GameUI.el('arenaRecord').textContent = `Overall record: ${GameState.arena.wins}W – ${GameState.arena.losses}L`;
+  const resultEl = GameUI.el('arenaResult');
+  resultEl.innerHTML = resultMsg || '';
+  resultEl.hidden = !resultMsg;
+  const list = GameUI.el('arenaList');
+  list.innerHTML = '';
+  if (champs.length < 2) {
+    list.innerHTML = `<div class="hint">You need at least 2 Hall of Fame champions to hold a match. Beat Giovanni a few more times!</div>`;
+  } else {
+    const ranked = champs.map((e) => ({ e, score: GameState.hofScore(e) })).sort((a, b) => b.score - a.score);
+    const medals = ['🥇', '🥈', '🥉'];
+    ranked.forEach(({ e }, rankIdx) => {
+      const key = GameState.arenaKey(e);
+      const isYours = key === GameUI._arenaYourKey;
+      const skill = GameState.arenaSkill(e);
+      const vs = GameState.arena.vs[key] || { wins: 0, losses: 0 };
+      const sprites = (e.party || []).map(m => `<img src="${GameData.spriteStatic(m.speciesId)}" title="${m.name}" alt="" />`).join('');
+      const vsTxt = (vs.wins || vs.losses) ? ` · you ${vs.wins}W-${vs.losses}L` : '';
+      const div = document.createElement('div');
+      div.className = 'arena-entry' + (isYours ? ' arena-yours' : '');
+      div.innerHTML = `
+        <div class="arena-entry-head">
+          <div class="hof-rank">${medals[rankIdx] || '#' + (rankIdx + 1)}</div>
+          <div class="arena-info">
+            <div class="arena-name" style="color:${e.color || '#fff'}">${e.name}${isYours ? ' <span class="hof-you-tag">YOUR TEAM</span>' : ''}</div>
+            <div class="hint">${e.turns} turns · score ${GameState.hofScore(e).toLocaleString()} · AI: <strong>${skill.tier}</strong>${vsTxt}</div>
+          </div>
+          ${isYours ? '<span class="arena-pick-hint">your team</span>' : `<button class="arena-fight-btn" type="button">⚔️ Fight</button>`}
+        </div>
+        <div class="arena-team">${sprites}</div>
+      `;
+      if (!isYours) {
+        const setMine = () => { GameUI._arenaYourKey = key; GameUI.showArena(); };
+        div.querySelector('.arena-info').onclick = setMine;
+        div.querySelector('.arena-team').onclick = setMine;
+        div.querySelector('.arena-fight-btn').onclick = (ev) => {
+          ev.stopPropagation();
+          const yourEntry = champs.find(c => GameState.arenaKey(c) === GameUI._arenaYourKey);
+          if (yourEntry) GameUI.startArenaBattle(yourEntry, e);
+        };
+      }
+      list.appendChild(div);
+    });
+    const tip = document.createElement('div');
+    tip.className = 'hint';
+    tip.style.cssText = 'margin-top:8px;text-align:center;';
+    tip.textContent = 'Tap a champion to make it YOUR team, or hit ⚔️ Fight to battle it.';
+    list.appendChild(tip);
+  }
+  GameUI.el('arenaCloseBtn').onclick = () => { modal.hidden = true; };
+};
+
+GameUI.startArenaBattle = function (yourEntry, oppEntry) {
+  // Build two temp "players" and run a battle. There's no live game on the home
+  // screen, so save/restore GameState.players around the match.
+  const mkPlayer = (entry, idx, isCpu) => ({
+    id: 'arena-' + idx, idx, name: entry.name, color: entry.color || (isCpu ? '#a855f7' : '#3b82f6'),
+    isCpu, party: GameState.arenaTeamFromEntry(entry),
+    items: {}, balls: {}, flags: {}, badges: [], eggs: [], money: 0, tile: 0, completed: false,
+  });
+  const you = mkPlayer(yourEntry, 0, false);
+  const opp = mkPlayer(oppEntry, 1, true);
+  GameUI._preArena = { players: GameState.players, active: GameState.activePlayerIdx, busy: GameState.busy, pending: GameState.pendingTileResolution };
+  GameState.players = [you, opp];
+  GameState.activePlayerIdx = 0;
+  GameState.busy = false;
+  GameState.pendingTileResolution = false;
+  const skill = GameState.arenaSkill(oppEntry);
+  const oppTeam = opp.party.map(m => ({
+    speciesId: m.speciesId, name: m.name, types: m.types.slice(),
+    moves: GameState.cloneMoves(m.moves), hp: m.maxHp, maxHp: m.maxHp, fainted: false,
+  }));
+  GameUI.el('arenaModal').hidden = true;
+  GameBattle.start({
+    kind: 'arena',
+    oppTeam,
+    opponentLabel: '🏆 ' + oppEntry.name,
+    opponentColor: opp.color,
+    arenaSkill: skill,
+    onWin: () => GameUI._endArena(oppEntry, true),
+    onLose: () => GameUI._endArena(oppEntry, false),
+  });
+};
+
+GameUI._endArena = function (oppEntry, won) {
+  GameState.recordArenaResult(oppEntry, won);
+  // Restore whatever (if anything) was running before the match.
+  const pre = GameUI._preArena || { players: [], active: 0 };
+  GameState.players = pre.players || [];
+  GameState.activePlayerIdx = pre.active || 0;
+  GameState.busy = false;
+  GameState.pendingTileResolution = false;
+  GameUI._preArena = null;
+  const msg = won
+    ? `<span class="win">🏆 You defeated <strong>${oppEntry.name}</strong>!</span>`
+    : `<span class="lose">💥 <strong>${oppEntry.name}</strong> defeated you. Try a different team!</span>`;
+  setTimeout(() => GameUI.showArena(msg), 400);
 };

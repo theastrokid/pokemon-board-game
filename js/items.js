@@ -27,6 +27,9 @@ GameItems.applyItem = function (item, player, ctx) {
       GameUI.log(`${player.name} clutches a Lucky Egg for the next gym battle.`);
       GameState.consumeItem(player, item.id);
       break;
+    case 'dice':
+      GameItems.applyLoadedDice(item, player);
+      break;
     default:
       GameUI.log(`No effect implemented for ${item.name}.`, 'system');
   }
@@ -260,6 +263,23 @@ GameItems._maybeReopenEvolve = function (item, player) {
   if ((live.items[item.id] || 0) <= 0) return;       // out of Rare Candies → close
   if (!GameItems._hasEvolveEligible(live)) return;    // nothing left to candy → close
   setTimeout(() => GameItems.applyEvolve(item, live), 150);
+};
+
+// Loaded Dice: the player picks 1-6; their NEXT roll uses that value. Only
+// consumed once a value is actually chosen (Cancel keeps the item).
+GameItems.applyLoadedDice = function (item, player) {
+  if ((player.flags && player.flags.loadedDice) > 0) {
+    GameUI.log(`A Loaded Dice is already set for your next roll (${player.flags.loadedDice}).`, 'system');
+    return;
+  }
+  if (!GameUI.showDicePicker) return;
+  GameUI.showDicePicker((n) => {
+    player.flags = player.flags || {};
+    player.flags.loadedDice = n;
+    GameState.consumeItem(player, item.id);
+    GameUI.log(`<span class="crit">${player.name} loaded the dice — the next roll will be a ${n}.</span>`, 'crit');
+    GameUI.refreshAll();
+  });
 };
 
 GameItems.applyBuff = function (item, player) {

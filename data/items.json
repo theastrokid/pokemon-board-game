@@ -10,7 +10,8 @@
     { "id": "x2_defense",   "name": "X-Defense",    "type": "battlebuff", "stat": "defense","amount": 0.8,  "weight": 5, "value": 16, "price": 500, "description": "Lead Pokemon in next battle gets +25% Defense for 3 incoming hits. Stackable." },
     { "id": "max_revive",   "name": "Max Revive",   "type": "revive", "amount": 1.0, "weight": 3,  "value": 32, "price": 1200, "description": "Revive a fainted Pokemon to full HP." },
     { "id": "lucky_egg",    "name": "Lucky Egg",    "type": "lucky",  "weight": 3,  "value": 28, "price": 1500,                "description": "2x rewards from the NEXT gym leader you defeat. Consumed on use." },
-    { "id": "egg",          "name": "Egg",          "type": "egg",    "weight": 3,  "value": 28, "price": 1500,                "description": "A mysterious Egg. Hatches into a SHINY Pokemon after 5 of your turns." }
+    { "id": "egg",          "name": "Egg",          "type": "egg",    "weight": 3,  "value": 28, "price": 1500,                "description": "A mysterious Egg. Hatches into a SHINY Pokemon after 5 of your turns." },
+    { "id": "loaded_dice",  "name": "Loaded Dice",  "type": "dice",   "weight": 4,  "value": 24, "price": 1000,                "description": "Choose your NEXT dice roll (1-6)." }
   ],
   "pokeballs": [
     { "id": "pokeball",   "name": "Poke Ball",   "weight": 60, "tier": 1, "value": 8,  "price": 200 },

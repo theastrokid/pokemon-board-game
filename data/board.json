@@ -809,6 +809,14 @@
         {
           "id": 138,
           "level": 10
+        },
+        {
+          "id": 185,
+          "level": 12
+        },
+        {
+          "id": 231,
+          "level": 11
         }
       ],
       "reward": {
@@ -824,7 +832,7 @@
       "color": "#5bc0eb",
       "_theme": "Water (Quagsire=electric-immune, Tentacruel/Togetic resist grass, Togetic adds a non-water type)",
       "scaleMultiplier": 1.5,
-      "teamSize": 3,
+      "teamSize": 4,
       "pool": [
         {
           "id": 120,
@@ -849,6 +857,14 @@
         {
           "id": 176,
           "level": 18
+        },
+        {
+          "id": 116,
+          "level": 18
+        },
+        {
+          "id": 131,
+          "level": 20
         }
       ],
       "reward": {
@@ -863,7 +879,7 @@
       "city": "Cinnabar Island",
       "color": "#d65b3a",
       "_theme": "Fire (Houndoom=Dark, Sandslash=Ground add non-fire types; water stays its canonical weakness)",
-      "teamSize": 3,
+      "teamSize": 5,
       "pool": [
         {
           "id": 58,
@@ -888,6 +904,18 @@
         {
           "id": 28,
           "level": 29
+        },
+        {
+          "id": 77,
+          "level": 28
+        },
+        {
+          "id": 126,
+          "level": 32
+        },
+        {
+          "id": 136,
+          "level": 31
         }
       ],
       "reward": {
@@ -945,6 +973,18 @@
         {
           "id": 149,
           "level": 70
+        },
+        {
+          "id": 76,
+          "level": 54
+        },
+        {
+          "id": 105,
+          "level": 52
+        },
+        {
+          "id": 130,
+          "level": 55
         }
       ],
       "reward": {

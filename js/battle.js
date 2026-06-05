@@ -18,10 +18,10 @@ GameBattle.ensurePP = function (mon) {
 GameBattle.start = function (opts) {
   // opts: { kind: 'gym'|'pvp', leader, opponentPlayer, prizePokemon, onWin, onLose }
   const player = GameState.currentPlayer();
-  // Battle uses the first 3 Pokemon in party order (the highlighted battle slots).
-  // For wild battles, just use the active first Pokemon that isn't fainted.
-  const playerTeam = (opts.kind === 'gym' || opts.kind === 'pvp')
-    ? player.party.slice(0, 3)
+  // Battle uses the WHOLE party (up to 6) in party order. The first non-fainted
+  // leads. For wild battles, just use the active non-fainted Pokemon.
+  const playerTeam = (opts.kind === 'gym' || opts.kind === 'pvp' || opts.kind === 'arena')
+    ? player.party.slice(0, 6)
     : player.party.filter(m => !m.fainted);
   let oppTeam;
   let opponentLabel;
@@ -54,7 +54,7 @@ GameBattle.start = function (opts) {
     opponentColor = leader.color;
   } else if (opts.kind === 'pvp') {
     const opp = opts.opponentPlayer;
-    oppTeam = opp.party.filter(m => !m.fainted).slice(0, 3).map(m => ({
+    oppTeam = opp.party.filter(m => !m.fainted).slice(0, 6).map(m => ({
       speciesId: m.speciesId,
       name: m.name,
       types: m.types.slice(),
@@ -78,6 +78,11 @@ GameBattle.start = function (opts) {
     }];
     opponentLabel = 'Wild Pokemon';
     opponentColor = '#888';
+  } else if (opts.kind === 'arena') {
+    // Champion Arena: opponent team is pre-built from a Hall of Fame entry.
+    oppTeam = opts.oppTeam || [];
+    opponentLabel = opts.opponentLabel || 'Champion';
+    opponentColor = opts.opponentColor || '#a855f7';
   }
 
   // Callers may override the displayed opponent label (e.g. Team Rocket reuses
@@ -88,10 +93,10 @@ GameBattle.start = function (opts) {
   playerTeam.forEach(m => GameBattle.ensurePP(m));
   oppTeam.forEach(m => GameBattle.ensurePP(m));
 
-  // Use the first 3 of the party for gym/pvp (battle slots), or all non-fainted for wild
+  // Use the whole party for gym/pvp/arena, or all non-fainted for wild
   let teamForBattle = playerTeam;
-  if (opts.kind === 'gym' || opts.kind === 'pvp') {
-    // Find the first non-fainted in battle slots to send out first
+  if (opts.kind === 'gym' || opts.kind === 'pvp' || opts.kind === 'arena') {
+    // Find the first non-fainted to send out first
     const firstAlive = teamForBattle.findIndex(m => !m.fainted);
     if (firstAlive > 0) {
       // Reorder so first non-fainted is in slot 0 for battle start
@@ -130,9 +135,16 @@ GameBattle.start = function (opts) {
     awaitingDice: false,
     pendingMoveIdx: null,
     // Final-boss mechanic: gym leaders may carry a Hyper Potion allowance
-    // (Giovanni = 2). Decremented as they spend them mid-fight.
+    // (Giovanni = 2). Arena champions get theirs from arenaSkill. Decremented
+    // as they're spent mid-fight.
     oppHyperPotionsLeft: (opts.kind === 'gym' && opts.leader && opts.leader.hyperPotions)
-      ? (Number(opts.leader.hyperPotions) || 0) : 0,
+      ? (Number(opts.leader.hyperPotions) || 0)
+      : (opts.arenaSkill ? (opts.arenaSkill.hyperPotions || 0) : 0),
+    // Arena AI extras: a one-shot Max Revive, smarter move choice, and a
+    // higher heal threshold (heal at <30% HP, not just <10).
+    oppMaxRevivesLeft: opts.arenaSkill ? (opts.arenaSkill.maxRevives || 0) : 0,
+    oppSmartMoves: opts.arenaSkill ? !!opts.arenaSkill.smartMoves : false,
+    oppHealBelowFrac: opts.arenaSkill ? 0.3 : 0,
     message: 'Battle start.',
     onWin: opts.onWin,
     onLose: opts.onLose,
@@ -155,7 +167,7 @@ GameBattle.start = function (opts) {
     const isFinalBoss = opts.leader && opts.leader.name === 'Giovanni';
     GameAudio.startBattleMusic(isFinalBoss ? 'giovanni' : 'gym');
     GameAudio.sfx.gymStart();
-  } else if (opts.kind === 'pvp') {
+  } else if (opts.kind === 'pvp' || opts.kind === 'arena') {
     GameAudio.startBattleMusic('gym');
   } else {
     GameAudio.startBattleMusic('wild');
@@ -173,7 +185,8 @@ GameBattle.renderBattle = function (b) {
   const teamSize = b.oppTeam ? b.oppTeam.length : 3;
   GameUI.el('battleSubtitle').textContent = b.kind === 'gym'
     ? `Beat all ${teamSize} of their Pokemon`
-    : b.kind === 'pvp' ? 'Trainer battle · 3v3' : 'Wild Pokemon battle';
+    : b.kind === 'arena' ? `Champion match · beat all ${teamSize}`
+    : b.kind === 'pvp' ? 'Trainer battle' : 'Wild Pokemon battle';
 
   // Leader sprite shown only for gym battles
   const leaderImg = GameUI.el('battleLeaderSprite');
@@ -210,7 +223,7 @@ GameBattle.renderBattle = function (b) {
   // Pokemon they're on, with a clear flag when it's their LAST one.
   const statusEl = GameUI.el('oppTeamStatus');
   if (statusEl) {
-    if ((b.kind === 'gym' || b.kind === 'pvp') && b.oppTeam && b.oppTeam.length > 1) {
+    if ((b.kind === 'gym' || b.kind === 'pvp' || b.kind === 'arena') && b.oppTeam && b.oppTeam.length > 1) {
       const total = b.oppTeam.length;
       const defeated = b.oppTeam.filter(m => m.fainted).length;
       const current = Math.min(defeated + 1, total);
@@ -290,17 +303,38 @@ GameBattle.choosePlayerMove = function (moveIdx) {
     GameBattle.renderBattle(b);
     return;
   }
-  // Strong moves are no longer gated by a dice roll — PP governs how often
-  // they can be used. Resolve every chosen move directly.
-  GameBattle.resolveTurn(moveIdx, true);
+  // Speed-based turn order: the faster active Pokemon strikes first, via a
+  // speed-weighted coin flip (equal speed = 50/50). If the opponent wins, it
+  // attacks first and the player's chosen move lands afterward.
+  const oMon = b.oppTeam[b.oppActive];
+  const pSpd = GameBattle._speedOf(pMon), oSpd = GameBattle._speedOf(oMon);
+  const playerFirst = Math.random() < pSpd / (pSpd + oSpd);
+  if (playerFirst) {
+    GameBattle.resolveTurn(moveIdx, true);
+  } else {
+    b._queuedPlayerMove = moveIdx;
+    b._queuedPlayerMonId = pMon.instanceId;
+    b.opponentPending = true;
+    b.message = `${oMon.name} is faster and moves first!`;
+    GameBattle.renderBattle(b);
+    setTimeout(() => GameBattle.opponentTurn(), 500);
+  }
 };
 
-GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
+// Base species Speed stat (added to pokemon.json from the official base stats).
+GameBattle._speedOf = function (mon) {
+  if (!mon) return 50;
+  const base = GameData.getPokemon(mon.speciesId);
+  return Math.max(1, (base && base.speed) || 50);
+};
+
+GameBattle.resolveTurn = function (playerMoveIdx, playerLanded, skipOpponent) {
   const b = GameBattle.active;
   const pMon = b.playerTeam[b.playerActive];
   const oMon = b.oppTeam[b.oppActive];
 
-  // Decide who goes first by max move power for simplicity? Just go player first.
+  // The player's chosen move resolves here. skipOpponent=true means the
+  // opponent already struck first this exchange (speed order), so no counter.
   if (playerLanded && playerMoveIdx != null) {
     const move = pMon.moves[playerMoveIdx];
     if (move.pp != null) move.pp = Math.max(0, move.pp - 1);
@@ -325,6 +359,24 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
     }
     GameAudio.sfx.hit();
     if (oMon.hp <= 0) {
+      // Arena Max Revive: a one-shot clutch save — the champion brings their
+      // downed Pokemon straight back to full HP instead of losing it.
+      if ((b.oppMaxRevivesLeft || 0) > 0) {
+        b.oppMaxRevivesLeft -= 1;
+        oMon.hp = oMon.maxHp;
+        b.message += ` ${b.opponentLabel} used a MAX REVIVE — ${oMon.name} is back at full HP!`;
+        GameUI.log(`<span class="crit">🧪 ${b.opponentLabel} used a MAX REVIVE on ${oMon.name}!</span>`, 'crit');
+        if (GameAudio.sfx && GameAudio.sfx.heal) GameAudio.sfx.heal();
+        if (skipOpponent) {
+          b.opponentPending = false;
+          GameBattle.renderBattle(b);
+        } else {
+          b.opponentPending = true;
+          setTimeout(() => GameBattle.opponentTurn(), 700);
+          GameBattle.renderBattle(b);
+        }
+        return;
+      }
       oMon.fainted = true;
       GameState.resetMoves(oMon);
       GameAudio.sfx.faint();
@@ -345,17 +397,46 @@ GameBattle.resolveTurn = function (playerMoveIdx, playerLanded) {
     }
   }
 
+  // If the opponent already moved first this exchange, just finish — no counter.
+  if (skipOpponent) {
+    b.opponentPending = false;
+    GameBattle.renderBattle(b);
+    return;
+  }
   // Opponent turn — lock player input until it resolves.
   b.opponentPending = true;
   setTimeout(() => GameBattle.opponentTurn(), 700);
   GameBattle.renderBattle(b);
 };
 
+// Unlock after the opponent acts, and — if the opponent moved FIRST this
+// exchange — resolve the player's queued move (same Pokemon, still conscious).
+GameBattle._finishOpponentTurn = function () {
+  const b = GameBattle.active;
+  if (!b) return;
+  b.opponentPending = false;
+  GameBattle.renderBattle(b);
+  if (b._queuedPlayerMove == null) return;
+  const moveIdx = b._queuedPlayerMove;
+  const monId = b._queuedPlayerMonId;
+  b._queuedPlayerMove = null;
+  b._queuedPlayerMonId = null;
+  const curMon = b.playerTeam[b.playerActive];
+  if (curMon && !curMon.fainted && curMon.instanceId === monId) {
+    const mv = curMon.moves[moveIdx];
+    if (mv && (mv.pp || 0) > 0) {
+      b.opponentPending = true;
+      GameBattle.renderBattle(b);
+      setTimeout(() => GameBattle.resolveTurn(moveIdx, true, true), 600);
+    }
+  }
+};
+
 GameBattle.opponentTurn = function () {
   const b = GameBattle.active;
   const pMon = b.playerTeam[b.playerActive];
   const oMon = b.oppTeam[b.oppActive];
-  if (!oMon || oMon.fainted) return;
+  if (!oMon || oMon.fainted) { GameBattle._finishOpponentTurn(); return; }
   GameBattle.ensurePP(oMon);
 
   // ===== Final-boss Hyper Potion (Giovanni) =====
@@ -363,7 +444,8 @@ GameBattle.opponentTurn = function () {
   // critically low (below 10 HP) but still conscious and not already full,
   // spend one INSTEAD of attacking. Never wasted on a fainted or full mon;
   // capped by oppHyperPotionsLeft (Giovanni = 2 total). Uses the turn.
-  if ((b.oppHyperPotionsLeft || 0) > 0 && oMon.hp > 0 && oMon.hp < 10 && oMon.hp < oMon.maxHp) {
+  const healTrigger = oMon.hp < 10 || (b.oppHealBelowFrac > 0 && oMon.hp < oMon.maxHp * b.oppHealBelowFrac);
+  if ((b.oppHyperPotionsLeft || 0) > 0 && oMon.hp > 0 && healTrigger && oMon.hp < oMon.maxHp) {
     const healItem = (window.GameData && GameData.getItem && GameData.getItem('hyper_potion'));
     const healAmt = (healItem && healItem.amount) || 120;
     oMon.hp = Math.min(oMon.maxHp, oMon.hp + healAmt);
@@ -372,8 +454,7 @@ GameBattle.opponentTurn = function () {
     b.message = `${b.opponentLabel} used a Hyper Potion on ${oMon.name}! HP restored to ${oMon.hp}/${oMon.maxHp}.${left > 0 ? ` (${left} left)` : ''}`;
     GameUI.log(`<span class="crit">💉 ${b.opponentLabel} used a HYPER POTION on ${oMon.name}! HP → ${oMon.hp}/${oMon.maxHp}.</span>`, 'crit');
     if (GameAudio.sfx && GameAudio.sfx.heal) GameAudio.sfx.heal();
-    b.opponentPending = false;
-    GameBattle.renderBattle(b);
+    GameBattle._finishOpponentTurn();
     return;
   }
 
@@ -387,6 +468,18 @@ GameBattle.opponentTurn = function () {
     struggled = true;
     move = { name: 'Struggle', power: 15, type: 'normal' };
     moveIdx = -1;
+  } else if (b.oppSmartMoves) {
+    // Skilled arena champions favour their highest-expected-damage move
+    // (power × type effectiveness × STAB) against the player's active mon.
+    const score = (mv) => {
+      const eff = GameBattle.typeEffect(mv.type, pMon.types || []);
+      const stab = (oMon.types || []).includes(mv.type) ? 1.2 : 1;
+      return (mv.power || 0) * eff * stab;
+    };
+    const best = usable.slice().sort((a, c) => score(c.mv) - score(a.mv))[0];
+    move = best.mv;
+    moveIdx = best.i;
+    if (move.pp != null) move.pp = Math.max(0, move.pp - 1);
   } else {
     // 50/50 mix: weak vs strong, but only from usable moves
     const wantStrong = Math.random() < 0.5;
@@ -435,9 +528,9 @@ GameBattle.opponentTurn = function () {
   }
   // Sync the real player party HP/fainted state
   GameBattle.syncBackToParty();
-  // Opponent has acted; unlock player input.
-  b.opponentPending = false;
-  GameBattle.renderBattle(b);
+  // Opponent has acted; unlock + resolve the player's queued move if the
+  // opponent went first this exchange.
+  GameBattle._finishOpponentTurn();
 };
 
 // Set by computeDamage so the caller can announce a crit. Reset every call.

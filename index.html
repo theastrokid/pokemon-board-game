@@ -67,6 +67,7 @@
     <div class="setup-actions">
       <button id="loadSaveBtn" class="ghost-btn">Resume last game</button>
       <button id="hallOfFameBtn" class="ghost-btn">Hall of Fame</button>
+      <button id="arenaBtn" class="ghost-btn">⚔️ Champion Arena</button>
       <button id="setupFullscreenBtn" class="ghost-btn">⛶ Fullscreen</button>
       <button id="startGameBtn" class="primary-btn">Start adventure</button>
     </div>
@@ -182,7 +183,7 @@
         <img id="gymPrepLeaderSprite" class="gym-prep-leader" alt="" />
         <div>
           <h2 id="gymPrepTitle">Prepare for battle</h2>
-          <p class="hint" id="gymPrepSubtitle">Order your team — slots 1-3 fight. Click a Pokemon, then a slot, to move it.</p>
+          <p class="hint" id="gymPrepSubtitle">Order your team — all of them fight; the top one leads. Click a Pokemon, then a slot, to move it.</p>
         </div>
       </div>
       <div class="gym-prep-opponent">
@@ -434,7 +435,8 @@
     <div class="modal-card team-rocket-card">
       <div class="tr-logo">R</div>
       <div class="tr-stage">
-        <img id="teamRocketSprite" class="tr-sprite" src="sprites/front/52.gif" alt="Team Rocket" onerror="this.onerror=null;this.src='sprites/static/52.png'" />
+        <img class="tr-sprite tr-duo" src="sprites/trainers/jessiejames.png" alt="Jessie & James" onerror="this.style.display='none'" />
+        <img id="teamRocketSprite" class="tr-sprite" src="sprites/front/52.gif" alt="Meowth" onerror="this.onerror=null;this.src='sprites/static/52.png'" />
       </div>
       <h2 class="tr-title">TEAM ROCKET!</h2>
       <p class="tr-subtitle" id="teamRocketSubtitle"></p>
@@ -515,6 +517,34 @@
       <div id="hofList" class="hof-list"></div>
       <div class="hof-actions">
         <button id="hofCloseBtn" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  DICE PICKER (Loaded Dice)  ===================== -->
+  <div id="dicePickerModal" class="modal" hidden>
+    <div class="modal-card dice-picker-card">
+      <h2>🎲 Loaded Dice</h2>
+      <p class="hint">Choose what your next roll will be.</p>
+      <div class="dice-pick-grid" id="dicePickGrid"></div>
+      <div class="modal-actions">
+        <button id="dicePickCancel" class="ghost-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================  CHAMPION ARENA  ===================== -->
+  <div id="arenaModal" class="modal" hidden>
+    <div class="modal-card arena-card">
+      <div class="arena-header">
+        <h2>⚔️ Champion Arena</h2>
+        <span class="arena-record" id="arenaRecord"></span>
+      </div>
+      <p class="arena-result" id="arenaResult" hidden></p>
+      <p class="hint">Pick YOUR champion, then fight another. Faster-finishing teams have tougher AI — Hyper Potions, a Max Revive, and best-move targeting.</p>
+      <div id="arenaList" class="arena-list"></div>
+      <div class="modal-actions">
+        <button id="arenaCloseBtn" class="primary-btn">Close</button>
       </div>
     </div>
   </div>

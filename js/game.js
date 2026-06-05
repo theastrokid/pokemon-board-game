@@ -21,9 +21,15 @@ GameGame.rollAndMove = function (rolledOverride) {
     return;
   }
   GameState.busy = true;
-  const roll = rolledOverride != null ? rolledOverride : GameState.rollDice();
+  // Loaded Dice (item) overrides the next roll with the player's chosen value.
+  let loaded = 0;
+  if (player.flags && player.flags.loadedDice > 0) {
+    loaded = player.flags.loadedDice;
+    player.flags.loadedDice = 0;
+  }
+  const roll = rolledOverride != null ? rolledOverride : (loaded > 0 ? loaded : GameState.rollDice());
   GameAudio.sfx.dice();
-  GameUI.log(`<span class="actor">${player.name}</span> rolled <strong>${roll}</strong>.`);
+  GameUI.log(`<span class="actor">${player.name}</span> rolled <strong>${roll}</strong>${loaded > 0 ? ' <span class="crit">(Loaded Dice!)</span>' : ''}.`);
   // Big in-board dice animation. Hold movement until tumble settles so the
   // roll value is visible before the token starts moving.
   if (GameUI && GameUI.runBigDice) {
@@ -742,9 +748,13 @@ GameGame._teamRocketBattle = function (player, onDone) {
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
   const size = Math.min(3, 2 + Math.floor(badgeCount / 2));
   const team = pool.slice(0, size).map(id => ({ id, level }));
-  const rocketLeader = { name: 'Team Rocket', city: '', color: '#b0246a', team, scaleMultiplier: 1 };
+  const rocketLeader = {
+    name: 'Team Rocket', city: '', color: '#b0246a', team, scaleMultiplier: 1,
+    prepLabel: '🚀 Team Rocket', prepSprite: 'sprites/trainers/jessiejames.png',
+  };
   GameUI.log(`<span class="crit">🚀 Team Rocket wants to battle!</span>`, 'crit');
-  GameBattle.start({
+
+  const startFight = () => GameBattle.start({
     kind: 'gym',
     leader: rocketLeader,
     opponentLabel: '🚀 Team Rocket',
@@ -765,16 +775,26 @@ GameGame._teamRocketBattle = function (player, onDone) {
       GameUI.log(`<span class="win">${player.name} sent Team Rocket blasting off and grabbed their stash — 3 items + 3 pokeballs!</span>`, 'win');
       GameUI.refreshAll();
       const finish = () => { if (onDone) onDone(); };
-      if (GameUI.showDraws) GameUI.showDraws('🚀 Team Rocket blasted off! You grabbed their stash:', draws, finish);
+      if (GameUI.showDraws) GameUI.showDraws('🚀 WON! Team Rocket blasted off — you grabbed their stash:', draws, finish);
       else finish();
     },
     onLose: () => {
-      GameUI.log(`<span class="lose">Team Rocket overpowered ${player.name} and fled.</span>`, 'lose');
+      GameUI.log(`<span class="lose">Team Rocket defeated ${player.name} and fled.</span>`, 'lose');
       GameState.healPlayer(player); // never strand the player with a fainted party
       GameUI.refreshAll();
-      if (onDone) onDone();
+      const finish = () => { if (onDone) onDone(); };
+      if (GameUI.showTeamRocketResult) GameUI.showTeamRocketResult('💥 You LOST to Team Rocket! They fled — your Pokémon were healed.', true, finish);
+      else finish();
     },
   });
+
+  // Humans get a prep screen (scout the Rocket team + reorder) first. CPUs
+  // skip straight to the fight.
+  if (!player.isCpu && GameUI.showGymPrep) {
+    GameUI.showGymPrep(rocketLeader, startFight);
+  } else {
+    startFight();
+  }
 };
 
 GameGame._teamRocketTheft = function (player, onDone) {
