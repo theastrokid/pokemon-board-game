@@ -1789,7 +1789,7 @@ GameUI.showEggHatch = function (player, egg, onComplete) {
     if (finished) return;
     finished = true;
     eggEl.hidden = true;
-    // Add the shiny hatchling now (room guaranteed by tickEggsTurnStart).
+    // Add the shiny hatchling now (makeHatchling frees a slot if the party is full).
     const mon = GameState.makeHatchling(player, egg.speciesId);
     spriteEl.src = GameData.spriteFront(egg.speciesId);
     spriteEl.onerror = function () { this.onerror = null; this.src = GameData.spriteStatic(egg.speciesId); };

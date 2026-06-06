@@ -347,7 +347,8 @@ GameGame.endTurn = function () {
 
 // Hatch a queue of ready Eggs one at a time. Humans get the reveal animation
 // (blocking the roll via GameState.busy until they continue); CPUs hatch
-// silently so play stays snappy. Room is already guaranteed by tickEggsTurnStart.
+// silently so play stays snappy. makeHatchling frees a party slot (releasing
+// the weakest) if the party is full, so every ready egg hatches.
 GameGame._runHatches = function (player, eggs) {
   const queue = eggs.slice();
   const next = () => {

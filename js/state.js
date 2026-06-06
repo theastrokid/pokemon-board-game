@@ -182,15 +182,55 @@ GameState.giveEgg = function (player) {
   player.eggs.push({
     instanceId: 'egg-' + Math.random().toString(36).slice(2, 8),
     speciesId,
-    turnsLeft: GameState.EGG_HATCH_TURNS,
+    turnsLeft: GameState.eggHatchTurnsFor(speciesId),
   });
   player.eggsReceived = (player.eggsReceived || 0) + 1;
+};
+
+// Hatch time scales 3-8 turns with the hatchling's total stats (HP + total
+// move power): the weakest species in the egg pool hatches fastest (3), the
+// strongest slowest (8). Uses the species' STAT RANK within the pool (a
+// percentile) rather than the raw value, so the 3-8 range spreads evenly
+// instead of bunching up when a few outliers (Chansey, Celebi) stretch the
+// top end. Sorted pool totals are computed once and cached.
+GameState.eggHatchTurnsFor = function (speciesId) {
+  const total = (s) => s ? ((s.hp || 0) + (s.moves || []).reduce((a, mv) => a + (mv.power || 0), 0)) : 0;
+  const base = GameData.getPokemon(speciesId);
+  if (!base) return GameState.EGG_HATCH_TURNS;
+  if (!GameState._eggSortedTotals) {
+    const pool = (window.GameItems && GameItems._buildEggPool) ? GameItems._buildEggPool() : [];
+    GameState._eggSortedTotals = pool.map(p => total(GameData.getPokemon(p.id))).filter(t => t > 0).sort((a, b) => a - b);
+  }
+  const arr = GameState._eggSortedTotals;
+  if (arr.length < 2) return GameState.EGG_HATCH_TURNS;
+  const t = total(base);
+  let below = 0;
+  for (const x of arr) { if (x <= t) below++; }
+  const pct = Math.max(0, Math.min(1, (below - 1) / (arr.length - 1))); // 0 (weakest) .. 1 (strongest)
+  return Math.max(3, Math.min(8, Math.round(3 + pct * 5)));
 };
 
 // Build a hatched Pokemon: always shiny, with the same +25% HP / +25% move
 // power bonus shiny wild catches get (see encounter.js), so it survives every
 // code path that later reads mon.moves.
 GameState.makeHatchling = function (player, speciesId) {
+  // Eggs ALWAYS hatch. If the party is full, send the weakest member to the PC
+  // to make room (prefer a non-shiny; if every slot is shiny, the lowest-stat
+  // one goes). Without this a full party would park ready eggs forever.
+  if (Array.isArray(player.party) && player.party.length >= 6) {
+    const stat = (m) => (m.maxHp || 0) + (m.moves || []).reduce((s, mv) => s + (mv.power || 0), 0);
+    let pool = player.party.filter(m => !m.isShiny);
+    if (!pool.length) pool = player.party.slice();
+    let weakest = pool[0];
+    pool.forEach(m => { if (stat(m) < stat(weakest)) weakest = m; });
+    const idx = player.party.indexOf(weakest);
+    if (idx >= 0) {
+      player.party.splice(idx, 1);
+      if (window.GameUI && GameUI.log) {
+        GameUI.log(`${player.name}'s party was full — <strong>${weakest.name}</strong> was sent to the PC to make room for the hatchling.`, 'system');
+      }
+    }
+  }
   const mon = GameState.addPokemonToParty(player, speciesId);
   if (mon) {
     mon.isShiny = true;
@@ -203,24 +243,16 @@ GameState.makeHatchling = function (player, speciesId) {
 };
 
 // Advance every Egg's countdown by one at the START of the owner's turn, and
-// return the Eggs that are ready to hatch (turnsLeft 0) AND have party room.
-// Eggs are spliced out atomically so they can never double-hatch; ready Eggs
-// with no party room stay parked at 0 until a slot frees up. A per-turn guard
-// stops any double endTurn from decrementing twice.
+// return ALL Eggs that are ready to hatch (turnsLeft 0). Ready eggs always
+// hatch — a full party no longer parks them (makeHatchling frees a slot). A
+// per-turn guard stops any double endTurn from decrementing twice.
 GameState.tickEggsTurnStart = function (player) {
   if (!player || !Array.isArray(player.eggs) || player.eggs.length === 0) return [];
   if (player._lastEggTickTurn === GameState.turnCount) return [];
   player._lastEggTickTurn = GameState.turnCount;
   player.eggs.forEach(egg => { egg.turnsLeft = Math.max(0, (egg.turnsLeft || 0) - 1); });
-  const hatched = [];
-  let i = 0;
-  while (i < player.eggs.length && (player.party.length + hatched.length) < 6) {
-    if (player.eggs[i].turnsLeft <= 0) {
-      hatched.push(player.eggs.splice(i, 1)[0]);
-    } else {
-      i++;
-    }
-  }
+  const hatched = player.eggs.filter(egg => egg.turnsLeft <= 0);
+  player.eggs = player.eggs.filter(egg => egg.turnsLeft > 0);
   return hatched;
 };
 
