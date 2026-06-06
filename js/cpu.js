@@ -134,6 +134,12 @@ GameCpu._chooseStrategicAction = function () {
   if (GameCpu._findEvolveTarget(player)) {
     return () => GameCpu._doEvolve(player);
   }
+  // After a gym loss, regroup at the Mart: sell spares to fund battle buffs.
+  // Placed before the buff-arming step so buy → arm → fight chains in one approach.
+  const battleBuy = GameCpu._findBattleBuyTarget(player);
+  if (battleBuy) {
+    return () => GameCpu._doShopForBattle(player, battleBuy);
+  }
   if (GameCpu._findDiscardTarget(player)) {
     return () => GameCpu._doDiscard(player);
   }
@@ -329,6 +335,75 @@ GameCpu._doEvolve = function (player) {
   for (let i = 0; i < evoCostFinal; i++) GameState.consumeItem(player, candyId);
   GameState.candiedInstancesThisTurn[mon.instanceId] = true;
   GameAudio.sfx.fanfare();
+  GameUI.refreshAll();
+};
+
+// === Regroup at the Mart after a gym loss: sell spares, buy battle buffs ===
+// Only kicks in while the CPU is on a losing streak against a gym (set in
+// GameGame.gymLoss, cleared on a win). It buys an X-Attack / X-Defense it
+// neither holds nor has already armed, funding it by selling clearly-spare
+// low-value items (extra balls above a keep count, surplus potions). It never
+// sells Master Balls, Revives, Rare Candies, Lucky Eggs, or the buffs.
+GameCpu._BATTLE_BUYS = ['x2_attack', 'x2_defense'];
+// Keep counts before a ball/potion is considered "spare" and sellable.
+GameCpu._SELL_KEEP = { pokeball: 2, greatball: 2, ultraball: 1, potion: 2, super_potion: 2, hyper_potion: 1 };
+
+GameCpu._buffArmed = function (player, id) {
+  const f = player.flags || {};
+  if (id === 'x2_attack') return (f.x2AttackPending || 0) > 0;
+  if (id === 'x2_defense') return (f.x2DefensePending || 0) > 0;
+  return false;
+};
+
+// Spare items the CPU is willing to sell, cheapest (least useful) first.
+GameCpu._sellableSurplus = function (player) {
+  if (!window.GameState || !GameState.sellPrice) return [];
+  const out = [];
+  Object.entries(player.balls || {}).forEach(([id, n]) => {
+    if (id === 'masterball') return; // never sell Master Balls
+    const keep = GameCpu._SELL_KEEP[id] != null ? GameCpu._SELL_KEEP[id] : 1;
+    for (let i = 0; i < (n - keep); i++) out.push({ kind: 'ball', id, price: GameState.sellPrice('ball', id) });
+  });
+  ['potion', 'super_potion', 'hyper_potion'].forEach(id => {
+    const n = (player.items && player.items[id]) || 0;
+    const keep = GameCpu._SELL_KEEP[id] != null ? GameCpu._SELL_KEEP[id] : 1;
+    for (let i = 0; i < (n - keep); i++) out.push({ kind: 'item', id, price: GameState.sellPrice('item', id) });
+  });
+  out.sort((a, b) => a.price - b.price);
+  return out;
+};
+
+GameCpu._findBattleBuyTarget = function (player) {
+  if ((player._gymLossStreak || 0) <= 0) return null;        // only when regrouping after a loss
+  if (!window.GameState || !GameState.buy) return null;
+  const want = GameCpu._BATTLE_BUYS.find(id =>
+    ((player.items && player.items[id]) || 0) < 1 &&
+    !GameCpu._buffArmed(player, id) &&
+    GameState.buyPrice('item', id) > 0);
+  if (!want) return null;
+  const price = GameState.buyPrice('item', want);
+  const raisable = GameCpu._sellableSurplus(player).reduce((s, x) => s + x.price, 0);
+  if ((player.money || 0) + raisable < price) return null;   // can't afford even after selling spares
+  return want;
+};
+
+GameCpu._doShopForBattle = function (player, wantId) {
+  const price = GameState.buyPrice('item', wantId);
+  let soldValue = 0, soldCount = 0;
+  if ((player.money || 0) < price) {
+    const surplus = GameCpu._sellableSurplus(player);
+    for (const s of surplus) {
+      if ((player.money || 0) >= price) break;
+      soldValue += GameState.sell(player, s.kind, s.id);
+      soldCount++;
+    }
+  }
+  if ((player.money || 0) < price) { GameUI.refreshAll(); return; } // still short — bail
+  GameState.buy(player, 'item', wantId);
+  const def = GameData.getItem(wantId);
+  const soldTag = soldCount > 0 ? ` (sold ${soldCount} spare${soldCount === 1 ? '' : 's'} for ₽${soldValue})` : '';
+  GameUI.log(`<span class="actor">${player.name}</span> regrouped at the Mart and bought a <strong>${def ? def.name : wantId}</strong> for the rematch${soldTag}.`, 'system');
+  if (GameAudio.sfx && GameAudio.sfx.item) GameAudio.sfx.item();
   GameUI.refreshAll();
 };
 

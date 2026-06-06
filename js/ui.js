@@ -1101,25 +1101,57 @@ GameUI.tileDescription = function (tile) {
 };
 
 // ============================== BRANCH MODAL ==============================
-GameUI.showBranch = function (tile, onPick) {
+// Friendly label for a tile type (shown on the branch landing preview).
+GameUI._TILE_TYPE_LABEL = {
+  pokemon: 'Wild Pokémon', item: 'Item', pokeball: 'Poké Ball', masterball: 'Master Ball',
+  trade: 'Trade', pokecentre: 'Poké Center', fainted: 'Hazard tile', gym: 'GYM',
+  battle: 'Trainer battle', specific: 'Special', start: 'Start',
+};
+
+// Branch picker. Brings the full board into focus and highlights the tiles
+// you'd travel/land on for each fork (color-matched to the options), so the
+// choice is informed. `steps` = movement remaining when the fork is reached.
+GameUI.showBranch = function (tile, steps, onPick) {
+  // Back-compat: older callers passed (tile, onPick).
+  if (typeof steps === 'function') { onPick = steps; steps = 1; }
   GameUI._unspectate('branchModal');
   const modal = GameUI.el('branchModal');
   modal.hidden = false;
+  modal.classList.add('branch-focus'); // bottom-anchored + see-through so the board shows
+  const COLORS = ['#38bdf8', '#fbbf24', '#a78bfa', '#34d399'];
   const optsEl = GameUI.el('branchOptions');
   optsEl.innerHTML = '';
+  const close = () => {
+    modal.classList.remove('branch-focus');
+    if (window.GameBoard && GameBoard.clearBranchHighlights) GameBoard.clearBranchHighlights();
+  };
+  const paths = [];
   tile.branchTo.forEach((nextI, idx) => {
+    const color = COLORS[idx % COLORS.length];
+    const tiles = (window.GameBoard && GameBoard.previewPath) ? GameBoard.previewPath(nextI, steps) : [nextI];
+    const landing = tiles.length ? tiles[tiles.length - 1] : nextI;
+    const landTile = GameData.getTile(landing);
+    const label = (tile.labels && tile.labels[idx]) ? tile.labels[idx] : `Path ${idx + 1}`;
+    const landType = landTile ? (GameUI._TILE_TYPE_LABEL[landTile.type] || landTile.type) : '';
+    paths.push({ tiles, color, label });
     const opt = document.createElement('div');
     opt.className = 'branch-option';
+    opt.style.setProperty('--branch-color', color);
     opt.innerHTML = `
-      <h3>${tile.labels && tile.labels[idx] ? tile.labels[idx] : `Path ${idx + 1}`}</h3>
-      <p class="hint">Continue to tile ${nextI}</p>
+      <span class="branch-swatch" style="background:${color}"></span>
+      <div class="branch-opt-text">
+        <h3>${label}</h3>
+        <p class="hint">Lands on <strong>${landType || ('tile ' + landing)}</strong>${landTile && landTile.area ? ` · ${landTile.area}` : ''}</p>
+      </div>
     `;
     opt.addEventListener('click', () => {
+      close();
       modal.hidden = true;
       onPick(nextI);
     });
     optsEl.appendChild(opt);
   });
+  if (window.GameBoard && GameBoard.highlightBranchPaths) GameBoard.highlightBranchPaths(paths);
 };
 
 // ============================== DRAW REVEAL ==============================

@@ -83,7 +83,7 @@ GameGame.movePlayer = function (player, steps, onArrive) {
   // to coexist with the tile's normal type (so e.g. tile 32 can be a wild encounter
   // AND show a path picker when you roll OFF it).
   if (Array.isArray(tile.branchTo) && tile.branchTo.length) {
-    GameUI.showBranch(tile, picked => advance(picked));
+    GameUI.showBranch(tile, steps, picked => advance(picked));
   } else {
     advance(GameBoard.nextTileFrom(player.tile));
   }

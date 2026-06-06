@@ -841,3 +841,67 @@ GameBoard.nextTileFrom = function (currentI, branchChoice) {
 GameBoard.maxTileIndex = function () {
   return GameData.board.tiles[GameData.board.tiles.length - 1].i;
 };
+
+// ============== BRANCH PATH PREVIEW / HIGHLIGHT ==============
+// Tiles you'd step onto if you take `steps` total steps starting with `firstNextI`.
+// Stops early at a gym (absolute stop), the board end, or another branch (can't
+// preview past a second fork). The last entry is the tile you'd LAND on.
+GameBoard.previewPath = function (firstNextI, steps) {
+  const path = [];
+  const max = GameBoard.maxTileIndex();
+  let cur = firstNextI, left = Math.max(1, steps || 1), guard = 0;
+  while (cur != null && left > 0 && guard++ < 80) {
+    if (cur > max) { path.push(max); break; }
+    path.push(cur);
+    left--;
+    const t = GameData.getTile(cur);
+    if (t && t.type === 'gym') break;                                   // gym = absolute stop
+    if (left <= 0) break;
+    if (t && Array.isArray(t.branchTo) && t.branchTo.length) break;     // don't preview past another fork
+    cur = GameBoard.nextTileFrom(cur);
+  }
+  return path;
+};
+
+GameBoard.clearBranchHighlights = function () {
+  const l = document.getElementById('branchHighlightLayer');
+  if (l && l.parentNode) l.parentNode.removeChild(l);
+};
+
+// paths: [{ tiles:[idx,...], color, label }]. Draws a translucent dot on every
+// tile in each path and a bright labelled ring on the landing tile.
+GameBoard.highlightBranchPaths = function (paths) {
+  GameBoard.clearBranchHighlights();
+  const svg = document.getElementById('boardSvg');
+  if (!svg || !Array.isArray(paths)) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const layer = document.createElementNS(NS, 'g');
+  layer.setAttribute('id', 'branchHighlightLayer');
+  const posOf = (ti) => GameBoard.tilePositions[ti] || (GameData.board.tilePositions && GameData.board.tilePositions[ti]);
+  paths.forEach(p => {
+    (p.tiles || []).forEach((ti, idx) => {
+      const pos = posOf(ti);
+      if (!pos) return;
+      const landing = idx === p.tiles.length - 1;
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', pos.x); c.setAttribute('cy', pos.y);
+      c.setAttribute('r', landing ? 30 : 20);
+      c.setAttribute('fill', p.color);
+      c.setAttribute('fill-opacity', landing ? 0.38 : 0.16);
+      c.setAttribute('stroke', p.color);
+      c.setAttribute('stroke-width', landing ? 5 : 2.5);
+      c.setAttribute('class', 'branch-hl' + (landing ? ' landing' : ''));
+      layer.appendChild(c);
+      if (landing && p.label) {
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', pos.x); t.setAttribute('y', pos.y - 40);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('class', 'branch-hl-label');
+        t.setAttribute('fill', p.color);
+        t.textContent = p.label;
+        layer.appendChild(t);
+      }
+    });
+  });
+  svg.appendChild(layer);
+};
