@@ -64,6 +64,11 @@
     const wrap = document.getElementById('trainerSetup');
     wrap.innerHTML = '';
     const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#06b6d4'];
+    // Saved Hall of Fame champions — selectable as a CPU "ghost" that emulates
+    // that run's winning team.
+    const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const champions = (window.GameState && GameState.loadHallOfFame) ? GameState.loadHallOfFame() : [];
+    const ghostOptionsHtml = champions.map((e, gi) => `<option value="${gi}">👻 ${esc(e.name)} · ${(e.party || []).length} mon · ${e.turns || '?'}t</option>`).join('');
     for (let i = 0; i < n; i++) {
       const row = document.createElement('div');
       row.className = 'trainer-row-v';
@@ -98,6 +103,10 @@
             <input type="checkbox" class="cpu-toggle-input" />
             <span class="cpu-toggle-label">🤖 CPU</span>
           </label>
+          <select class="ghost-select" title="Emulate a Hall of Fame champion's winning team" hidden ${champions.length ? '' : 'disabled'}>
+            <option value="">Fresh CPU</option>
+            ${ghostOptionsHtml}
+          </select>
         </div>
         <div class="trainer-pick-section">
           <h4>Sprite</h4>
@@ -229,7 +238,28 @@
         const currentTrainer = TRAINERS.find(t => t.id === row.dataset.trainer) || initialTrainer;
         const baseName = cpuInput.checked ? `CPU ${currentTrainer.label}` : currentTrainer.label;
         setDefault(baseName);
+        // The ghost (emulate-a-champion) picker only applies to CPUs.
+        if (ghostSelect) {
+          ghostSelect.hidden = !(cpuInput.checked && champions.length > 0);
+          if (!cpuInput.checked) { ghostSelect.value = ''; row.dataset.ghost = ''; }
+        }
       });
+
+      // Ghost pick → emulate that champion (sets the row's name/sprite to match).
+      const ghostSelect = row.querySelector('.ghost-select');
+      if (ghostSelect) {
+        ghostSelect.addEventListener('change', () => {
+          row.dataset.ghost = ghostSelect.value;
+          const e = ghostSelect.value !== '' ? champions[Number(ghostSelect.value)] : null;
+          if (e) {
+            setDefault(`${e.name} 👻`);
+            if (e.trainerSprite) {
+              row.dataset.trainer = e.trainerSprite;
+              row.querySelectorAll('.trainer-sprite-pick').forEach(b => b.classList.toggle('selected', b.dataset.trainer === e.trainerSprite));
+            }
+          }
+        });
+      }
     }
   }
 
@@ -300,6 +330,29 @@
     }
   }, 150);
 
+  // The species that evolves INTO `id` (single + multi evolution lines), or null.
+  function preEvoOf(id) {
+    const E = (window.GameItems && GameItems.evolutions) || {};
+    const M = (window.GameItems && GameItems.multiEvolutions) || {};
+    for (const from in E) { if (Number(E[from]) === id) return Number(from); }
+    for (const from in M) { if ((M[from] || []).map(Number).indexOf(id) >= 0) return Number(from); }
+    return null;
+  }
+  // A ghost's "wishlist": the champion's final team species PLUS each one's
+  // pre-evolution ancestors, so the ghost recognises a base form as on-path to
+  // the proven team. Returned as a plain array (MP-state-sync safe).
+  function buildGhostTargets(entry) {
+    const set = new Set();
+    (entry.party || []).forEach(m => {
+      let id = Number(m.speciesId);
+      if (!id) return;
+      set.add(id);
+      let cur = id, guard = 0;
+      while (guard++ < 5) { const pre = preEvoOf(cur); if (pre == null) break; set.add(pre); cur = pre; }
+    });
+    return Array.from(set);
+  }
+
   async function startGame() {
     const rows = document.querySelectorAll('#trainerSetup .trainer-row-v');
     GameState.reset();
@@ -311,6 +364,19 @@
       const p = GameState.makePlayer(i, name, starter);
       p.trainerSprite = trainer;
       p.isCpu = isCpu;
+      // Ghost CPU: emulate a saved Hall of Fame champion's winning team.
+      const ghostIdx = row.dataset.ghost;
+      if (isCpu && ghostIdx) {
+        const entry = (GameState.loadHallOfFame() || [])[Number(ghostIdx)];
+        if (entry) {
+          p.isGhost = true;
+          p.ghostName = entry.name;
+          p.color = entry.color || p.color;
+          if (entry.trainerSprite) p.trainerSprite = entry.trainerSprite;
+          p.ghostTargets = buildGhostTargets(entry);
+          p.ghostTeam = (entry.party || []).map(m => m.name);
+        }
+      }
       GameState.giveItem(p, 'potion');
       GameState.giveItem(p, 'potion');
       GameState.giveItem(p, 'super_potion');
@@ -343,6 +409,12 @@
     document.getElementById('app').classList.remove('screen-setup');
     GameBoard.render();
     GameGame.start();
+    // Announce any champion ghosts so players see whose winning team is being emulated.
+    (GameState.players || []).forEach(pl => {
+      if (pl.isGhost && GameUI.log) {
+        GameUI.log(`<span class="actor">${pl.name}</span> is emulating champion <strong>${pl.ghostName}</strong>'s team: ${(pl.ghostTeam || []).join(', ') || '—'}.`, 'system');
+      }
+    });
     if (window.GameCpu) GameCpu.start();
   }
 

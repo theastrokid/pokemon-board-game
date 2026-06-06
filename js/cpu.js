@@ -308,9 +308,13 @@ GameCpu._doEvolve = function (player) {
     const options = GameItems.getEvolutionOptions(mon.speciesId);
     // Evolve cost scales with the evolving mon's stage (1 candy Stage 1→2, 2 Stage 2→3).
     const evoCost = GameItems.getEvolutionStage(mon.speciesId);
-    // For multi-evolution (Eevee/Slowpoke) just take the first option — keeps
-    // CPU behavior deterministic enough to simulate.
-    const chosen = options[0];
+    // For multi-evolution (Eevee/Slowpoke): a ghost CPU picks the form its
+    // champion actually used (wishlist); otherwise just take the first option.
+    let chosen = options[0];
+    if (options.length > 1 && player.isGhost && Array.isArray(player.ghostTargets)) {
+      const want = options.find(o => player.ghostTargets.indexOf(Number(o)) >= 0);
+      if (want != null) chosen = want;
+    }
     const newData = GameData.getPokemon(chosen);
     const oldName = mon.name;
     const wasFainted = mon.fainted;
@@ -510,9 +514,11 @@ GameCpu._handleDiscardForRoom = function () {
   if (incomingId == null) { GameCpu._click('itemPickerCancel'); return; }
   const pool = player.party.filter(m => !m.isShiny);       // shinies are protected
   const cand = pool.length ? pool : player.party.slice();
-  const weakest = cand.slice().sort((a, b) => GameCpu._monScore(a) - GameCpu._monScore(b))[0];
-  const incomingScore = GameCpu._speciesScore(incomingId);
-  if (weakest && incomingScore > GameCpu._monScore(weakest)) {
+  // Ghost CPUs weight the champion's wishlist species above raw stats, so they
+  // keep/seek the proven team; for everyone else this is pure stat ranking.
+  const weakest = cand.slice().sort((a, b) => GameCpu._teamValue(a, player) - GameCpu._teamValue(b, player))[0];
+  const incomingScore = GameCpu._speciesTeamValue(incomingId, player);
+  if (weakest && incomingScore > GameCpu._teamValue(weakest, player)) {
     const idx = player.party.findIndex(m => m.instanceId === weakest.instanceId);
     const grid = GameUI.el('itemPickerGrid');
     const card = grid && grid.children[idx];
@@ -531,16 +537,32 @@ GameCpu._monScore = function (m) {
   return (m.maxHp || 0) + 2 * maxMove;
 };
 
+// Ghost CPUs (emulating a saved champion) value that champion's team — its
+// final species and their pre-evolutions (player.ghostTargets) — above raw
+// stats, so they assemble and field the proven winning squad while the dice
+// rolls and which Pokemon they actually meet stay random.
+GameCpu.GHOST_BONUS = 600;
+GameCpu._ghostWants = function (player, speciesId) {
+  return !!(player && player.isGhost && Array.isArray(player.ghostTargets)
+    && player.ghostTargets.indexOf(Number(speciesId)) >= 0);
+};
+GameCpu._teamValue = function (mon, player) {
+  return GameCpu._monScore(mon) + (mon && GameCpu._ghostWants(player, mon.speciesId) ? GameCpu.GHOST_BONUS : 0);
+};
+GameCpu._speciesTeamValue = function (speciesId, player) {
+  return GameCpu._speciesScore(speciesId) + (GameCpu._ghostWants(player, speciesId) ? GameCpu.GHOST_BONUS : 0);
+};
+
 GameCpu._shouldOptimizeBattleSlots = function (player) {
   if (!player.party || player.party.length <= 3) return false;
-  const sorted = [...player.party].sort((a, b) => GameCpu._monScore(b) - GameCpu._monScore(a));
+  const sorted = [...player.party].sort((a, b) => GameCpu._teamValue(b, player) - GameCpu._teamValue(a, player));
   const currentTop3 = new Set(player.party.slice(0, 3));
   // Different if any of the optimal top 3 ISN'T already in the current top 3.
   return sorted.slice(0, 3).some(m => !currentTop3.has(m));
 };
 
 GameCpu._doOptimizeBattleSlots = function (player) {
-  player.party.sort((a, b) => GameCpu._monScore(b) - GameCpu._monScore(a));
+  player.party.sort((a, b) => GameCpu._teamValue(b, player) - GameCpu._teamValue(a, player));
   GameUI.log(`${player.name} reshuffled their party for battle.`, 'system');
   GameUI.refreshAll();
 };
