@@ -784,6 +784,8 @@
       "city": "Pewter City",
       "color": "#cf8b4b",
       "_theme": "Rock / Ground (Graveler=Fighting, Omanyte=Water, Zubat=Poison/Flying break the sweep)",
+      "_note": "Difficulty ramp tuned by 1000-game sim to ~0.5 avg CPU retries (easiest gym).",
+      "scaleMultiplier": 1.05,
       "teamSize": 3,
       "pool": [
         {
@@ -831,8 +833,8 @@
       "city": "Cerulean City",
       "color": "#5bc0eb",
       "_theme": "Water (Quagsire=electric-immune, Tentacruel/Togetic resist grass, Togetic adds a non-water type)",
-      "_note": "scaleMultiplier kept modest: the global +25% gym buff stacks on it, so 1.5 made Misty the single hardest gym (2.3x) at position 2. 1.05 keeps her between Brock and Blaine for a monotonic difficulty ramp.",
-      "scaleMultiplier": 1.05,
+      "_note": "Difficulty ramp tuned by 1000-game sim to ~1.0 avg CPU retries. (1.5 stacked with the global +25% buff made Misty a 2.3x spike at gym 2; this keeps the ramp Brock<Misty<Blaine<Giovanni.)",
+      "scaleMultiplier": 1.15,
       "teamSize": 4,
       "pool": [
         {
@@ -880,6 +882,8 @@
       "city": "Cinnabar Island",
       "color": "#d65b3a",
       "_theme": "Fire (Houndoom=Dark, Sandslash=Ground add non-fire types; water stays its canonical weakness)",
+      "_note": "Difficulty ramp tuned by 1000-game sim to ~2.0 avg CPU retries (Blaine is very multiplier-sensitive; small bumps spike retries hard).",
+      "scaleMultiplier": 1.15,
       "teamSize": 5,
       "pool": [
         {
