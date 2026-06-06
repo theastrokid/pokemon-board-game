@@ -438,9 +438,39 @@ GameItems.EGG_HATCH_POOL = [
   238, // Smoochum
 ];
 
+// Eggs can hatch ANY Gen 1-2 stage-1 base form that evolves (so you hatch a
+// baby/base mon and raise it). The hand-picked EGG_HATCH_POOL favourites are
+// weighted 5× more likely than the rest (and favourites that don't evolve —
+// e.g. Celebi, Hitmontop — are still included at 5×). Pool built + cached once.
+GameItems._buildEggPool = function () {
+  if (GameItems._eggPoolCache) return GameItems._eggPoolCache;
+  const favs = new Set((GameItems.EGG_HATCH_POOL || []).map(Number));
+  const seen = new Set();
+  const pool = [];
+  Object.keys(GameData.pokemon).forEach(k => {
+    const id = Number(k);
+    // Stage-1 base form that can still evolve.
+    if (GameItems.getEvolutionStage(id) !== 1) return;
+    if (!GameItems.getEvolutionOptions(id).length) return;
+    pool.push({ id, weight: favs.has(id) ? 5 : 1 });
+    seen.add(id);
+  });
+  // Favourites that aren't evolving stage-1 mons (Celebi, Hitmontop, …) still
+  // hatch, at the 5× weight.
+  favs.forEach(id => {
+    if (!seen.has(id) && GameData.pokemon[String(id)]) pool.push({ id, weight: 5 });
+  });
+  GameItems._eggPoolCache = pool;
+  return pool;
+};
+
 GameItems.randomSingleStageSpeciesId = function () {
-  const pool = (GameItems.EGG_HATCH_POOL || []).filter(id => GameData.pokemon[String(id)]);
-  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : 138; // Omanyte fallback
+  const pool = GameItems._buildEggPool();
+  if (!pool.length) return 138; // Omanyte fallback
+  const total = pool.reduce((s, x) => s + x.weight, 0);
+  let r = Math.random() * total;
+  for (const x of pool) { r -= x.weight; if (r <= 0) return x.id; }
+  return pool[pool.length - 1].id;
 };
 
 // ============== PROMPT PICKERS ==============

@@ -477,6 +477,7 @@ GameGame.gymWin = function (tile, leader) {
 
   if (!player.badges) player.badges = [];
   player.badges.push(leader.name);
+  player._gymLossStreak = 0; // cleared the gym — reset the regroup counter
 
   // Giovanni / endgame: no item or ball rewards, go straight to Hall of Fame.
   if (reward.endsGame) {
@@ -521,6 +522,9 @@ GameGame.gymWin = function (tile, leader) {
 GameGame.gymLoss = function (tile, leader) {
   const player = GameState.currentPlayer();
   const penalty = leader.failPenalty;
+  // Track repeated losses to this gym so the CPU prep knows to regroup
+  // (reorder for the matchup) rather than mindlessly repeat the same attempt.
+  player._gymLossStreak = (player._gymLossStreak || 0) + 1;
   if (penalty === 'back8') {
     player.tile = Math.max(0, player.tile - 8);
     GameUI.log(`${player.name} fell back 8 tiles after losing.`, 'lose');

@@ -542,8 +542,10 @@ GameCpu.orderPartyForGym = function (player, leaderTeam) {
   if (lead0) {
     let bestIdx = -1, bestVal = -Infinity;
     player.party.forEach((m, i) => {
-      if (i > 2 || m.fainted) return;
-      const v = offenseVs(m, lead0);
+      if (m.fainted) return; // battles use up to 6 — consider the WHOLE bench
+      // Pick the best counter to the leader's first mon, tie-broken toward the
+      // stronger Pokemon so the lead is a real threat, not a glass cannon.
+      const v = offenseVs(m, lead0) * 1000 + GameCpu._monScore(m);
       if (v > bestVal) { bestVal = v; bestIdx = i; }
     });
     if (bestIdx > 0) {
@@ -551,7 +553,8 @@ GameCpu.orderPartyForGym = function (player, leaderTeam) {
       player.party.unshift(lead);
     }
   }
-  GameUI.log(`${player.name} sized up the gym and reordered for the matchup.`, 'system');
+  const remark = (player._gymLossStreak | 0) > 0 ? 'regrouped and reordered for another shot at' : 'sized up';
+  GameUI.log(`${player.name} ${remark} the gym and set the matchup.`, 'system');
   GameUI.refreshAll();
 };
 

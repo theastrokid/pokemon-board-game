@@ -406,16 +406,111 @@ GameTrade._receiveProposal = function (proposal) {
   GameTrade._pendingProposal = proposal;
   GameTrade._showRecipientPrompt(proposal);
   const target = GameState.players[proposal.targetIdx];
+  const from = GameState.players[proposal.fromIdx];
   if (target && target.isCpu) {
-    // CPU recipients auto-accept after a short delay so the human can see
-    // what just happened. (Future hook: AI evaluation could decline.)
+    const initiatorIsHuman = from && !from.isCpu;
     setTimeout(() => {
-      // Only respond if we still own the pending — it might have been
-      // cancelled in the meantime.
-      if (GameTrade._pendingProposal === proposal) {
+      if (GameTrade._pendingProposal !== proposal) return; // cancelled meanwhile
+      // Forced trades and CPU-to-CPU offers (always built fair) auto-accept.
+      // A CPU only haggles over a HUMAN's offer, and only if it's a lowball.
+      if (proposal.forced || !initiatorIsHuman || GameTrade._cpuAcceptsProposal(proposal)) {
         GameTrade._respondToProposal('accept');
+      } else {
+        GameTrade._cpuCounterOffer(proposal); // decline + counter (keeps onDone)
       }
     }, 900);
+  }
+};
+
+// Value of an item/ball bundle (for trade fairness math).
+GameTrade._bundleValue = function (bundle) {
+  let v = 0;
+  Object.entries((bundle && bundle.items) || {}).forEach(([id, n]) => { v += GameTrade._itemUnitValue(id, 'item') * (n || 0); });
+  Object.entries((bundle && bundle.balls) || {}).forEach(([id, n]) => { v += GameTrade._itemUnitValue(id, 'ball') * (n || 0); });
+  return v;
+};
+
+// CPU (the recipient) accepts only if what it RECEIVES is at least ~85% of what
+// it GIVES UP. Lowball offers get declined (and countered).
+GameTrade._cpuAcceptsProposal = function (proposal) {
+  const from = GameState.players[proposal.fromIdx];
+  const target = GameState.players[proposal.targetIdx];
+  if (!from || !target) return true;
+  let gets = 0;
+  if (GameTrade._bundleHasItems(proposal.fromBundle)) gets += GameTrade._bundleValue(proposal.fromBundle);
+  if (proposal.fromMonInstanceId) {
+    const m = from.party.find(x => x.instanceId === proposal.fromMonInstanceId);
+    if (m) gets += GameTrade._monValue(m);
+  }
+  let gives = 0;
+  if (proposal.offerMode === 'pokemon' && proposal.targetMonInstanceId) {
+    const m = target.party.find(x => x.instanceId === proposal.targetMonInstanceId);
+    if (m) gives += GameTrade._monValue(m);
+  } else {
+    gives += GameTrade._bundleValue(proposal.targetBundle);
+  }
+  if (gives <= 0) return true; // CPU gives nothing away — sure
+  return gets >= gives * 0.85;
+};
+
+// The CPU declined a lowball — fire back a FAIR counter: it still offers what
+// the human wanted from it, but asks the human for value to match (~the value
+// it's giving up). Preserves the original trade's onDone so the turn resolves
+// exactly once, when the human answers the counter.
+GameTrade._cpuCounterOffer = function (orig) {
+  const cpu = GameState.players[orig.targetIdx];
+  const human = GameState.players[orig.fromIdx];
+  const origOnDone = GameTrade.state && GameTrade.state.onDone;
+  // Tear down the lowball WITHOUT firing onDone — the negotiation continues.
+  GameTrade._pendingProposal = null;
+  const cm = GameUI.el('tradeConfirmModal'); if (cm) cm.hidden = true;
+  const finish = (ok) => { if (origOnDone) origOnDone(!!ok); };
+  if (!cpu || !human) { finish(false); return; }
+
+  // What the CPU offers = what the human originally asked it for.
+  const cpuGivesMon = (orig.offerMode === 'pokemon' && orig.targetMonInstanceId)
+    ? cpu.party.find(m => m.instanceId === orig.targetMonInstanceId) : null;
+  const cpuGivesBundle = (orig.offerMode === 'items') ? orig.targetBundle : null;
+  const giveValue = cpuGivesMon ? GameTrade._monValue(cpuGivesMon) : GameTrade._bundleValue(cpuGivesBundle);
+  if (giveValue <= 0) { GameUI.log(`${cpu.name} declined the trade.`, 'system'); finish(false); return; }
+
+  // Ask the human for fair value: prefer their party mon closest to giveValue
+  // (never their last one); otherwise an item/ball bundle of similar value.
+  let askMonId = null, askBundle = null, mode = 'pokemon';
+  let best = null, bestDiff = Infinity;
+  (human.party || []).forEach(m => {
+    const v = GameTrade._monValue(m);
+    if (v >= giveValue * 0.7) { const d = Math.abs(v - giveValue); if (d < bestDiff) { bestDiff = d; best = m; } }
+  });
+  if (best && human.party.length > 1) {
+    askMonId = best.instanceId; mode = 'pokemon';
+  } else {
+    const built = GameTrade._buildBundleNear(human, giveValue, 5);
+    if (built && built.value >= giveValue * 0.6) { askBundle = built.bundle; mode = 'items'; }
+    else if (best && human.party.length > 1) { askMonId = best.instanceId; mode = 'pokemon'; }
+    else { GameUI.log(`${cpu.name} declined — no fair counter to offer.`, 'system'); finish(false); return; }
+  }
+
+  const counter = {
+    fromIdx: orig.targetIdx, targetIdx: orig.fromIdx,
+    fromMonInstanceId: cpuGivesMon ? cpuGivesMon.instanceId : null,
+    fromBundle: cpuGivesBundle || null,
+    targetMonInstanceId: askMonId,
+    targetBundle: askBundle || { items: {}, balls: {} },
+    offerMode: mode, forced: false,
+  };
+  GameTrade.state = {
+    from: cpu, target: human, fromMon: null, targetMon: null,
+    targetBundle: counter.targetBundle, offerMode: mode, forced: false, onDone: origOnDone,
+  };
+  GameUI.log(`<span class="actor">${cpu.name}</span> declined the lowball and made a counter-offer.`, 'system');
+  if (window.GameMP && GameMP.enabled) GameMP.send({ type: 'trade-proposal', proposal: counter, ts: Date.now() });
+  // Single-device / host: pop the human's Accept/Decline prompt for the counter.
+  if (GameTrade._isPlayerLocal(counter.targetIdx)) {
+    setTimeout(() => GameTrade._receiveProposal(counter), 150);
+  } else {
+    GameTrade._pendingProposal = counter;
+    GameTrade._showInitiatorWaiting(counter);
   }
 };
 
