@@ -68,7 +68,7 @@ GameUI.renderPlayerStrip = function () {
     const chip = document.createElement('div');
     chip.className = 'player-chip' + (p === GameState.currentPlayer() ? ' active' : '');
     const spriteHtml = p.trainerSprite ? `<img class="player-chip-img" src="sprites/trainers/${p.trainerSprite}.png" />` : `<span class="dot" style="background:${p.color}"></span>`;
-    chip.innerHTML = `${spriteHtml}${p.name}`;
+    chip.innerHTML = `${spriteHtml}<span class="chip-name">${p.name}</span><span class="chip-money">₽${p.money != null ? p.money : 0}</span>`;
     chip.addEventListener('click', () => {
       GameUI.renderPlayerPanel(p, true);
     });
@@ -91,6 +91,7 @@ GameUI.renderCurrentPlayerCard = function () {
     <div>
       <div class="cp-name" style="color:${p.color}">${p.name}</div>
       <div class="cp-pos">${area.name} · Tile ${tileLabel}</div>
+      <div class="cp-money">₽${p.money != null ? p.money : 0}</div>
     </div>
   `;
   GameUI.el('areaPill').textContent = area.name;
@@ -1753,6 +1754,49 @@ GameUI.playEvolutionAnimation = function (fromSpeciesId, toSpeciesId, fromName, 
 // wobbles ~2.2s, then the shiny hatchling is revealed and added to the party.
 // GameState.busy is held true for the duration so the player can't roll into a
 // half-resolved state; it's released only when they tap Continue.
+// A human's party is full and an Egg is ready — let them pick which Pokemon to
+// send to the PC to make room (mandatory: no cancel, the egg WILL hatch). On
+// pick, the chosen mon is released and onChosen() runs the hatch. CPUs never
+// see this (makeHatchling auto-frees the weakest slot for them).
+GameUI.promptReleaseForHatch = function (player, hatchSpeciesId, onChosen) {
+  const modal = GameUI.el('itemPickerModal');
+  if (!modal || !player || !Array.isArray(player.party) || player.party.length < 6) {
+    if (onChosen) onChosen();
+    return;
+  }
+  const hatch = GameData.getPokemon(hatchSpeciesId);
+  GameState.busy = true; // hold through the choice + hatch
+  GameUI.el('itemPickerTitle').textContent = 'Party full!';
+  GameUI.el('itemPickerHint').textContent = `Choose a Pokémon to send to the PC to welcome the hatching ${hatch ? hatch.name : 'Pokémon'}.`;
+  const grid = GameUI.el('itemPickerGrid');
+  grid.innerHTML = '';
+  const cancelBtn = GameUI.el('itemPickerCancel');
+  player.party.forEach(mon => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <img src="${GameData.spriteStatic(mon.speciesId)}" style="width:48px;height:48px;image-rendering:pixelated;" />
+      <h4>${mon.isShiny ? '✨ ' : ''}${mon.name}</h4>
+      <p>HP ${mon.hp}/${mon.maxHp}</p>
+    `;
+    card.onclick = () => {
+      const idx = player.party.findIndex(m => m.instanceId === mon.instanceId);
+      if (idx >= 0) {
+        player.party.splice(idx, 1);
+        GameUI.log(`${player.name} sent <strong>${mon.name}</strong> to the PC to make room for the hatchling.`, 'system');
+      }
+      modal.hidden = true;
+      if (cancelBtn) cancelBtn.style.display = ''; // restore for other pickers
+      GameUI.refreshAll();
+      if (onChosen) onChosen();
+    };
+    grid.appendChild(card);
+  });
+  // Mandatory choice — hide the escape so the egg can't be left un-hatched.
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  modal.hidden = false;
+};
+
 GameUI.showEggHatch = function (player, egg, onComplete) {
   const modal = GameUI.el('eggHatchModal');
   if (!modal) {

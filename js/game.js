@@ -354,13 +354,22 @@ GameGame._runHatches = function (player, eggs) {
   const next = () => {
     if (!queue.length) { GameUI.refreshAll(); return; }
     const egg = queue.shift();
-    if (player.isCpu || !GameUI.showEggHatch) {
-      const mon = GameState.makeHatchling(player, egg.speciesId);
-      GameUI.log(`<span class="crit">✨ ${player.name}'s Egg hatched into a SHINY ${mon ? mon.name : 'Pokemon'}!</span>`, 'crit');
-      GameUI.refreshAll();
-      next();
+    const hatch = () => {
+      if (player.isCpu || !GameUI.showEggHatch) {
+        const mon = GameState.makeHatchling(player, egg.speciesId);
+        GameUI.log(`<span class="crit">✨ ${player.name}'s Egg hatched into a SHINY ${mon ? mon.name : 'Pokemon'}!</span>`, 'crit');
+        GameUI.refreshAll();
+        next();
+      } else {
+        GameUI.showEggHatch(player, egg, next);
+      }
+    };
+    // Human + full party: let them pick who to send to the PC first. CPUs let
+    // makeHatchling auto-free the weakest slot.
+    if (!player.isCpu && player.party.length >= 6 && GameUI.promptReleaseForHatch) {
+      GameUI.promptReleaseForHatch(player, egg.speciesId, hatch);
     } else {
-      GameUI.showEggHatch(player, egg, next);
+      hatch();
     }
   };
   next();
