@@ -154,23 +154,21 @@ GameItems.applyEvolve = function (item, player) {
       return;
     }
     if (chosenEvolutionId == null) {
-      // Stat boost path (fully-evolved Pokemon). Tier 1 = +25% (1 candy);
-      // tier 2 = up to +50% total (3 candies). Cap at 2 boosts.
+      // Stat boost path (fully-evolved Pokemon): one +50% boost for 3 candies.
       const curBoost = liveMon.boostCount || 0;
-      if (curBoost >= 2) {
+      if (curBoost >= 1) {
         GameUI.log(`${liveMon.name} is already fully boosted (+50%).`, 'system');
         return;
       }
-      const candyCost = curBoost === 0 ? 1 : 3;
+      const candyCost = 3;
       if ((livePlayer.items[item.id] || 0) < candyCost) {
-        GameUI.log(`${liveMon.name}'s +50% upgrade needs ${candyCost} Rare Candies.`, 'system');
+        GameUI.log(`${liveMon.name}'s +50% boost needs ${candyCost} Rare Candies.`, 'system');
         return;
       }
       GameItems.applyStatBoost(livePlayer, liveMon);
       for (let i = 0; i < candyCost; i++) GameState.consumeItem(livePlayer, item.id);
       GameState.candiedInstancesThisTurn[liveMon.instanceId] = true;
-      const tierMsg = liveMon.boostCount >= 2 ? '+50% total stats' : '+25% HP & move power';
-      GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! ${tierMsg} (used ${candyCost} Rare Cand${candyCost > 1 ? 'ies' : 'y'}).</span>`, 'crit');
+      GameUI.log(`<span class="crit">${livePlayer.name}'s ${liveMon.name} grew stronger! +50% HP & move power (used ${candyCost} Rare Candies).</span>`, 'crit');
       GameAudio.sfx.fanfare();
       GameUI.refreshAll();
       GameItems._maybeReopenEvolve(item, livePlayer); // keep candying like Potions
@@ -182,7 +180,13 @@ GameItems.applyEvolve = function (item, player) {
     const oldSpeciesId = liveMon.speciesId;
     const wasFainted = liveMon.fainted;
     const targetInstanceId = liveMon.instanceId;
-    GameState.consumeItem(livePlayer, item.id);
+    // Evolution cost scales with stage: Stage 1→2 = 1 candy, Stage 2→3 = 2.
+    const evoCost = GameItems.getEvolutionStage(oldSpeciesId);
+    if ((livePlayer.items[item.id] || 0) < evoCost) {
+      GameUI.log(`${oldName} needs ${evoCost} Rare Cand${evoCost > 1 ? 'ies' : 'y'} to evolve.`, 'system');
+      return;
+    }
+    for (let i = 0; i < evoCost; i++) GameState.consumeItem(livePlayer, item.id);
     GameState.candiedInstancesThisTurn[targetInstanceId] = true;
     GameUI.refreshAll();
     GameUI.playEvolutionAnimation(oldSpeciesId, evolved, oldName, newData.name, () => {
@@ -220,14 +224,11 @@ GameItems.applyEvolve = function (item, player) {
   }, player);
 };
 
-// Stat boost for a fully-evolved Pokemon. Two tiers:
-//   tier 1 (boostCount 0 -> 1): +25%, costs 1 Rare Candy.
-//   tier 2 (boostCount 1 -> 2): a further ×1.2 (≈ +50% over base), costs 3.
-// Each tier also full-heals, clears fainted, and bumps max PP to 40/5. The
-// caller enforces the candy cost + the boostCount<2 cap.
+// Stat boost for a fully-evolved Pokemon: a single +50% to max HP and every
+// move's power, for 3 Rare Candies. Also full-heals, clears fainted, and bumps
+// max PP to 40/5. The caller enforces the 3-candy cost + the boostCount<1 cap.
 GameItems.applyStatBoost = function (player, mon) {
-  const nextTier = (mon.boostCount || 0) + 1;
-  const mul = nextTier >= 2 ? 1.2 : 1.25; // 1.25 then ×1.2 ≈ 1.5× base total
+  const mul = 1.5; // +50% in one boost
   mon.maxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * mul));
   mon.hp = mon.maxHp;
   mon.fainted = false;
@@ -236,7 +237,7 @@ GameItems.applyStatBoost = function (player, mon) {
     mv.maxPp = mv.gated ? 5 : 40;
     mv.pp = mv.maxPp;
   });
-  mon.boostCount = nextTier;
+  mon.boostCount = 1;
 };
 
 // Is there any party member that can still take a Rare Candy this turn? Used
@@ -246,10 +247,11 @@ GameItems._hasEvolveEligible = function (player) {
   const candies = (player.items && player.items.rare_candy) || 0;
   return player.party.some(m => {
     if (GameState.candiedInstancesThisTurn[m.instanceId]) return false; // 1/mon/turn
-    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return true; // can evolve (1 candy)
-    const bc = m.boostCount || 0;
-    if (bc >= 2) return false;             // already fully boosted
-    return candies >= (bc === 0 ? 1 : 3);  // tier 1 needs 1 candy, tier 2 needs 3
+    if (GameItems.getEvolutionOptions(m.speciesId).length > 0) {
+      return candies >= GameItems.getEvolutionStage(m.speciesId); // evolve cost = stage (1 or 2)
+    }
+    if ((m.boostCount || 0) >= 1) return false; // already boosted (+50%)
+    return candies >= 3;                         // +50% boost costs 3 candies
   });
 };
 
@@ -474,6 +476,10 @@ GameItems.promptPickPartyMember = function (candidates, onPick, opts) {
 GameItems.promptDiscardForRoom = function (incomingSpeciesId, onKeep, onSkip) {
   const player = GameState.currentPlayer();
   const incoming = GameData.getPokemon(incomingSpeciesId);
+  // Expose the incoming species so the CPU watchdog can decide whether the new
+  // catch out-stats its weakest mon (keep) or not (skip), instead of blindly
+  // cancelling — which used to forfeit prizes like a freshly-caught Lugia.
+  GameItems._discardForRoomIncoming = incomingSpeciesId;
   GameUI.el('itemPickerTitle').textContent = `Party full · pick one to discard`;
   GameUI.el('itemPickerHint').textContent = `Replacing with ${incoming.name}. Bonus rewards for Stage 2/3 or Ancient Temple natives.`;
   const grid = GameUI.el('itemPickerGrid');
@@ -493,6 +499,7 @@ GameItems.promptDiscardForRoom = function (incomingSpeciesId, onKeep, onSkip) {
       ${bonusBadge}
     `;
     card.onclick = () => {
+      GameItems._discardForRoomIncoming = null;
       GameUI.el('itemPickerModal').hidden = true;
       const idx = player.party.findIndex(m => m.instanceId === mon.instanceId);
       player.party.splice(idx, 1);
@@ -522,6 +529,7 @@ GameItems.promptDiscardForRoom = function (incomingSpeciesId, onKeep, onSkip) {
     grid.appendChild(card);
   });
   GameUI.el('itemPickerCancel').onclick = () => {
+    GameItems._discardForRoomIncoming = null;
     GameUI.el('itemPickerModal').hidden = true;
     onSkip();
   };

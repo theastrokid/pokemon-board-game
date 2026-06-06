@@ -70,7 +70,12 @@ GameCpu._chooseAction = function () {
       case 'tileModal':        return () => GameCpu._click('tileResolveBtn');
       case 'victoryModal':     return () => GameCpu._click('victoryContinueBtn');
       case 'hofModal':         return () => GameCpu._click('hofCloseBtn');
-      case 'itemPickerModal':  return () => GameCpu._click('itemPickerCancel');
+      case 'itemPickerModal':  return () => {
+        // A full-party catch prompt? Decide smartly (keep upgrades). Otherwise
+        // it's some other item picker the CPU doesn't drive — just cancel.
+        if (window.GameItems && GameItems._discardForRoomIncoming != null) GameCpu._handleDiscardForRoom();
+        else GameCpu._click('itemPickerCancel');
+      };
       case 'dicePickerModal':  return () => GameCpu._click('dicePickCancel');
       case 'gymPrepModal':     return () => GameCpu._click('gymPrepFightBtn');
       case 'shopModal':        return () => GameCpu._click('shopCloseBtn');
@@ -259,19 +264,20 @@ GameCpu._doHeal = function (player) {
 GameCpu._findEvolveTarget = function (player) {
   if (!GameCpu._findEvolveItemId(player)) return null;
   if (!window.GameItems || !GameItems.getEvolutionOptions) return null;
+  const candies = (player.items && player.items.rare_candy) || 0;
+  // Evolve cost scales with stage: Stage 1→2 = 1 candy, Stage 2→3 = 2.
   const eligibleForEvo = player.party.find(m => {
     if (GameState.candiedInstancesThisTurn[m.instanceId]) return false;
-    return GameItems.getEvolutionOptions(m.speciesId).length > 0;
+    return GameItems.getEvolutionOptions(m.speciesId).length > 0
+      && candies >= GameItems.getEvolutionStage(m.speciesId);
   });
   if (eligibleForEvo) return { mon: eligibleForEvo, mode: 'evolve' };
-  // Stat boosts for maxed mons — tier 1 (+25%, 1 candy) then tier 2 (+50%, 3).
-  const candies = (player.items && player.items.rare_candy) || 0;
+  // Stat boost for maxed mons: a single +50% for 3 candies.
   const eligibleForBoost = player.party.find(m => {
     if (GameState.candiedInstancesThisTurn[m.instanceId]) return false;
     if (GameItems.getEvolutionOptions(m.speciesId).length > 0) return false; // can still evolve
-    const bc = m.boostCount || 0;
-    if (bc >= 2) return false;
-    return candies >= (bc === 0 ? 1 : 3);
+    if ((m.boostCount || 0) >= 1) return false;
+    return candies >= 3;
   });
   if (eligibleForBoost) return { mon: eligibleForBoost, mode: 'boost' };
   return null;
@@ -283,24 +289,26 @@ GameCpu._doEvolve = function (player) {
   if (!candyId || !target) return;
   const mon = target.mon;
   if (target.mode === 'boost') {
-    const cost = (mon.boostCount || 0) === 0 ? 1 : 3; // tier 2 (+50%) costs 3 candies
+    const cost = 3; // single +50% boost costs 3 candies
     GameItems.applyStatBoost(player, mon);
     for (let i = 0; i < cost; i++) GameState.consumeItem(player, candyId);
     GameState.candiedInstancesThisTurn[mon.instanceId] = true;
-    const tierMsg = (mon.boostCount || 0) >= 2 ? '+50% total' : '+25%';
-    GameUI.log(`<span class="crit">${player.name}'s ${mon.name} grew stronger! ${tierMsg} (used ${cost} Rare Cand${cost > 1 ? 'ies' : 'y'}).</span>`, 'crit');
+    GameUI.log(`<span class="crit">${player.name}'s ${mon.name} grew stronger! +50% (used ${cost} Rare Candies).</span>`, 'crit');
     GameAudio.sfx.fanfare();
     GameUI.refreshAll();
     return;
   }
   {
     const options = GameItems.getEvolutionOptions(mon.speciesId);
+    // Evolve cost scales with the evolving mon's stage (1 candy Stage 1→2, 2 Stage 2→3).
+    const evoCost = GameItems.getEvolutionStage(mon.speciesId);
     // For multi-evolution (Eevee/Slowpoke) just take the first option — keeps
     // CPU behavior deterministic enough to simulate.
     const chosen = options[0];
     const newData = GameData.getPokemon(chosen);
     const oldName = mon.name;
     const wasFainted = mon.fainted;
+    mon._evoCost = evoCost;
     mon.speciesId = chosen;
     mon.name = newData.name;
     mon.types = newData.types.slice();
@@ -316,7 +324,9 @@ GameCpu._doEvolve = function (player) {
     mon.boostCount = 0;
     GameUI.log(`<span class="crit">${player.name}'s ${oldName} evolved into ${newData.name}!</span>`, 'crit');
   }
-  GameState.consumeItem(player, candyId);
+  const evoCostFinal = mon._evoCost || 1;
+  delete mon._evoCost;
+  for (let i = 0; i < evoCostFinal; i++) GameState.consumeItem(player, candyId);
   GameState.candiedInstancesThisTurn[mon.instanceId] = true;
   GameAudio.sfx.fanfare();
   GameUI.refreshAll();
@@ -347,20 +357,14 @@ GameCpu._doUseBattleBuff = function (player) {
   GameUI.refreshAll();
 };
 
-// === Discard down to a lean party ===
-// Keeping the party small frees space (no more catch-discard prompts), gives
-// the CPU stage-scaled item + ball rewards from release, and concentrates
-// Rare Candy / Heal investment on a smaller squad.
-//
-// Strategy sweep across 12 sims (4 strategies × 3 runs, 6 CPUs each):
-//   lean3      18/18 = 100.0%  (mean win 58 turns)  ← winner
-//   wide5      16/18 =  88.9%  (mean win 62 turns)
-//   balanced4  15/18 =  83.3%  (mean win 47 turns when they win, 3 stallers)
-//   full6      12/18 =  66.7%  (mean win 117 turns)
-// Updated strategy: keep a SQUAD of 4 with deliberate type variance, not a
-// lean 3. Four slots let the CPU answer more gym-leader matchups while the
-// discard logic below protects unique types so the bench stays diverse.
-GameCpu.TARGET_PARTY_SIZE = 4;
+// === Party management: keep a FULL squad of the strongest mons ===
+// The CPU builds a big, high-stat team. It fills all 6 slots and, when it
+// catches something while full, keeps the newcomer only if it out-stats the
+// weakest mon on the bench (see GameCpu._handleDiscardForRoom). It no longer
+// cashes Pokemon in for items — a deep, strong roster answers more gym
+// matchups and posts a higher Hall of Fame team-stat score. With a target of
+// 6 the proactive discard below is effectively disabled (party never exceeds 6).
+GameCpu.TARGET_PARTY_SIZE = 6;
 
 // A "keep" score: raw strength plus a big bonus when the mon is the ONLY
 // holder of its primary type in the party (so we don't discard our last Fire
@@ -412,6 +416,34 @@ GameCpu._doDiscard = function (player) {
   GameUI.log(`${player.name} released <strong>${released.name}</strong> · drew ${n} item${n>1?'s':''} + ${n} ball${n>1?'s':''}${bonusTag}.`, 'crit');
   GameAudio.sfx.item && GameAudio.sfx.item();
   GameUI.refreshAll();
+};
+
+// Stat estimate for a freshly-caught species (matches _monScore on a new mon).
+GameCpu._speciesScore = function (speciesId) {
+  const p = GameData.getPokemon(speciesId);
+  if (!p) return 0;
+  const maxMove = (p.moves || []).reduce((mx, mv) => Math.max(mx, mv.power || 0), 0);
+  return (p.hp || 0) + 2 * maxMove;
+};
+
+// Full-party catch: keep the newcomer only if it out-stats the weakest mon on
+// the bench (then click that mon's card to swap + collect prizes). Otherwise
+// skip. This is what stops the CPU forfeiting a strong catch like Lugia.
+GameCpu._handleDiscardForRoom = function () {
+  const player = GameState.currentPlayer();
+  const incomingId = window.GameItems && GameItems._discardForRoomIncoming;
+  if (incomingId == null) { GameCpu._click('itemPickerCancel'); return; }
+  const pool = player.party.filter(m => !m.isShiny);       // shinies are protected
+  const cand = pool.length ? pool : player.party.slice();
+  const weakest = cand.slice().sort((a, b) => GameCpu._monScore(a) - GameCpu._monScore(b))[0];
+  const incomingScore = GameCpu._speciesScore(incomingId);
+  if (weakest && incomingScore > GameCpu._monScore(weakest)) {
+    const idx = player.party.findIndex(m => m.instanceId === weakest.instanceId);
+    const grid = GameUI.el('itemPickerGrid');
+    const card = grid && grid.children[idx];
+    if (card) { card.click(); return; } // swaps weakest out, keeps the catch
+  }
+  GameCpu._click('itemPickerCancel'); // newcomer not worth a slot — keep team
 };
 
 // === Battle slot optimization ===

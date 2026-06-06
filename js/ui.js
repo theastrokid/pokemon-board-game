@@ -1540,12 +1540,10 @@ GameUI.showEvolutionPicker = function (eligible, onPick, player) {
       return;
     }
     if (options.length === 0) {
-      // Fully evolved — stat-boost option. Tier 1 = +25% (1 candy); tier 2 =
-      // +50% total (3 candies). Capped at two boosts.
+      // Fully evolved — a single +50% stat boost for 3 Rare Candies.
       const bc = mon.boostCount || 0;
-      const maxed = bc >= 2;
-      const tier2 = bc === 1;                 // next boost is the +50% upgrade
-      const cost = bc === 0 ? 1 : 3;
+      const maxed = bc >= 1;
+      const cost = 3;
       const canAfford = candies >= cost;
       const row = document.createElement('div');
       row.className = 'evolve-row' + (maxed || !canAfford ? ' disabled' : '');
@@ -1559,26 +1557,23 @@ GameUI.showEvolutionPicker = function (eligible, onPick, player) {
           <div class="evolve-arrow" style="color:#555;">✗</div>
           <div class="evolve-to">
             <div class="evolve-name" style="color:#888;">Fully boosted (+50%)</div>
-            <div class="hint">Each Pokemon can take at most two boosts</div>
+            <div class="hint">Each Pokemon can take one stat boost</div>
           </div>
         `;
       } else {
-        const mul = tier2 ? 1.2 : 1.25;
-        const newMaxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * mul));
-        const pct = tier2 ? '+50%' : '+25%';
-        const boostLabel = tier2 ? '+50% UPGRADE' : 'STAT BOOST';
-        const costLabel = `${cost} Rare Cand${cost > 1 ? 'ies' : 'y'}`;
+        const newMaxHp = Math.max(mon.maxHp + 1, Math.round(mon.maxHp * 1.5));
+        const costLabel = `${cost} Rare Candies`;
         row.innerHTML = `
           <div class="evolve-from">
             <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" />
-            <div class="evolve-name">${mon.name}${tier2 ? ' <span class="hint">(+25%)</span>' : ''}</div>
+            <div class="evolve-name">${mon.name}</div>
             <div class="hint">HP ${mon.hp}/${mon.maxHp}</div>
           </div>
-          <div class="evolve-arrow" style="color:var(--pop);font-weight:bold;">${pct}</div>
+          <div class="evolve-arrow" style="color:var(--pop);font-weight:bold;">+50%</div>
           <div class="evolve-to">
             <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" style="filter:drop-shadow(0 0 8px var(--pop));" />
-            <div class="evolve-name">${boostLabel}</div>
-            <div class="hint">HP → ${newMaxHp} · moves ${pct} · costs ${costLabel}${canAfford ? '' : ` — need ${cost}`}</div>
+            <div class="evolve-name">STAT BOOST</div>
+            <div class="hint">HP → ${newMaxHp} · moves +50% · costs ${costLabel}${canAfford ? '' : ` — need ${cost}`}</div>
           </div>
         `;
         if (canAfford) {
@@ -1590,11 +1585,14 @@ GameUI.showEvolutionPicker = function (eligible, onPick, player) {
       }
       grid.appendChild(row);
     } else if (options.length === 1) {
-      // Single evolution path — one clickable row
+      // Single evolution path — cost scales with stage (1 candy Stage 1→2, 2 Stage 2→3).
       const evolvedId = options[0];
       const evolvedData = GameData.getPokemon(evolvedId);
+      const evoCost = GameItems.getEvolutionStage(mon.speciesId);
+      const canAfford = candies >= evoCost;
+      const costLabel = `${evoCost} Rare Cand${evoCost > 1 ? 'ies' : 'y'}`;
       const row = document.createElement('div');
-      row.className = 'evolve-row';
+      row.className = 'evolve-row' + (canAfford ? '' : ' disabled');
       row.innerHTML = `
         <div class="evolve-from">
           <img src="${GameData.spriteFront(mon.speciesId)}" onerror="this.src='${GameData.spriteStatic(mon.speciesId)}'" alt="${mon.name}" />
@@ -1605,13 +1603,15 @@ GameUI.showEvolutionPicker = function (eligible, onPick, player) {
         <div class="evolve-to">
           <img src="${GameData.spriteFront(evolvedId)}" onerror="this.src='${GameData.spriteStatic(evolvedId)}'" alt="${evolvedData.name}" />
           <div class="evolve-name">${evolvedData.name}</div>
-          <div class="hint">${evolvedData.types.join(' / ')} · HP ${evolvedData.hp}</div>
+          <div class="hint">${evolvedData.types.join(' / ')} · HP ${evolvedData.hp} · costs ${costLabel}${canAfford ? '' : ` — need ${evoCost}`}</div>
         </div>
       `;
-      row.addEventListener('click', () => {
-        modal.hidden = true;
-        onPick(mon, evolvedId);
-      });
+      if (canAfford) {
+        row.addEventListener('click', () => {
+          modal.hidden = true;
+          onPick(mon, evolvedId);
+        });
+      }
       grid.appendChild(row);
     } else {
       // Multi-evolution path (Eevee) — show source, then a row of each evolution
@@ -1645,11 +1645,18 @@ GameUI.showEvolutionPicker = function (eligible, onPick, player) {
         <div class="evolve-arrow">→</div>
         <div class="evolve-multi-options">${optionsHtmlNoTypes}</div>
       `;
+      const evoCost = GameItems.getEvolutionStage(mon.speciesId);
+      const canAfford = candies >= evoCost;
       wrap.querySelectorAll('.evolve-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-          modal.hidden = true;
-          onPick(mon, Number(btn.dataset.evoId));
-        });
+        if (canAfford) {
+          btn.addEventListener('click', () => {
+            modal.hidden = true;
+            onPick(mon, Number(btn.dataset.evoId));
+          });
+        } else {
+          btn.disabled = true;
+          btn.classList.add('disabled');
+        }
       });
       grid.appendChild(wrap);
     }
