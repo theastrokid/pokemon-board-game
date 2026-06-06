@@ -831,7 +831,8 @@
       "city": "Cerulean City",
       "color": "#5bc0eb",
       "_theme": "Water (Quagsire=electric-immune, Tentacruel/Togetic resist grass, Togetic adds a non-water type)",
-      "scaleMultiplier": 1.5,
+      "_note": "scaleMultiplier kept modest: the global +25% gym buff stacks on it, so 1.5 made Misty the single hardest gym (2.3x) at position 2. 1.05 keeps her between Brock and Blaine for a monotonic difficulty ramp.",
+      "scaleMultiplier": 1.05,
       "teamSize": 4,
       "pool": [
         {
